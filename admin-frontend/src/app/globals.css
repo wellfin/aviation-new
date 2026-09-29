@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens extracted from the Figma "Global Aviation Website" file.
+ * Use these via Tailwind utilities, e.g. `bg-navy-900`, `text-brand`, `font-mono`.
+ */
+@theme {
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+  --font-inter: var(--font-inter-face), ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand */
+  --color-brand: #2f80ed;
+  --color-brand-cyan: #00c2ff;
+  --color-brand-dark: #1a5fc4;
+
+  /* Navy scale (headers, dark surfaces, footer) */
+  --color-navy-950: #071423;
+  --color-navy-900: #0b1f3a;
+  --color-navy-800: #0a2d5e;
+  --color-navy-700: #0f2a4f;
+
+  /* Neutrals */
+  --color-ink: #0b1f3a;
+  --color-muted: #64748b;
+  --color-subtle: #94a3b8;
+  --color-line: #e2e8f0;
+  --color-surface: #f4f7fb;
+  --color-surface-2: #f8fafc;
+
+  /* Status */
+  --color-success: #2ecc71;
+  --color-warning: #f4b400;
+  --color-danger: #e53935;
+  --color-purple: #7b4fb8;
+
+  --radius-card: 16px;
+  --shadow-card: 0px 4px 24px 0px rgba(11, 31, 58, 0.1);
+  --shadow-soft: 0px 2px 12px 0px rgba(11, 31, 58, 0.06);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: #ffffff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility bg-brand-gradient {
+  background-image: linear-gradient(135deg, #2f80ed 0%, #00c2ff 100%);
+}
+
+@utility bg-header-gradient {
+  background-image: linear-gradient(177deg, #0b1f3a 0%, #0a2d5e 50%, #071423 100%);
+}
+
+@utility bg-hero-navy {
+  background-image: linear-gradient(180deg, #0b1f3a 0%, #0a2d5e 55%, #0b1f3a 100%);
+}
+
+@utility text-brand-gradient {
+  background-image: linear-gradient(90deg, #2f80ed 0%, #00c2ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility container-site {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  @media (width >= 48rem) {
+    padding-inline: 24px;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

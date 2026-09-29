@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+.mongo-data
+uploads
+.mail-outbox
+coverage
+*.log
+.test-uploads
+.dev-admin.txt
