@@ -1,10 +1,10 @@
 node_modules
-dist
+/dist
 .env
 .env.*
 !.env.example
-.mongo-data
-uploads
+/.mongo-data
+/uploads
 .mail-outbox
 coverage
 *.log
