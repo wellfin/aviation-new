@@ -6,6 +6,10 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { listCategories } from "@/lib/data/categories";
 import { getAdvertisement } from "@/lib/data/content";
 
+// Every page is rendered per request (ads rotate on each view), so nothing here is
+// prerendered at build time — the build must not need the API to be running.
+export const dynamic = "force-dynamic";
+
 export default async function SiteLayout({ children }: { children: ReactNode }) {
   const [stickyAd, categories] = await Promise.all([getAdvertisement("sticky-footer"), listCategories()]);
   return (
