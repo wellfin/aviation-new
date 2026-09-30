@@ -12,7 +12,7 @@ import { fieldErrors, type FieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { AdPreview } from "./AdPreview";
 import { TrafficShareCard } from "./TrafficShareCard";
-import { PLACEMENT_HINT, PLACEMENT_LABEL, SELECTABLE_PLACEMENTS, adFormSchema, adState, type AdFormValues, type AdminAd, type PlacementTraffic } from "./schema";
+import { PLACEMENT_HINT, PLACEMENT_LABEL, SELECTABLE_PLACEMENTS, adFormSchema, adState, projectTraffic, type AdFormValues, type AdminAd, type PlacementTraffic } from "./schema";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
 const STATE_TONE = { active: "green", paused: "slate", scheduled: "blue", ended: "amber" } as const;
@@ -201,6 +201,11 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
         : !weightOk
           ? "Enter a weight from 1 to 100."
           : "";
+  const share = projectTraffic(
+    traffic.data?.[0],
+    ad?.id,
+    notLiveReason === "" ? { advertiser: values.advertiser || "This ad", weight: weightNum, impressions: ad?.impressions ?? 0 } : null,
+  );
 
   return (
     <form onSubmit={submit} noValidate>
@@ -244,21 +249,42 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
                 <Input id="startsAt" name="startsAt" type="datetime-local" label="Starts (optional)" value={values.startsAt} onChange={(e) => set("startsAt", e.target.value)} error={errors.startsAt} />
                 <Input id="endsAt" name="endsAt" type="datetime-local" label="Ends (optional)" value={values.endsAt} onChange={(e) => set("endsAt", e.target.value)} error={errors.endsAt} />
               </div>
-              <Input
-                id="weight"
-                name="weight"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={100}
-                step={1}
-                label="Weight"
-                value={weightText}
-                onChange={(e) => setWeightText(e.target.value)}
-                error={errors.weight}
-                hint="1–100. Higher weights are shown more often than other ads in the same placement."
-                wrapperClassName="sm:max-w-xs"
-              />
+              <div className="grid items-start gap-4 sm:grid-cols-2">
+                <Input
+                  id="weight"
+                  name="weight"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={100}
+                  step={1}
+                  label="Weight"
+                  value={weightText}
+                  onChange={(e) => setWeightText(e.target.value)}
+                  error={errors.weight}
+                  hint="1–100. Higher weights are shown more often than other ads in the same placement."
+                />
+                <div aria-live="polite">
+                  <p className="text-xs font-semibold tracking-[0.6px] text-muted uppercase">Traffic share</p>
+                  <div className="mt-2 rounded-xl border border-line bg-surface px-4 py-3">
+                    {traffic.loading && !traffic.data ? (
+                      <p className="text-sm text-muted">Calculating…</p>
+                    ) : (
+                      <>
+                        <p className="text-2xl font-extrabold text-brand">{share.thisShare.toFixed(1)}%</p>
+                        <p className="text-xs text-muted">
+                          {notLiveReason
+                            ? notLiveReason.replace(/\.$/, "") + " — not shown"
+                            : `of ${PLACEMENT_LABEL[values.placement]} views · others ${share.othersShare.toFixed(1)}%`}
+                        </p>
+                        <p className="mt-1 text-xs text-subtle">
+                          Weight {weightOk ? weightNum : "–"} of {share.totalWeight} total live weight
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </Card>
         </div>
