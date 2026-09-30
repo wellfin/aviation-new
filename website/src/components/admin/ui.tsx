@@ -1,7 +1,7 @@
 "use client";
 
-import { AlertTriangle, Inbox, RefreshCw, Search } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { AlertTriangle, Inbox, RefreshCw } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { ApiError } from "@/lib/api/client";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import { cn } from "@/lib/utils";
@@ -133,44 +133,6 @@ export function DataTable<T>({
 }
 
 /* ─────────────── Filters (URL-synced) ─────────────── */
-
-export function SearchFilter({ param = "q", placeholder = "Search…", label = "Search" }: { param?: string; placeholder?: string; label?: string }) {
-  const { get, set } = useUrlParams();
-  const current = get(param);
-  const [value, setValue] = useState(current);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Keep the box in sync when the URL changes elsewhere (back button, "clear filters").
-  const [lastUrlValue, setLastUrlValue] = useState(current);
-  if (lastUrlValue !== current) {
-    setLastUrlValue(current);
-    setValue(current);
-  }
-
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current);
-  }, []);
-
-  return (
-    <label className="relative block w-full sm:w-72">
-      <span className="sr-only">{label}</span>
-      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-subtle" aria-hidden />
-      <input
-        type="search"
-        value={value}
-        placeholder={placeholder}
-        maxLength={100}
-        onChange={(e) => {
-          const v = e.target.value;
-          setValue(v);
-          if (timer.current) clearTimeout(timer.current);
-          timer.current = setTimeout(() => set({ [param]: v.trim() }), 350);
-        }}
-        className="h-10 w-full rounded-xl border border-line bg-white pr-3 pl-9 text-sm outline-none focus:border-brand focus:ring-3 focus:ring-brand/15"
-      />
-    </label>
-  );
-}
 
 export function SelectFilter({ param, label, options }: { param: string; label: string; options: Array<{ value: string; label: string }> }) {
   const { get, set } = useUrlParams();

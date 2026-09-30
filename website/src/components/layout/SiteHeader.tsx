@@ -3,17 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, Inbox, LogOut, Menu, ShieldCheck, User, X } from "lucide-react";
+import { Building2, Inbox, LogOut, Menu, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { ServicesMenu, serviceHref } from "./ServicesMenu";
 import { can, useAuth } from "@/lib/auth/auth-context";
 import { useCategories } from "@/components/categories/CategoriesContext";
 import { cn } from "@/lib/utils";
-
-/** Separate admin console app (staff only). */
-const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://localhost:3200";
-const ADMIN_PERMISSIONS = ["reports:read", "providers:manage", "content:manage", "users:read", "leads:read", "reviews:moderate"];
 
 const NAV = [
   { label: "Home", href: "/" },
@@ -152,11 +148,6 @@ export function SiteHeader() {
                         <Inbox className="size-4" /> Enquiries
                       </Link>
                     </>
-                  )}
-                  {ADMIN_PERMISSIONS.some((p) => can(user, p)) && (
-                    <a role="menuitem" href={`${ADMIN_URL}/admin`} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-ink hover:bg-surface">
-                      <ShieldCheck className="size-4" /> Admin console
-                    </a>
                   )}
                   <button role="menuitem" type="button" onClick={handleLogout} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-danger hover:bg-danger/5">
                     <LogOut className="size-4" /> Log out

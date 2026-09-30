@@ -34,11 +34,3 @@ export function passwordChangedEmail(to: string): MailMessage {
     text: `The password for your account was just changed and all other sessions were signed out.\n\nIf this wasn't you, reset your password immediately at ${env.FRONTEND_URL}/forgot-password.${SIGNATURE}`,
   };
 }
-
-export function staffNotification(subject: string, lines: Array<[string, string | undefined | null]>): Omit<MailMessage, "to"> {
-  const body = lines
-    .filter(([, v]) => v)
-    .map(([k, v]) => `${k}: ${v}`)
-    .join("\n");
-  return { subject, text: `${body}${SIGNATURE}` };
-}

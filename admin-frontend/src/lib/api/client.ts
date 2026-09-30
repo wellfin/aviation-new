@@ -24,23 +24,12 @@ export class ApiError extends Error {
   }
 }
 
-export type MockHandler = (body: unknown) => unknown;
-
-const mockHandlers = new Map<string, MockHandler>();
-
-/** Register a simulated response for an endpoint (mock mode only). */
-export function registerMock(method: string, path: string, handler: MockHandler): void {
-  mockHandlers.set(`${method.toUpperCase()} ${path}`, handler);
-}
-
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function apiRequest<T>(method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", path: string, body?: unknown): Promise<T> {
   if (publicConfig.dataSource === "mock") {
     await delay(500);
-    const handler = mockHandlers.get(`${method} ${path}`);
-    // Handlers throw ApiError to simulate validation / auth failures.
-    return (handler ? handler(body) : { ok: true }) as T;
+    return { ok: true } as T;
   }
 
   let res = await send(method, path, body);
@@ -119,5 +108,3 @@ function refreshSession(): Promise<boolean> {
     });
   return refreshing;
 }
-
-export const apiPost = <T = { ok: true }>(path: string, body: unknown) => apiRequest<T>("POST", path, body);

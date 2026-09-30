@@ -499,18 +499,3 @@ export function ReasonDialog({
     document.body,
   );
 }
-
-/* ─────────────── Misc ─────────────── */
-
-/** "" → undefined, otherwise a number (NaN for junk, so zod reports it). */
-export function toNumber(v: string): number | undefined {
-  const t = v.trim();
-  return t === "" ? undefined : Number(t);
-}
-
-/** Picks error messages under `prefix.` and strips the prefix. */
-export function errorsUnder(errors: Record<string, string>, prefix: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(errors)) if (k.startsWith(`${prefix}.`)) out[k.slice(prefix.length + 1)] = v;
-  return out;
-}

@@ -42,7 +42,3 @@ export const ADS: Advertisement[] = [
     cta: "Learn More",
   },
 ];
-
-export function getAd(placement: Advertisement["placement"]): Advertisement | undefined {
-  return ADS.find((a) => a.placement === placement);
-}

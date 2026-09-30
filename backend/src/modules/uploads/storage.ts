@@ -72,13 +72,8 @@ export class LocalDiskStorage implements Storage {
   }
 }
 
-let storage: Storage = new LocalDiskStorage(env.UPLOAD_DIR);
+const storage: Storage = new LocalDiskStorage(env.UPLOAD_DIR);
 
 export function getStorage(): Storage {
   return storage;
-}
-
-/** Replaces the storage backend (e.g. an S3 implementation at boot). */
-export function setStorage(next: Storage): void {
-  storage = next;
 }

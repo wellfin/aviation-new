@@ -30,44 +30,22 @@ export function can(user: SessionUser | null, permission: string): boolean {
   return (user.permissions ?? MOCK_ROLE_PERMISSIONS[user.role]).includes(permission);
 }
 
-interface SignupInput {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  accountType: "user" | "provider";
-  company?: string;
-  country?: string;
-  phone?: string;
-  /** What the account is for, e.g. "pilot", "business", "charter", "airport". */
-  service?: string;
-  /** Pricing plan selected before signing up (provider accounts). */
-  plan?: string;
-}
-
 interface AuthContextValue {
   user: SessionUser | null;
   loading: boolean;
   login: (email: string, password: string, remember?: boolean) => Promise<SessionUser>;
-  signup: (input: SignupInput) => Promise<{ email: string }>;
-  verifyOtp: (email: string, code: string) => Promise<SessionUser>;
-  requestPasswordReset: (email: string) => Promise<void>;
-  resetPassword: (email: string, code: string, password: string) => Promise<void>;
-  resendVerification: (email: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 /* ------------------------------------------------------------------
- * Mock mode: a browser-only stand-in for the auth API so every auth
- * screen can be exercised before the backend exists. Never used when
+ * Mock mode: a browser-only stand-in for the auth API. Never used when
  * NEXT_PUBLIC_DATA_SOURCE=api.
  * ------------------------------------------------------------------ */
 const MOCK_USERS_KEY = "ga_mock_users";
 const MOCK_SESSION_KEY = "ga_mock_session";
-export const MOCK_DEMO_ACCOUNT = { email: "demo@globalaviation.test", password: "Demo1234" };
-export const MOCK_OTP = "123456";
+const MOCK_DEMO_ACCOUNT = { email: "demo@globalaviation.test", password: "Demo1234" };
 
 interface MockUserRecord extends SessionUser {
   password: string;
@@ -154,90 +132,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [isMock],
   );
 
-  const signup = useCallback(
-    async (input: SignupInput) => {
-      if (!isMock) {
-        await apiRequest("POST", "/auth/register", input);
-        return { email: input.email };
-      }
-      await new Promise((r) => setTimeout(r, 500));
-      const users = mockUsers();
-      if (users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) {
-        throw new ApiError(409, { code: "EMAIL_TAKEN", message: "An account with this email already exists.", fieldErrors: { email: "Email already registered" } });
-      }
-      users.push({
-        id: `usr_${Date.now()}`,
-        firstName: input.firstName,
-        lastName: input.lastName,
-        email: input.email,
-        role: input.accountType === "provider" ? "PROVIDER" : "USER",
-        password: input.password,
-        verified: false,
-      });
-      writeJson(MOCK_USERS_KEY, users);
-      return { email: input.email };
-    },
-    [isMock],
-  );
-
-  const verifyOtp = useCallback(
-    async (email: string, code: string) => {
-      if (!isMock) {
-        const u = await apiRequest<SessionUser>("POST", "/auth/verify-email", { email, code });
-        setUser(u);
-        return u;
-      }
-      await new Promise((r) => setTimeout(r, 500));
-      if (code !== MOCK_OTP) throw new ApiError(400, { code: "INVALID_OTP", message: "That code is incorrect or has expired.", fieldErrors: { code: "Invalid code" } });
-      const users = mockUsers();
-      const rec = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (!rec) throw invalid("We couldn't find that account.", "NOT_FOUND");
-      rec.verified = true;
-      writeJson(MOCK_USERS_KEY, users);
-      const session = toSession(rec);
-      writeJson(MOCK_SESSION_KEY, session);
-      setUser(session);
-      return session;
-    },
-    [isMock],
-  );
-
-  const requestPasswordReset = useCallback(
-    async (email: string) => {
-      // Always resolves (no account enumeration) — mirrors the real API contract.
-      if (!isMock) await apiRequest("POST", "/auth/forgot-password", { email });
-      else await new Promise((r) => setTimeout(r, 500));
-    },
-    [isMock],
-  );
-
-  const resetPassword = useCallback(
-    async (email: string, code: string, password: string) => {
-      if (!isMock) {
-        await apiRequest("POST", "/auth/reset-password", { email, code, password });
-        return;
-      }
-      await new Promise((r) => setTimeout(r, 500));
-      if (code !== MOCK_OTP) throw new ApiError(400, { code: "INVALID_OTP", message: "That code is incorrect or has expired.", fieldErrors: { code: "Invalid code" } });
-      const users = mockUsers();
-      const rec = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      // Unknown emails succeed silently, mirroring the real API (no account enumeration).
-      if (rec) {
-        rec.password = password;
-        writeJson(MOCK_USERS_KEY, users);
-      }
-    },
-    [isMock],
-  );
-
-  const resendVerification = useCallback(
-    async (email: string) => {
-      if (!isMock) await apiRequest("POST", "/auth/resend-verification", { email });
-      else await new Promise((r) => setTimeout(r, 500));
-    },
-    [isMock],
-  );
-
   const logout = useCallback(async () => {
     if (!isMock) await apiRequest("POST", "/admin/auth/logout").catch(() => undefined);
     else window.localStorage.removeItem(MOCK_SESSION_KEY);
@@ -245,8 +139,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [isMock]);
 
   const value = useMemo(
-    () => ({ user, loading, login, signup, verifyOtp, requestPasswordReset, resetPassword, resendVerification, logout }),
-    [user, loading, login, signup, verifyOtp, requestPasswordReset, resetPassword, resendVerification, logout],
+    () => ({ user, loading, login, logout }),
+    [user, loading, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

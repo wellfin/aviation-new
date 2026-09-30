@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import type { Advertisement } from "@/lib/types";
-import { adLinkProps } from "./ad-link";
+import { adLinkProps, isRemoteImage } from "./ad-link";
 
 /**
  * Collapsible leaderboard pinned to the bottom of the viewport. The image is a
@@ -31,7 +31,7 @@ export function StickyFooterAd({ ad }: { ad: Advertisement | null }) {
             className="group relative block h-[120px] w-full overflow-hidden rounded-t-[20px] border border-b-0 border-white/10 bg-navy-950 shadow-[0_-4px_24px_rgba(0,0,0,0.25)]"
             aria-label={`Advertisement: ${ad.advertiser}${ad.headline ? ` — ${ad.headline}` : ""}`}
           >
-            <Image src={ad.image} alt="" fill sizes="1131px" className="object-cover object-[72%_50%]" />
+            <Image src={ad.image} unoptimized={isRemoteImage(ad.image)} alt="" fill sizes="1131px" className="object-cover object-[72%_50%]" />
             <div className="absolute inset-0 bg-gradient-to-r from-navy-950/90 via-navy-950/60 via-45% to-transparent" />
             <span className="absolute top-2.5 right-3 rounded-full border border-white/10 bg-black/45 px-2 py-0.5 text-[8px] font-bold tracking-[0.96px] text-white/60">AD</span>
             <div className="relative flex h-full items-center gap-6 px-8">

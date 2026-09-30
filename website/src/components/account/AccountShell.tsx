@@ -1,10 +1,9 @@
 "use client";
 
-import { LogOut, ShieldHalf } from "lucide-react";
+import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { ADMIN_ENTRY_PERMISSIONS } from "@/components/admin/nav";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { apiRequest } from "@/lib/api/client";
 import { can, useAuth, type SessionUser } from "@/lib/auth/auth-context";
@@ -30,16 +29,9 @@ export function useAccount(): AccountContextValue {
   return ctx;
 }
 
-/** The admin console is a separate app (admin-frontend). */
-export const ADMIN_CONSOLE_URL = `${process.env.NEXT_PUBLIC_ADMIN_URL ?? "http://localhost:3200"}/admin`;
-
-export function isStaff(user: SessionUser | null): boolean {
-  return ADMIN_ENTRY_PERMISSIONS.some((p) => can(user, p));
-}
-
-/** Business (provider) tools; staff manage listings from the admin console instead. */
+/** Business (provider) tools. Staff never sign in here — they use the separate admin console. */
 export function isBusiness(user: SessionUser | null): boolean {
-  return can(user, "listing:manage:own") && !isStaff(user);
+  return can(user, "listing:manage:own");
 }
 
 /** Signed-in dashboard chrome: client-side guard, hero band, sub-navigation. */
@@ -95,7 +87,6 @@ export function AccountShell({ children }: { children: ReactNode }) {
   const business = isBusiness(user);
   const items = ACCOUNT_NAV.filter((i) => (!i.permission || can(user, i.permission)) && (i.group !== "business" || business));
   const businessItems = items.filter((i) => i.group === "business");
-  const staff = isStaff(user);
 
   async function handleLogout() {
     setSigningOut(true);
@@ -141,15 +132,6 @@ export function AccountShell({ children }: { children: ReactNode }) {
             </p>
             <p className="mt-1 text-sm text-white/60">{user.email}</p>
           </div>
-          {staff && (
-            <a
-              href={ADMIN_CONSOLE_URL}
-              className="inline-flex h-11 items-center gap-2 self-start rounded-xl border border-brand-cyan/40 bg-brand-cyan/10 px-5 text-sm font-semibold text-brand-cyan transition hover:bg-brand-cyan/20 md:self-auto"
-            >
-              <ShieldHalf className="size-4" aria-hidden />
-              Open admin console
-            </a>
-          )}
         </div>
       </section>
 

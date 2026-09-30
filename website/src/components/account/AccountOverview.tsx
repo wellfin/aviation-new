@@ -1,15 +1,15 @@
 "use client";
 
-import { BadgeCheck, Building2, CloudSun, CreditCard, Heart, Inbox, MailWarning, MessageSquareText, Search, ShieldHalf, UserRound } from "lucide-react";
+import { BadgeCheck, Building2, CloudSun, CreditCard, Heart, Inbox, MailWarning, MessageSquareText, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { PageHeader, StatusPill } from "@/components/admin/ui";
 import { Badge } from "@/components/ui/Badge";
-import { Button, ButtonLink, buttonClasses } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { ApiError } from "@/lib/api/client";
 import { can, useAuth, type SessionUser } from "@/lib/auth/auth-context";
 import { formatDate } from "@/lib/utils";
-import { ADMIN_CONSOLE_URL, isBusiness, isStaff, useAccount } from "./AccountShell";
+import { isBusiness, useAccount } from "./AccountShell";
 import { LOCAL_FAVORITES_EVENT, readLocalFavorites, useAccountFavorites } from "./favorites-store";
 import { useAccountApi } from "./hooks";
 import type { Listing, OwnReview, Paginated, SubscriptionOverview } from "./types";
@@ -84,21 +84,6 @@ export function AccountOverview() {
           {resend === "error"
             ? "We couldn't send a new code right now. Please try again in a minute."
             : `Some features — writing reviews${isProvider ? " and managing your listing" : ""} — need a verified email. We sent a code to ${user.email}.`}
-        </Notice>
-      )}
-
-      {isStaff(user) && (
-        <Notice
-          tone="info"
-          title="You have staff access"
-          action={
-            <a href={ADMIN_CONSOLE_URL} className={buttonClasses("navy", "sm")}>
-              <ShieldHalf className="size-4" aria-hidden />
-              Open admin console
-            </a>
-          }
-        >
-          Moderate listings and reviews, manage content and see reports in the admin console.
         </Notice>
       )}
 

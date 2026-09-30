@@ -19,14 +19,6 @@ export type ServiceCategorySlug =
   | "mro"
   | "meet-and-assist";
 
-export interface ServiceCategory {
-  slug: ServiceCategorySlug;
-  name: string;
-  /** Long name used on profile headers, e.g. "Fixed Base Operator". */
-  longName: string;
-  icon: string;
-}
-
 export interface ContactInfo {
   phone: string;
   email: string;
@@ -124,19 +116,6 @@ export interface Provider {
   employees?: string;
 }
 
-export type ProviderSort = "rating" | "reviews" | "name" | "newest";
-
-export interface ProviderQuery {
-  q?: string;
-  category?: ServiceCategorySlug | "all";
-  tier?: ProviderTier | "all";
-  country?: string;
-  airport?: string;
-  sort?: ProviderSort;
-  page?: number;
-  pageSize?: number;
-}
-
 export interface Paginated<T> {
   items: T[];
   total: number;
@@ -188,40 +167,6 @@ export interface Airport {
   featured: boolean;
 }
 
-export interface NewsArticle {
-  slug: string;
-  title: string;
-  excerpt: string;
-  category: NewsCategory;
-  image: string;
-  publishedAt: string;
-  author: string;
-  authorRole: string;
-  readMinutes: number;
-  featured: boolean;
-  body: string[];
-}
-
-export type NewsCategory = "Industry News" | "FBO Network" | "Regulatory" | "Fuel" | "Technology" | "Business Aviation";
-
-export interface PricingPlan {
-  id: "basic" | "pro" | "ultra_pro" | "enterprise";
-  name: string;
-  tagline: string;
-  monthlyPrice: number | null;
-  yearlyPrice: number | null;
-  highlighted: boolean;
-  features: string[];
-  cta: string;
-}
-
-export interface FaqItem {
-  id: string;
-  category: string;
-  question: string;
-  answer: string;
-}
-
 export interface Advertisement {
   id: string;
   placement: "header-banner" | "sidebar" | "sponsored-strip" | "sticky-footer" | "inline";
@@ -233,58 +178,4 @@ export interface Advertisement {
   cta?: string;
   /** API mode: counts the click and redirects to `href` — use it as the link target when present. */
   clickUrl?: string;
-}
-
-/* ---------- Aviation tool results (third-party integrations) ---------- */
-
-export type FlightCategory = "VFR" | "MVFR" | "IFR" | "LIFR";
-
-export interface MetarReport {
-  icao: string;
-  raw: string;
-  observedAt: string;
-  flightCategory: FlightCategory;
-  windDirDeg: number | null;
-  windSpeedKt: number;
-  windGustKt: number | null;
-  visibility: string;
-  temperatureC: number;
-  dewpointC: number;
-  altimeterHpa: number;
-  clouds: Array<{ cover: string; baseFt: number }>;
-  conditions: string[];
-}
-
-export interface TafReport {
-  icao: string;
-  raw: string;
-  issuedAt: string;
-  validFrom: string;
-  validTo: string;
-  periods: Array<{
-    from: string;
-    to: string;
-    change: "FM" | "TEMPO" | "BECMG" | "PROB30" | "PROB40" | "BASE";
-    summary: string;
-  }>;
-}
-
-export type NotamSeverity = "critical" | "warning" | "info";
-
-export interface Notam {
-  id: string;
-  icao: string;
-  number: string;
-  type: string;
-  severity: NotamSeverity;
-  subject: string;
-  text: string;
-  effectiveFrom: string;
-  effectiveTo: string | null;
-}
-
-export interface NearbyAirport {
-  airport: Airport;
-  distanceKm: number;
-  bearingDeg: number;
 }

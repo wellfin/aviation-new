@@ -41,5 +41,4 @@ export function isDuplicateKeyError(err: unknown): err is { code: 11000; keyPatt
   return typeof err === "object" && err !== null && (err as { code?: unknown }).code === 11000;
 }
 
-export const objectId = (id: string) => new mongoose.Types.ObjectId(id);
 export const isObjectId = (id: string) => mongoose.isValidObjectId(id) && /^[a-f\d]{24}$/i.test(id);
