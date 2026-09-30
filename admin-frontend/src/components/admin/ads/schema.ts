@@ -19,12 +19,10 @@ export const PLACEMENT_LABEL: Record<AdPlacement, string> = {
 };
 
 export const PLACEMENT_HINT: Record<AdPlacement, string> = {
-  "header-banner":
-    "Full-width creative image — upload 2172×411 px and keep text in the middle band (tops/bottoms are trimmed on short banners). Headline is used as alt text; body and CTA aren't shown.",
-  sidebar: "Dark card on listing sidebars — upload an 860×1120 px background with no text. Shows advertiser, headline, body and CTA over the dimmed image.",
-  "sponsored-strip":
-    "Strip between results and sponsor cards — upload a 2700×450 px background with no text, subject on the right. Shows advertiser, headline, one line of body and a CTA.",
-  "sticky-footer": "Collapsible leaderboard pinned to the bottom of desktop screens — upload exactly 2262×296 px, with the collapse tab graphic at the top centre.",
+  "header-banner": "Full-width banner on listing pages. Shows advertiser, headline, body (large screens) and CTA over the image. Image: 2700×900 px, no text.",
+  sidebar: "Dark card on listing sidebars. Shows advertiser, headline, body and CTA over the dimmed image. Image: 2700×900 px, no text.",
+  "sponsored-strip": "Strip between results and sponsor cards. Shows advertiser, headline, one line of body and a CTA. Image: 2700×900 px, no text.",
+  "sticky-footer": "Collapsible bar pinned to the bottom of desktop screens. Shows advertiser, headline, body and CTA. Image: 2700×900 px, no text.",
   inline: "Not shown on the website yet.",
 };
 
