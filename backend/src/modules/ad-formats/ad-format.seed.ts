@@ -1,14 +1,12 @@
 import { logger } from "../../lib/logger.js";
 import { AdFormat } from "./ad-format.model.js";
 
-/** Ad products from the Figma Advertise page. Inserted only if missing — admin edits are kept. */
+/** Ad products — one per placement the website renders. Inserted only if missing — admin edits are kept. */
 const FORMATS = [
-  { key: "header-banner", icon: "🖥️", title: "Header Banner", description: "Full-width banner above the fold on all pages" },
-  { key: "sidebar", icon: "📌", title: "Sidebar Ads", description: "Sticky sidebar placement on directory & airport pages" },
-  { key: "sponsored-cards", icon: "🎯", title: "Sponsored Cards", description: "Featured placement in search results & directory listings" },
-  { key: "airport-page", icon: "✈️", title: "Airport Page Ads", description: "Exclusive placement on specific airport profile pages" },
-  { key: "video", icon: "🎥", title: "Video Ads", description: "Pre-roll video on airport and provider profile pages" },
-  { key: "newsletter", icon: "📬", title: "Newsletter Ads", description: "Dedicated placement in our weekly aviation intelligence newsletter" },
+  { key: "header-banner", icon: "🖥️", title: "Header Banner", description: "Full-width banner at the top and bottom of the directory, airport, provider, news, tools and other key pages" },
+  { key: "sidebar", icon: "📌", title: "Sidebar Ads", description: "Sponsor card beside charter, airport, provider, FAQ and news content" },
+  { key: "sponsored-cards", icon: "🎯", title: "Sponsored Cards", description: "Featured strip between directory and charter results, plus sponsor cards on the home, charter and news pages" },
+  { key: "sticky-footer", icon: "📢", title: "Sticky Footer", description: "Collapsible bar pinned to the bottom of every page on desktop" },
 ];
 
 export async function seedAdFormats(): Promise<void> {

@@ -14,7 +14,7 @@ export const FAQ_SEED: Array<{ category: FaqCategory; question: string; answer: 
   { category: "Subscriptions", question: "Which payment methods do you accept?", answer: "We accept all major credit and debit cards and bank transfer for annual enterprise plans. All payments are processed securely." },
   { category: "Subscriptions", question: "Is there a refund policy?", answer: "Yes — all paid plans come with a 14-day money-back guarantee. See our Refund Policy for details." },
   { category: "Data Licence", question: "Can I license your airport and provider data?", answer: "Yes. We offer enterprise data licences via API and bulk exports. Visit the Data Licence page to request access." },
-  { category: "Advertisements", question: "How can I advertise on the platform?", answer: "We offer header banners, sponsored cards, airport-page ads and video placements. Visit the Advertise page to see formats and request a media kit." },
+  { category: "Advertisements", question: "How can I advertise on the platform?", answer: "We offer header banners, sidebar ads, sponsored cards and a sticky footer bar. Visit the Advertise page to see the packages and send an enquiry." },
   { category: "Aviation Tools", question: "Where does the weather data come from?", answer: "METAR and TAF reports are sourced from official aviation weather services and refreshed every few minutes." },
   { category: "Aviation Tools", question: "Are the runway diagrams suitable for navigation?", answer: "No. Diagrams are for planning and reference only. Always use current official charts for navigation." },
 ];
