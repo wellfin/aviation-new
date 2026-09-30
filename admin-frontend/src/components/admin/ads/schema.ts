@@ -4,6 +4,12 @@ import { imageRef } from "@/components/admin/news/schema";
 export const AD_PLACEMENTS = ["header-banner", "sidebar", "sponsored-strip", "sticky-footer", "inline"] as const;
 export type AdPlacement = (typeof AD_PLACEMENTS)[number];
 
+/**
+ * Placements the website actually renders. "inline" is still accepted by the API but has
+ * no slot on any page yet, so it isn't offered when creating ads or filtering.
+ */
+export const SELECTABLE_PLACEMENTS: readonly AdPlacement[] = AD_PLACEMENTS.filter((p) => p !== "inline");
+
 export const PLACEMENT_LABEL: Record<AdPlacement, string> = {
   "header-banner": "Header banner",
   sidebar: "Sidebar card",
@@ -13,11 +19,13 @@ export const PLACEMENT_LABEL: Record<AdPlacement, string> = {
 };
 
 export const PLACEMENT_HINT: Record<AdPlacement, string> = {
-  "header-banner": "Full-width creative image (about 2172×411). Headline is used as alt text; body and CTA aren't shown.",
-  sidebar: "Dark card on listing sidebars. Shows advertiser, headline, body and CTA over a dimmed image.",
-  "sponsored-strip": "Slim strip between results. Shows advertiser, headline, one line of body and a CTA.",
-  "sticky-footer": "Collapsible leaderboard pinned to the bottom of desktop screens (image about 2262×296).",
-  inline: "Full-width creative image placed inside page content.",
+  "header-banner":
+    "Full-width creative image — upload 2172×411 px and keep text in the middle band (tops/bottoms are trimmed on short banners). Headline is used as alt text; body and CTA aren't shown.",
+  sidebar: "Dark card on listing sidebars — upload an 860×1120 px background with no text. Shows advertiser, headline, body and CTA over the dimmed image.",
+  "sponsored-strip":
+    "Strip between results and sponsor cards — upload a 2700×450 px background with no text, subject on the right. Shows advertiser, headline, one line of body and a CTA.",
+  "sticky-footer": "Collapsible leaderboard pinned to the bottom of desktop screens — upload exactly 2262×296 px, with the collapse tab graphic at the top centre.",
+  inline: "Not shown on the website yet.",
 };
 
 export interface AdminAd {

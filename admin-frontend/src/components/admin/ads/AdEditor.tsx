@@ -11,7 +11,7 @@ import { ApiError, apiRequest } from "@/lib/api/client";
 import { fieldErrors, type FieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { AdPreview } from "./AdPreview";
-import { AD_PLACEMENTS, PLACEMENT_HINT, PLACEMENT_LABEL, adFormSchema, adState, type AdFormValues, type AdminAd } from "./schema";
+import { PLACEMENT_HINT, PLACEMENT_LABEL, SELECTABLE_PLACEMENTS, adFormSchema, adState, type AdFormValues, type AdminAd } from "./schema";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
 const STATE_TONE = { active: "green", paused: "slate", scheduled: "blue", ended: "amber" } as const;
@@ -196,7 +196,8 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
           <Card title="Creative">
             <div className="flex flex-col gap-4">
               <Select id="placement" name="placement" label="Placement" value={values.placement} onChange={(e) => set("placement", e.target.value as AdFormValues["placement"])} error={errors.placement}>
-                {AD_PLACEMENTS.map((p) => (
+                {/* An older ad saved as "inline" keeps its value visible so editing doesn't silently change it. */}
+                {(SELECTABLE_PLACEMENTS.includes(values.placement) ? SELECTABLE_PLACEMENTS : [...SELECTABLE_PLACEMENTS, values.placement]).map((p) => (
                   <option key={p} value={p}>
                     {PLACEMENT_LABEL[p]}
                   </option>

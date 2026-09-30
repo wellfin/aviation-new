@@ -10,7 +10,7 @@ import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
-import { AD_PLACEMENTS, PLACEMENT_LABEL, adState, type AdminAd, type PlacementStats } from "./schema";
+import { AD_PLACEMENTS, PLACEMENT_LABEL, SELECTABLE_PLACEMENTS, adState, type AdminAd, type PlacementStats } from "./schema";
 import { siteUrl } from "@/components/admin/news/site";
 
 const PAGE_SIZE = 20;
@@ -20,9 +20,11 @@ const pct = (n: number) => `${n.toFixed(2)}%`;
 function PlacementStatsGrid({ stats, loading }: { stats: PlacementStats[] | null; loading: boolean }) {
   if (loading && !stats) return <div className="mb-6 h-28 animate-pulse rounded-2xl bg-white shadow-soft" role="status" aria-label="Loading placement stats" />;
   if (!stats) return null;
+  // Placements the website doesn't render (e.g. "inline") only appear if an ad still uses them.
+  const shown = stats.filter((s) => SELECTABLE_PLACEMENTS.includes(s.placement) || s.ads > 0);
   return (
-    <ul className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Placement performance">
-      {stats.map((s) => (
+    <ul className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Placement performance">
+      {shown.map((s) => (
         <li key={s.placement} className="rounded-2xl border border-line bg-white p-4 shadow-soft">
           <p className="text-xs font-semibold tracking-[0.6px] text-muted uppercase">{PLACEMENT_LABEL[s.placement]}</p>
           <p className="mt-1 text-2xl font-extrabold text-ink">{pct(s.ctr)}</p>
@@ -134,7 +136,7 @@ export function AdsList() {
       <PlacementStatsGrid stats={stats.data} loading={stats.loading} />
       <FilterBar>
         <SearchFilter placeholder="Advertiser or headline" label="Search ads" />
-        <SelectFilter param="placement" label="Placement" options={AD_PLACEMENTS.map((p) => ({ value: p, label: PLACEMENT_LABEL[p] }))} />
+        <SelectFilter param="placement" label="Placement" options={SELECTABLE_PLACEMENTS.map((p) => ({ value: p, label: PLACEMENT_LABEL[p] }))} />
         <SelectFilter param="active" label="Active" options={[{ value: "true", label: "Active" }, { value: "false", label: "Paused" }]} />
       </FilterBar>
       {feedback && (
