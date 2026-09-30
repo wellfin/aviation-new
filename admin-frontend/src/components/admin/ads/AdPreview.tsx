@@ -4,6 +4,7 @@ import { Component, type ReactNode } from "react";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { SidebarAd } from "@/components/ads/SidebarAd";
 import { SponsoredStrip } from "@/components/ads/SponsoredStrip";
+import { StickyFooterBar } from "@/components/ads/StickyFooterBar";
 import type { Advertisement } from "@/lib/types";
 import { siteUrl } from "@/components/admin/news/site";
 import { isSafeAdHref, PLACEMENT_LABEL, type AdPlacement } from "./schema";
@@ -53,12 +54,8 @@ export function AdPreview({ placement, ad }: { placement: AdPlacement; ad: Adver
   } else if (placement === "sponsored-strip") {
     content = <SponsoredStrip ad={safe} />;
   } else if (placement === "sticky-footer") {
-    // The live component is fixed to the viewport; show its creative at the same ratio instead.
-    content = (
-      <div className="overflow-hidden rounded-t-xl border border-b-0 border-line">
-        <PlainImage src={siteUrl(safe.image)} alt={safe.advertiser} className="h-auto w-full" />
-      </div>
-    );
+    // The live component is fixed to the viewport; this is the same bar, rendered inline.
+    content = <StickyFooterBar ad={safe} />;
   } else {
     content = <AdBanner ad={safe} className="!px-0" />;
   }

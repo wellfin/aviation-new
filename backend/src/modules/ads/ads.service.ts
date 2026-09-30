@@ -96,6 +96,63 @@ export async function adStats(): Promise<PlacementStats[]> {
   });
 }
 
+export interface TrafficShareAd {
+  id: string;
+  advertiser: string;
+  headline: string | null;
+  image: string;
+  weight: number;
+  /** Expected share of this placement's views right now: weight ÷ total live weight, in % (1 decimal). */
+  share: number;
+  impressions: number;
+  clicks: number;
+  /** Share of the live ads' recorded impressions so far, in % (1 decimal). */
+  impressionShare: number;
+}
+
+export interface PlacementTraffic {
+  placement: AdPlacement;
+  /** Sum of the weights of the ads that can be served now. */
+  totalWeight: number;
+  liveAds: number;
+  impressions: number;
+  /** Live ads, largest share first. */
+  ads: TrafficShareAd[];
+}
+
+const pct1 = (part: number, whole: number) => (whole > 0 ? Math.round((part / whole) * 1000) / 10 : 0);
+
+/**
+ * How each placement's traffic is split right now: only ads that are active and
+ * inside their schedule window take part, each getting weight ÷ total weight.
+ * Mirrors `serveAd`/`pickWeighted` (weights below 1 count as 1).
+ */
+export async function trafficShares(placement?: AdPlacement): Promise<PlacementTraffic[]> {
+  const now = new Date();
+  const placements = placement ? [placement] : [...AD_PLACEMENTS];
+  return Promise.all(
+    placements.map(async (p) => {
+      const live = await Ad.find(inWindowFilter(p, now)).limit(MAX_CANDIDATES);
+      const totalWeight = live.reduce((sum, a) => sum + Math.max(1, a.weight), 0);
+      const impressions = live.reduce((sum, a) => sum + a.impressions, 0);
+      const ads = live
+        .map((a) => ({
+          id: a.id,
+          advertiser: a.advertiser,
+          headline: a.headline ?? null,
+          image: a.image,
+          weight: a.weight,
+          share: pct1(Math.max(1, a.weight), totalWeight),
+          impressions: a.impressions,
+          clicks: a.clicks,
+          impressionShare: pct1(a.impressions, impressions),
+        }))
+        .sort((x, y) => y.weight - x.weight || x.advertiser.localeCompare(y.advertiser));
+      return { placement: p, totalWeight, liveAds: live.length, impressions, ads };
+    }),
+  );
+}
+
 async function findAd(id: string): Promise<AdDoc> {
   const ad = await Ad.findById(id);
   if (!ad) throw notFound("Advertisement");

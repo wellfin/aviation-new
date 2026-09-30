@@ -72,6 +72,38 @@ describe("ads — serving", () => {
     expect(total).toBe(VIEWS);
   });
 
+  it("reports each live ad's traffic share (weight ÷ total live weight) per placement", async () => {
+    const now = Date.now();
+    await Ad.create([
+      ad({ placement: "header-banner", advertiser: "A", weight: 50 }),
+      ad({ placement: "header-banner", advertiser: "B", weight: 30 }),
+      ad({ placement: "header-banner", advertiser: "C", weight: 30 }),
+      ad({ placement: "header-banner", advertiser: "D", weight: 30 }),
+      { ...ad({ placement: "header-banner", advertiser: "Paused", weight: 100 }), active: false },
+      { ...ad({ placement: "header-banner", advertiser: "Expired", weight: 100 }), endsAt: new Date(now - 1000) },
+      ad({ placement: "sidebar", advertiser: "Solo", weight: 10 }),
+    ]);
+    const { agent } = await signedInAgent("ADMIN");
+    const r = await agent.get(admin("/traffic?placement=header-banner"));
+    expect(r.status).toBe(200);
+    const [hb] = r.body.data;
+    expect(hb).toMatchObject({ placement: "header-banner", totalWeight: 140, liveAds: 4 });
+    expect(hb.ads.map((a: { advertiser: string; share: number }) => [a.advertiser, a.share])).toEqual([
+      ["A", 35.7],
+      ["B", 21.4],
+      ["C", 21.4],
+      ["D", 21.4],
+    ]);
+
+    const all = (await agent.get(admin("/traffic"))).body.data as Array<{ placement: string; totalWeight: number; ads: Array<{ share: number }> }>;
+    expect(all.find((p) => p.placement === "sidebar")).toMatchObject({ totalWeight: 10, ads: [{ share: 100 }] });
+    expect(all.find((p) => p.placement === "sticky-footer")).toMatchObject({ totalWeight: 0, ads: [] });
+    expect((await agent.get(admin("/traffic?placement=popup"))).status).toBe(422);
+
+    const { agent: manager } = await signedInAgent("MANAGER");
+    expect((await manager.get(admin("/traffic"))).status).toBe(403);
+  });
+
   it("validates the placement", async () => {
     expect((await request(app).get("/api/v1/ads/serve?placement=popup")).status).toBe(422);
     expect((await request(app).get("/api/v1/ads/serve")).status).toBe(422);

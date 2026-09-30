@@ -8,7 +8,7 @@ export function SponsoredStrip({ ad, className, tall = false }: { ad: Advertisem
   if (!ad) return null;
   return (
     <div className={cn("relative overflow-hidden rounded-[14px] border-[1.5px] border-white/12 shadow-[0_2px_12px_rgba(0,0,0,0.15)]", tall ? "h-[224px]" : "h-[82px]", className)}>
-      <Image src={ad.image} alt="" fill sizes="1350px" className="object-cover" />
+      <Image src={ad.image} alt="" fill sizes="1350px" className="object-cover object-[72%_50%]" />
       <div className="absolute inset-0 bg-gradient-to-r from-navy-950/92 via-navy-950/75 via-55% to-navy-950/35" />
       <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-brand to-transparent opacity-50" />
       <span className="absolute top-2 right-2.5 rounded-full border border-white/10 bg-black/45 px-2 py-0.5 text-[8px] font-bold tracking-[0.96px] text-white/40">AD</span>

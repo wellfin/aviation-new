@@ -11,7 +11,8 @@ import { ApiError, apiRequest } from "@/lib/api/client";
 import { fieldErrors, type FieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { AdPreview } from "./AdPreview";
-import { PLACEMENT_HINT, PLACEMENT_LABEL, SELECTABLE_PLACEMENTS, adFormSchema, adState, type AdFormValues, type AdminAd } from "./schema";
+import { TrafficShareCard } from "./TrafficShareCard";
+import { PLACEMENT_HINT, PLACEMENT_LABEL, SELECTABLE_PLACEMENTS, adFormSchema, adState, type AdFormValues, type AdminAd, type PlacementTraffic } from "./schema";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
 const STATE_TONE = { active: "green", paused: "slate", scheduled: "blue", ended: "amber" } as const;
@@ -107,8 +108,11 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
   const [weightText, setWeightText] = useState(String(values.weight));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [saving, setSaving] = useState(false);
+  // "Now" for the live/scheduled/ended check in the traffic panel, fixed when the form opens.
+  const [now] = useState(() => Date.now());
   const [feedback, setFeedback] = useState<Feedback>(justCreated ? { status: "success", message: "Ad created." } : null);
   const set = <K extends keyof AdFormValues>(key: K, value: AdFormValues[K]) => setValues((v) => ({ ...v, [key]: value }));
+  const traffic = useApi<PlacementTraffic[]>(`/admin/ads/traffic?placement=${values.placement}`);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -136,6 +140,7 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
         setValues(toValues(next));
         setWeightText(String(next.weight));
         setFeedback({ status: "success", message: "Changes saved." });
+        traffic.reload();
       } else {
         const created = await apiRequest<AdminAd>("POST", "/admin/ads", {
           placement: v.placement,
@@ -181,6 +186,21 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
     cta: values.cta || undefined,
   };
   const state = ad ? adState(ad) : null;
+
+  // Would this ad be served with the settings currently in the form? (mirrors the API's live filter)
+  const weightNum = /^\d+$/.test(weightText.trim()) ? Number(weightText) : Number.NaN;
+  const weightOk = Number.isInteger(weightNum) && weightNum >= 1 && weightNum <= 100;
+  const startMs = values.startsAt ? new Date(values.startsAt).getTime() : null;
+  const endMs = values.endsAt ? new Date(values.endsAt).getTime() : null;
+  const notLiveReason = !values.active
+    ? "This ad is paused."
+    : startMs !== null && startMs > now
+      ? "This ad hasn't started yet."
+      : endMs !== null && endMs <= now
+        ? "This ad has ended."
+        : !weightOk
+          ? "Enter a weight from 1 to 100."
+          : "";
 
   return (
     <form onSubmit={submit} noValidate>
@@ -246,6 +266,17 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
           <Card title="Live preview">
             <AdPreview placement={values.placement} ad={preview} />
           </Card>
+          <TrafficShareCard
+            placement={values.placement}
+            traffic={traffic.data?.[0]}
+            loading={traffic.loading}
+            adId={ad?.id}
+            advertiser={values.advertiser}
+            weight={weightOk ? weightNum : null}
+            impressions={ad?.impressions ?? 0}
+            live={notLiveReason === ""}
+            notLiveReason={notLiveReason}
+          />
           <Card>
             <div className="flex flex-col gap-3">
               {feedback && (

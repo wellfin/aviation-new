@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { requirePermission } from "../../middleware/auth.js";
 import { created, handler, noContent, ok } from "../../lib/http.js";
-import { adminAdsQuery, createAdBody, idParams, serveQuery, updateAdBody } from "./ads.schemas.js";
+import { adminAdsQuery, createAdBody, idParams, serveQuery, trafficQuery, updateAdBody } from "./ads.schemas.js";
 import * as ads from "./ads.service.js";
 
 /** Public: mounted at /ads */
@@ -38,6 +38,14 @@ adminAdsRouter.get(
 adminAdsRouter.get("/stats", async (_req, res) => {
   ok(res, await ads.adStats());
 });
+
+/** Current traffic split per placement: each live ad's weight, share % and delivered impressions. */
+adminAdsRouter.get(
+  "/traffic",
+  handler({ query: trafficQuery }, async ({ query }, _req, res) => {
+    ok(res, await ads.trafficShares(query.placement));
+  }),
+);
 
 adminAdsRouter.post(
   "/",

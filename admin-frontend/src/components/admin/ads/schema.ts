@@ -56,6 +56,59 @@ export interface PlacementStats {
   ctr: number;
 }
 
+/** GET /admin/ads/traffic: how a placement's views are split between its live ads right now. */
+export interface TrafficShareAd {
+  id: string;
+  advertiser: string;
+  headline: string | null;
+  image: string;
+  weight: number;
+  /** weight ÷ total live weight, in % */
+  share: number;
+  impressions: number;
+  clicks: number;
+  impressionShare: number;
+}
+
+export interface PlacementTraffic {
+  placement: AdPlacement;
+  totalWeight: number;
+  liveAds: number;
+  impressions: number;
+  ads: TrafficShareAd[];
+}
+
+export interface ProjectedRow {
+  id: string;
+  advertiser: string;
+  weight: number;
+  share: number;
+  impressions: number;
+  isThis: boolean;
+}
+
+/**
+ * The traffic split this placement would have if the ad being edited used `candidate`
+ * (same formula as the API: weight ÷ total live weight). `candidate` null = the ad isn't
+ * live with its current settings, so it takes no share.
+ */
+export function projectTraffic(
+  traffic: PlacementTraffic | undefined,
+  thisId: string | undefined,
+  candidate: { advertiser: string; weight: number; impressions: number } | null,
+): { rows: ProjectedRow[]; totalWeight: number; thisShare: number; othersShare: number } {
+  const others = (traffic?.ads ?? []).filter((a) => a.id !== thisId);
+  const entries = [
+    ...others.map((a) => ({ id: a.id, advertiser: a.advertiser, weight: Math.max(1, a.weight), impressions: a.impressions, isThis: false })),
+    ...(candidate ? [{ id: thisId ?? "this-ad", advertiser: candidate.advertiser, weight: Math.max(1, candidate.weight), impressions: candidate.impressions, isThis: true }] : []),
+  ];
+  const totalWeight = entries.reduce((s, e) => s + e.weight, 0);
+  const pct = (w: number) => (totalWeight > 0 ? Math.round((w / totalWeight) * 1000) / 10 : 0);
+  const rows = entries.map((e) => ({ ...e, share: pct(e.weight) })).sort((a, b) => b.weight - a.weight || Number(b.isThis) - Number(a.isThis));
+  const thisShare = candidate ? pct(Math.max(1, candidate.weight)) : 0;
+  return { rows, totalWeight, thisShare, othersShare: others.length ? Math.round((100 - thisShare) * 10) / 10 : 0 };
+}
+
 /** Same rule as the API's `isSafeAdHref`: a site path or an absolute http(s) URL — never javascript:/data:. */
 export function isSafeAdHref(href: string): boolean {
   if (href.startsWith("/")) return !href.startsWith("//") && !href.includes("\\") && !/\s/.test(href);

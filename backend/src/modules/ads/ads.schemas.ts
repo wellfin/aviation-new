@@ -8,6 +8,8 @@ export const idParams = z.object({ id: z.string().refine(isObjectId, "Invalid id
 
 export const serveQuery = z.object({ placement: z.enum(AD_PLACEMENTS) });
 
+export const trafficQuery = z.object({ placement: z.enum(AD_PLACEMENTS).optional() });
+
 export const adminAdsQuery = paginationQuery.extend({
   placement: z.enum(AD_PLACEMENTS).optional(),
   active: z.enum(["true", "false"]).transform((v) => v === "true").optional(),
