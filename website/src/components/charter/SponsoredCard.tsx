@@ -14,7 +14,7 @@ export function SponsoredCard({ ad, className }: { ad: Advertisement | null; cla
       aria-label="Sponsored"
       className={cn("relative flex min-h-[250px] flex-col justify-end overflow-hidden rounded-[14px] border-[1.5px] border-white/12 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.15)]", className)}
     >
-      <Image src={ad.image} alt="" fill sizes="430px" className="object-cover" />
+      <Image src={ad.image} alt="" fill sizes="430px" className="object-cover object-[72%_50%]" />
       <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/75 to-navy-950/40" />
       <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-brand to-transparent opacity-50" />
       <span className="absolute top-2.5 right-4 rounded-full border border-white/10 bg-black/45 px-2 py-0.5 text-[8px] font-bold tracking-[0.96px] text-white/40">AD</span>

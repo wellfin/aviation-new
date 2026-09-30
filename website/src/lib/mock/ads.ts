@@ -7,7 +7,7 @@ export const ADS: Advertisement[] = [
     advertiser: "Global Aviation Services",
     headline: "Your Global Partner in Aviation Services",
     body: "Connect with trusted FBOs, ground handlers, and aviation service providers worldwide.",
-    image: "/images/shared/ad-global-partner.png",
+    image: "/images/shared/ad-global-partner-bg.jpg",
     href: "/directory",
     cta: "Explore Services",
   },
@@ -35,8 +35,11 @@ export const ADS: Advertisement[] = [
     id: "ad-american-flight-support",
     placement: "sticky-footer",
     advertiser: "American Flight Support",
-    image: "/images/shared/sticky-ad-american-flight-support.png",
+    headline: "Trip Support, Handling & Fuel Across the Americas",
+    body: "24/7 flight operations support for business aviation.",
+    image: "/images/shared/ad-american-flight-support-bg.jpg",
     href: "https://americanflightsupport.com",
+    cta: "Learn More",
   },
 ];
 

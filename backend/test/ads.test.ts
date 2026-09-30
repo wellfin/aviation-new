@@ -33,8 +33,11 @@ describe("ads — serving", () => {
       id: expect.any(String),
       placement: "sticky-footer",
       advertiser: "American Flight Support",
-      image: "/images/shared/sticky-ad-american-flight-support.png",
+      headline: "Trip Support, Handling & Fuel Across the Americas",
+      body: "24/7 flight operations support for business aviation.",
+      image: "/images/shared/ad-american-flight-support-bg.jpg",
       href: "https://americanflightsupport.com",
+      cta: "Learn More",
       clickUrl: `${env.PUBLIC_API_URL}/api/v1/ads/${r.body.data.id}/click`,
     });
     expect((await Ad.findById(r.body.data.id))?.impressions).toBe(1);

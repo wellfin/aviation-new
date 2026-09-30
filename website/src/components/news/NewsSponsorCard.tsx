@@ -11,7 +11,7 @@ export function NewsSponsorCard({ ad, icon, className }: { ad: Advertisement | n
       aria-label={`Sponsored: ${ad.advertiser}`}
       className={cn("relative h-[250px] overflow-hidden rounded-[14px] border border-white/12 bg-navy-950 shadow-[0_2px_12px_rgba(0,0,0,0.15)]", className)}
     >
-      <Image src={ad.image} alt="" fill sizes="(max-width: 1024px) 100vw, 434px" className="object-cover" />
+      <Image src={ad.image} alt="" fill sizes="(max-width: 1024px) 100vw, 434px" className="object-cover object-[72%_50%]" />
       <div className="absolute inset-0 bg-gradient-to-b from-navy-950/50 via-navy-950/88 via-55% to-navy-950/97" />
       <div className="absolute top-0 left-0 h-0.5 w-[70%] bg-gradient-to-r from-transparent via-brand to-transparent opacity-50" />
       <span className="absolute top-2 right-2.5 rounded-full border border-white/10 bg-black/45 px-2 py-0.5 text-[8px] leading-3 font-bold tracking-[0.96px] text-white/40">
