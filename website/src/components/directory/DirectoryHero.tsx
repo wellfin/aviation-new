@@ -14,13 +14,13 @@ export function DirectoryHero({ params }: { params: DirectoryParams }) {
         <form action="/directory" role="search" className="mt-6 flex w-full max-w-[903px] flex-col gap-3 sm:flex-row">
           {(["category", "tier", "sort", "view"] as const).map((k) => (keep[k] ? <input key={k} type="hidden" name={k} value={keep[k]} /> : null))}
           <label className="relative flex-1">
-            <span className="sr-only">Search providers</span>
+            <span className="sr-only">Search by provider, airport, city, ICAO or IATA code</span>
             <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-subtle" aria-hidden />
             <input
               type="search"
               name="q"
               defaultValue={params.q}
-              placeholder="Search providers, services, airports..."
+              placeholder="Search Provider, Airport, City, ICAO, IATA"
               className="h-[52px] w-full rounded-[24px] border border-white/15 bg-white/8 pr-4 pl-10 text-[15px] text-white outline-none placeholder:text-subtle focus:border-brand-cyan/60 focus:ring-3 focus:ring-brand/20"
             />
           </label>
