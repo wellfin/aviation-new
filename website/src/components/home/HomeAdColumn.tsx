@@ -13,10 +13,13 @@ export function AdMarker({ className }: { className?: string }) {
 const CREATIVES = [
   { src: "/images/home/ad-international-airlines.png", alt: "International Airlines advertisement", height: "lg:h-[458px]" },
   { src: "/images/home/ad-utility-air.png", alt: "Utility Air — enquire now and go into the draw to win a pilot's watch. 02 9924 6282, sales@utilityair.com", height: "lg:h-[599px]" },
-  { src: "/images/home/ad-island-banner.png", alt: "Aerial banner-tow advertisement over a coastline", height: "lg:h-[560px]" },
+  { src: "/images/home/ad-island-banner.png", alt: "Aerial banner-tow advertisement over a coastline", height: "lg:h-auto lg:min-h-[560px] lg:flex-1" },
 ] as const;
 
-/** Right-hand column of static display-ad creatives running beside the news and "Trusted by" blocks. */
+/**
+ * Right-hand column of static display-ad creatives running beside the news and "Trusted by" blocks.
+ * The last creative stretches so the column ends level with the content beside it.
+ */
 export function HomeAdColumn({ className }: { className?: string }) {
   return (
     <aside aria-label="Advertisements" className={cn("grid grid-cols-1 gap-5 sm:grid-cols-3 lg:flex lg:flex-col", className)}>
