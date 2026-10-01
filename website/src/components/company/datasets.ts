@@ -4,8 +4,6 @@ export interface Dataset {
   name: string;
   frequency: string;
   description: string;
-  volume: string;
-  formats: string[];
   /** Example REST endpoint shown in the API section. */
   endpoint: string;
 }
@@ -17,8 +15,6 @@ export const DATASETS: Dataset[] = [
     name: "Airport Database",
     frequency: "Monthly",
     description: "Complete global airport data including ICAO/IATA codes, coordinates, elevation, timezone, runway details, navaids, and communication frequencies.",
-    volume: "40,000+ records",
-    formats: ["CSV", "JSON", "XML"],
     endpoint: "GET /v1/airports/{icao}",
   },
   {
@@ -27,8 +23,6 @@ export const DATASETS: Dataset[] = [
     name: "Provider Database",
     frequency: "Daily",
     description: "Full service provider database with company details, service categories, airport coverage, contact information, and verified status.",
-    volume: "50,000+ records",
-    formats: ["CSV", "JSON"],
     endpoint: "GET /v1/providers?airport={icao}",
   },
   {
@@ -37,8 +31,6 @@ export const DATASETS: Dataset[] = [
     name: "Weather Feed",
     frequency: "30 min",
     description: "Live METAR and TAF data for 40,000+ airports sourced from NOAA, AVIMET, and national meteorological services.",
-    volume: "Real-time",
-    formats: ["JSON API", "WebSocket"],
     endpoint: "GET /v1/weather/{icao}/metar",
   },
   {
@@ -47,8 +39,6 @@ export const DATASETS: Dataset[] = [
     name: "NOTAM Feed",
     frequency: "Hourly",
     description: "Full NOTAM feeds from all ICAO NOF contracting states with parsed, structured data and criticality classification.",
-    volume: "Real-time",
-    formats: ["JSON API", "XML"],
     endpoint: "GET /v1/notams/{icao}",
   },
   {
@@ -57,19 +47,15 @@ export const DATASETS: Dataset[] = [
     name: "Runway Database",
     frequency: "Quarterly",
     description: "Technical runway data including designators, dimensions, surface type, ILS frequencies, lighting, and obstacle clearance data.",
-    volume: "120,000+ runways",
-    formats: ["CSV", "JSON"],
     endpoint: "GET /v1/airports/{icao}/runways",
   },
   {
-    id: "fuel-prices",
-    emoji: "⛽",
-    name: "Fuel Prices",
-    frequency: "Daily",
-    description: "Aviation fuel prices (AvGas & Jet-A) at airports worldwide, sourced from supplier networks and updated daily.",
-    volume: "Global coverage",
-    formats: ["JSON API", "CSV"],
-    endpoint: "GET /v1/fuel-prices?airport={icao}",
+    id: "nearby-airports",
+    emoji: "📍",
+    name: "Nearby Airports",
+    frequency: "Monthly",
+    description: "Airports within a chosen radius of any airport or coordinate, with distance, bearing, and the FBOs and handlers available at each.",
+    endpoint: "GET /v1/airports/{icao}/nearby?radius={nm}",
   },
 ];
 

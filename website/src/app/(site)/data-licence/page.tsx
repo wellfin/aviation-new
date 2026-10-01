@@ -8,7 +8,7 @@ import { ButtonLink } from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "Enterprise Aviation Data Licensing",
   description:
-    "License airport, provider, weather, NOTAM, runway and fuel price data via REST API or bulk export. Trusted by airlines, software companies and government agencies.",
+    "License airport, provider, weather, NOTAM, runway and nearby-airport data via REST API or bulk export. Trusted by airlines, software companies and government agencies.",
 };
 
 const API_FEATURES = [
@@ -94,14 +94,6 @@ export default function DataLicencePage() {
                   </span>
                 </div>
                 <p className="mt-4 flex-1 text-sm leading-[22px] text-muted">{d.description}</p>
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-subtle">
-                  <span>{d.volume} ·</span>
-                  {d.formats.map((f) => (
-                    <span key={f} className="rounded-md bg-brand/8 px-2 py-0.5 font-mono text-[10px] text-brand">
-                      {f}
-                    </span>
-                  ))}
-                </div>
               </li>
             ))}
           </ul>
