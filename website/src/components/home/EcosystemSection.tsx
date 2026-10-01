@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { ChartColumn, Globe, Plane, Sheet, type LucideIcon } from "lucide-react";
+import { CountUp } from "@/components/ui/CountUp";
 import { cn } from "@/lib/utils";
 
 interface Stat {
@@ -35,7 +36,7 @@ function StatBubble({ stat }: { stat: Stat }) {
         <Icon className="size-[18px]" strokeWidth={1.75} />
       </span>
       <span className="flex min-w-0 flex-col">
-        <span className="text-base leading-5 font-extrabold text-[#0b2c5c]">{stat.value}</span>
+        <CountUp value={stat.value} className="text-base leading-5 font-extrabold text-[#0b2c5c]" />
         <span className="text-[11px] leading-[13.75px] text-[#0b2c5c]/50">{stat.label}</span>
       </span>
       <Image

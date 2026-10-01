@@ -6,6 +6,7 @@ import { ABOUT_STATS, CAPABILITIES, SERVICE_CHIPS, WHY_CHOOSE_US } from "@/compo
 import { PageShell } from "@/components/company/PageShell";
 import { ButtonLink } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import { CountUp } from "@/components/ui/CountUp";
 
 export const metadata: Metadata = {
   title: "About Us — The World's Most Trusted Aviation Directory",
@@ -63,7 +64,7 @@ export default function AboutPage() {
                     <s.icon className="size-5" />
                   </span>
                   <span>
-                    <span className="block text-base leading-6 font-extrabold text-ink sm:text-lg">{s.value}</span>
+                    <CountUp value={s.value} className="block text-base leading-6 font-extrabold text-ink sm:text-lg" />
                     <span className="block text-xs text-subtle">{s.label}</span>
                   </span>
                 </li>
