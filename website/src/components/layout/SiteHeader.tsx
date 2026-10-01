@@ -112,9 +112,6 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2 lg:ml-0">
-          <button type="button" className="hidden h-9 items-center rounded-xl bg-white/8 px-3 text-sm font-medium text-white/70 sm:flex" aria-label="Language: English">
-            🌐 EN
-          </button>
           {user ? (
             <div ref={userRef} className="relative hidden sm:block">
               <button
