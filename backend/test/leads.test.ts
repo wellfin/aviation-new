@@ -125,6 +125,17 @@ describe("demo requests", () => {
     expect(lead?.details?.role).toBeUndefined();
   });
 
+  it("rejects a preferred date in the past (blank and upcoming dates are fine)", async () => {
+    const past = new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10);
+    const r = await post("/demo-requests", { ...demoPayload("x@example.com"), preferredDate: past });
+    expect(r.status).toBe(422);
+    expect(r.body.error.fieldErrors.preferredDate).toMatch(/today or a later date/i);
+
+    const future = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10);
+    await proveEmail("demo_email", "x@example.com");
+    expect((await post("/demo-requests", { ...demoPayload("x@example.com"), preferredDate: future })).status).toBe(201);
+  });
+
   it("requires company and interest", async () => {
     const r = await post("/demo-requests", { ...demoPayload("x@example.com"), company: "", interest: "" });
     expect(r.status).toBe(422);

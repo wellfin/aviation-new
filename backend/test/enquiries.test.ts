@@ -41,6 +41,10 @@ async function makeProvider(
   });
 }
 
+/** A departure day comfortably in the future, whenever the suite runs. */
+const FUTURE_DAY = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
+const PAST_DAY = new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10);
+
 const general = { name: "Ann Lee", email: "Ann@Example.com", dialCode: "+44", phone: "7700 900123", service: "Fuel", message: "Need a fuel quote for Friday." };
 
 function uiFleet(slug: string, aircraftId: string) {
@@ -50,7 +54,7 @@ function uiFleet(slug: string, aircraftId: string) {
     tripType: "one-way",
     from: "OMDB",
     to: "EGLL",
-    date: "2026-10-12",
+    date: FUTURE_DAY,
     time: "09:30",
     passengers: "6",
     name: "Sam Pilot",
@@ -154,7 +158,7 @@ describe("POST /providers/:slug/enquiries", () => {
       type: "fleet",
       name: "Sam Pilot",
       email: "sam@example.com",
-      trip: { tripType: "round-trip", from: "OMDB", to: "LFMN", departAt: "2026-11-01T08:00", passengers: 4, aircraftId },
+      trip: { tripType: "round-trip", from: "OMDB", to: "LFMN", departAt: `${FUTURE_DAY}T08:00`, passengers: 4, aircraftId },
     };
     expect((await post(`/providers/${provider.slug}/enquiries`).send(body)).status).toBe(201);
     const saved = await Enquiry.findOne({ provider: provider._id }).lean();
@@ -183,7 +187,7 @@ describe("POST /enquiries (frontend form endpoint)", () => {
       type: "fleet",
       company: "Acme Corp",
       phone: "+971 50 123 4567",
-      trip: { tripType: "one-way", from: "OMDB", to: "EGLL", departAt: "2026-10-12T09:30", passengers: 6, aircraft: "Gulfstream G650" },
+      trip: { tripType: "one-way", from: "OMDB", to: "EGLL", departAt: `${FUTURE_DAY}T09:30`, passengers: 6, aircraft: "Gulfstream G650" },
     });
   });
 
@@ -346,5 +350,29 @@ describe("enquiry email rules", () => {
       expect(testOutbox.filter((m) => m.to === email)).toHaveLength(0);
     }
     expect(await Enquiry.countDocuments()).toBe(0);
+  });
+});
+
+describe("departure dates", () => {
+  it("rejects a departure day that has already passed, on both fleet enquiry shapes", async () => {
+    const provider = await makeProvider();
+    const aircraftId = String(provider.fleet[0]!._id);
+
+    const flat = await post("/enquiries").send({ ...uiFleet(provider.slug, aircraftId), date: PAST_DAY });
+    expect(flat.status).toBe(422);
+    expect(flat.body.error.fieldErrors.date).toMatch(/in the past/i);
+
+    const api = await post(`/providers/${provider.slug}/enquiries`).send({
+      type: "fleet",
+      name: "Sam Pilot",
+      email: "sam@example.com",
+      trip: { tripType: "one-way", from: "OMDB", to: "EGLL", departAt: `${PAST_DAY}T09:30`, passengers: 2, aircraftId },
+    });
+    expect(api.status).toBe(422);
+    expect(await Enquiry.countDocuments()).toBe(0);
+
+    // Today is fine.
+    const today = new Date().toISOString().slice(0, 10);
+    expect((await post("/enquiries").send({ ...uiFleet(provider.slug, aircraftId), date: today })).status).toBe(201);
   });
 });

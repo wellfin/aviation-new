@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "../../lib/business-email.js";
+import { isNotPastDate } from "../../lib/dates.js";
 import { isObjectId } from "../../lib/db.js";
 import { parse } from "../../lib/http.js";
 import { paginationQuery } from "../../lib/pagination.js";
@@ -75,7 +76,8 @@ export const fleetEnquiryBody = z.object({
     departAt: z
       .string()
       .trim()
-      .regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/, "Choose a departure date"),
+      .regex(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?$/, "Choose a departure date")
+      .refine(isNotPastDate, "Departure date can't be in the past"),
     passengers,
     /** Fleet aircraft id from the provider profile. */
     aircraftId: z.string().trim().max(60).optional(),
@@ -89,7 +91,11 @@ export const flatFleetEnquiryBody = z.object({
   tripType,
   from: airportField("Enter a departure airport"),
   to: airportField("Enter a destination airport"),
-  date: z.string().trim().regex(isoDate, "Choose a departure date"),
+  date: z
+    .string()
+    .trim()
+    .regex(isoDate, "Choose a departure date")
+    .refine((v) => isNotPastDate(v), "Departure date can't be in the past"),
   time: z
     .string()
     .trim()

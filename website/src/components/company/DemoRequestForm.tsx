@@ -10,6 +10,7 @@ import { publicConfig } from "@/lib/public-config";
 import { Button } from "@/components/ui/Button";
 import { FieldError, FormStatus, Input, Label, Select, Textarea } from "@/components/ui/Field";
 import { cn } from "@/lib/utils";
+import { minToday } from "@/lib/dates";
 
 const OTP_SEND_PATH = "/demo-requests/email-otp";
 const OTP_VERIFY_PATH = "/demo-requests/email-otp/verify";
@@ -273,7 +274,8 @@ export function DemoRequestForm() {
         </Select>
       </div>
 
-      <Input name="preferredDate" label="Preferred date" type="date" error={errors.preferredDate} />
+      {/* Past days are greyed out in the picker; the schema rejects a typed-in past date. */}
+      <Input name="preferredDate" label="Preferred date" type="date" ref={minToday} error={errors.preferredDate} />
 
       <Textarea
         name="message"

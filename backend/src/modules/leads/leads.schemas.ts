@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isNotPastDate } from "../../lib/dates.js";
 import { isObjectId } from "../../lib/db.js";
 import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "../../lib/business-email.js";
 import { paginationQuery } from "../../lib/pagination.js";
@@ -63,7 +64,14 @@ export const demoRequestBody = z.object({
   role: optionalShort(120),
   phone,
   interest: shortText(120).pipe(z.string().min(1, "Please choose an option")),
-  preferredDate: optionalShort(40),
+  preferredDate: z
+    .string()
+    .trim()
+    .max(40)
+    .refine(singleLine, "Invalid characters")
+    .refine((v) => v === "" || isNotPastDate(v), "Choose today or a later date")
+    .optional()
+    .or(z.literal("")),
   message: optionalMessage,
   ...honeypot,
 });

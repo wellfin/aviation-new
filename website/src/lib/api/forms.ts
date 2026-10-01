@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "@/lib/business-email";
+import { isTodayOrLater } from "@/lib/dates";
 
 /**
  * Form schemas shared by every public form. The backend must validate the same
@@ -58,7 +59,13 @@ export const demoRequestSchema = z.object({
   role: z.string().trim().max(120).optional().or(z.literal("")),
   phone,
   interest: z.string().trim().min(1, "Please choose an option").max(120),
-  preferredDate: z.string().trim().max(40).optional().or(z.literal("")),
+  preferredDate: z
+    .string()
+    .trim()
+    .max(40)
+    .refine((v) => v === "" || isTodayOrLater(v), "Choose today or a later date")
+    .optional()
+    .or(z.literal("")),
   message: z.string().trim().max(5000).optional().or(z.literal("")),
 });
 

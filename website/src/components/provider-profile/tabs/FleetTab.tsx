@@ -17,6 +17,7 @@ import { useEmailVerification } from "@/components/contact/useEmailVerification"
 import { useAuth } from "@/lib/auth/auth-context";
 import { fleetEnquirySchema } from "../schema";
 import { CARD_TITLE } from "../styles";
+import { minToday } from "@/lib/dates";
 
 const TRIP_TYPES = [
   { value: "one-way", label: "One Way" },
@@ -81,7 +82,7 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
       <div className="grid gap-4 sm:grid-cols-2">
         <Input label="Departure Airport *" name="from" id="fe-from" placeholder="e.g. EGLL / Heathrow" error={errors.from} />
         <Input label="Destination Airport *" name="to" id="fe-to" placeholder="e.g. OMDB / Dubai" error={errors.to} />
-        <Input label="Departure Date *" name="date" id="fe-date" type="date" error={errors.date} />
+        <Input label="Departure Date *" name="date" id="fe-date" type="date" ref={minToday} error={errors.date} />
         <Input label="Departure Time" name="time" id="fe-time" type="time" error={errors.time} />
       </div>
       <div>
