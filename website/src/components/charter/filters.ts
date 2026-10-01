@@ -113,13 +113,28 @@ function holdsCert(p: Provider, cert: CertificationFilter): boolean {
 }
 
 /**
+ * "Abu Dhabi Emirate" → "abu dhabi": official subdivision names carry a type word that
+ * postal addresses usually omit, so it is dropped before matching against an address.
+ */
+export function stateKey(state: string): string {
+  const key = state
+    .toLowerCase()
+    .replace(/\b(emirate|province|state|region|governorate|district|county|prefecture|oblast|department|canton|territory|municipality|voivodeship)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    // "Canton of Luxembourg" → "luxembourg"
+    .replace(/^of /, "");
+  return key || state.toLowerCase().trim();
+}
+
+/**
  * Criteria the provider API does not filter on (continent, state, city, aircraft type,
  * certification) are applied here. Any selected aircraft type / certification may match.
  */
 export function matchesCharterFilters(p: Provider, f: CharterParams): boolean {
   if (f.continent && continentOf(p.countryCode) !== f.continent) return false;
   if (f.city && p.city.toLowerCase() !== f.city.toLowerCase()) return false;
-  if (f.state && !`${p.contact.address} ${p.city}`.toLowerCase().includes(f.state.toLowerCase())) return false;
+  if (f.state && !`${p.contact.address} ${p.city}`.toLowerCase().includes(stateKey(f.state))) return false;
   if (f.types.length && !f.types.some((t) => offersType(p, t))) return false;
   if (f.certs.length && !f.certs.some((c) => holdsCert(p, c))) return false;
   return true;

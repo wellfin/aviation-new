@@ -1,8 +1,8 @@
 "use client";
 
 import { Ambulance, Fan, Package, Plane, Search, Users, type LucideIcon } from "lucide-react";
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { FieldError, Input, Select } from "@/components/ui/Field";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { FieldError, Select } from "@/components/ui/Field";
 import { cn } from "@/lib/utils";
 import {
   AIRCRAFT_TYPES,
@@ -65,6 +65,9 @@ export function CharterSearchForm({ locations, initial }: { locations: LocationO
   const [q, setQ] = useState(initial?.q ?? "");
   const [continent, setContinent] = useState<string>(initial?.continent ?? "");
   const [country, setCountry] = useState(initial?.country ?? "");
+  const [stateName, setStateName] = useState(initial?.state ?? "");
+  // States/provinces of the selected country, loaded on demand from /api/states.
+  const [stateList, setStateList] = useState<{ country: string; names: string[] }>({ country: "", names: [] });
   const [city, setCity] = useState(initial?.city ?? "");
   const [types, setTypes] = useState<AircraftType[]>(initial?.types ?? []);
   const [certs, setCerts] = useState<CertificationFilter[]>(initial?.certs ?? []);
@@ -75,6 +78,25 @@ export function CharterSearchForm({ locations, initial }: { locations: LocationO
     const pool = country ? locations.filter((l) => l.code === country) : countries;
     return [...new Set(pool.flatMap((l) => l.cities))].sort();
   }, [locations, countries, country]);
+
+  useEffect(() => {
+    if (!country) return;
+    let cancelled = false;
+    fetch(`/api/states?country=${encodeURIComponent(country)}`)
+      .then((r) => (r.ok ? (r.json() as Promise<{ states?: string[] }>) : { states: [] }))
+      .catch(() => ({ states: [] as string[] }))
+      .then((d) => {
+        if (!cancelled) setStateList({ country, names: d.states ?? [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [country]);
+
+  const statesLoading = Boolean(country) && stateList.country !== country;
+  const loadedStates = country && stateList.country === country ? stateList.names : [];
+  // Keep a state carried in the URL selectable even before (or without) a country's list.
+  const stateOptions = stateName && !loadedStates.includes(stateName) ? [stateName, ...loadedStates] : loadedStates;
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     const name = q.trim();
@@ -144,6 +166,7 @@ export function CharterSearchForm({ locations, initial }: { locations: LocationO
             onChange={(e) => {
               setContinent(e.target.value);
               setCountry("");
+              setStateName("");
               setCity("");
             }}
             className={cn(selectClass, !continent && "text-subtle")}
@@ -162,6 +185,7 @@ export function CharterSearchForm({ locations, initial }: { locations: LocationO
             value={country}
             onChange={(e) => {
               setCountry(e.target.value);
+              setStateName("");
               setCity("");
             }}
             className={cn(selectClass, !country && "text-subtle")}
@@ -173,15 +197,21 @@ export function CharterSearchForm({ locations, initial }: { locations: LocationO
               </option>
             ))}
           </Select>
-          <Input
+          <Select
             label="State"
             id="charter-state"
             name="state"
-            defaultValue={initial?.state}
-            maxLength={60}
-            placeholder="Enter state or region"
-            className={cn(selectClass, "h-11")}
-          />
+            value={stateName}
+            onChange={(e) => setStateName(e.target.value)}
+            className={cn(selectClass, !stateName && "text-subtle")}
+          >
+            <option value="">{statesLoading ? "Loading states…" : country || stateOptions.length ? "Select State" : "Select State (choose a country first)"}</option>
+            {stateOptions.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </Select>
           <Select
             label="City"
             id="charter-city"

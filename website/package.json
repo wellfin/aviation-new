@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test",
-    "flags:sync": "node scripts/sync-flags.mjs"
+    "flags:sync": "node scripts/sync-flags.mjs",
+    "states:sync": "node scripts/sync-states.mjs"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
@@ -30,6 +31,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "country-flag-icons": "^1.6.20",
+    "country-state-city": "^3.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",
