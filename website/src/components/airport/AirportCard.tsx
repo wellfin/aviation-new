@@ -16,7 +16,7 @@ export function AirportCard({ airport }: { airport: Airport }) {
           alt=""
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 450px"
-          className="object-cover opacity-85 transition duration-500 group-hover:scale-105"
+          className="object-cover opacity-85 transition duration-500 ease-out group-hover:scale-110 motion-reduce:group-hover:scale-100"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-navy-900/75 to-navy-900/0 to-55%" />
         <div className="absolute bottom-3 left-3 flex items-center gap-2">

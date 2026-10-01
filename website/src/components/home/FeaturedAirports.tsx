@@ -12,8 +12,8 @@ function AirportCard({ airport }: { airport: Airport }) {
       href={`/airports/${airport.icao.toLowerCase()}`}
       className="group flex flex-col overflow-hidden rounded-[16px] border border-line/70 bg-white transition hover:-translate-y-0.5 hover:shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
-      <div className="relative h-[180px] bg-navy-900">
-        <Image src={airport.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 450px" className="object-cover" />
+      <div className="relative h-[180px] overflow-hidden bg-navy-900">
+        <Image src={airport.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 450px" className="object-cover transition duration-500 ease-out group-hover:scale-110 motion-reduce:group-hover:scale-100" />
         <div className="absolute inset-0 bg-gradient-to-b from-navy-900/10 via-navy-900/25 to-navy-900/70" aria-hidden />
         <span className="absolute top-3.5 right-3.5 rounded-lg border border-brand-cyan/25 bg-brand/25 px-2.5 py-1 text-xs font-semibold text-brand-cyan/90 backdrop-blur-sm">
           {airport.servicesCount} services
