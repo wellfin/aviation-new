@@ -3,7 +3,9 @@ import { isObjectId } from "../../lib/db.js";
 import { forbidden, notFound, validationError } from "../../lib/errors.js";
 import { containsRegex, paginated, skipFor } from "../../lib/pagination.js";
 import { logger } from "../../lib/logger.js";
+import { LEAD_OTP } from "../leads/leads.service.js";
 import { sendMailInBackground } from "../notifications/mailer.js";
+import { consumeVerifiedEmail } from "../otp/otp.service.js";
 import { Provider } from "../providers/provider.model.js";
 import type { UserDoc } from "../users/user.model.js";
 import { enquiryConfirmationEmail, providerEnquiryEmail } from "./enquiry.emails.js";
@@ -66,6 +68,9 @@ function recipients(...emails: Array<string | null | undefined>): string[] {
  * Stores a lead for a published pro/ultra_pro listing and notifies the provider
  * and the enquirer. Honeypot submissions pass every check (so bots can't tell)
  * but are neither stored nor emailed.
+ *
+ * The sender must have verified the email with a one-time code (POST /enquiries/email-otp),
+ * unless they are signed in and enquiring from their own, already verified, account email.
  */
 export async function submitEnquiry(slug: string, input: EnquiryInput, user: UserDoc | undefined): Promise<void> {
   const provider = await Provider.findOne({ slug, status: "published" })
@@ -92,6 +97,9 @@ export async function submitEnquiry(slug: string, input: EnquiryInput, user: Use
     logger.info({ provider: String(provider._id) }, "Enquiry honeypot triggered; submission dropped");
     return;
   }
+
+  const ownVerifiedEmail = Boolean(user?.emailVerifiedAt) && user?.email.toLowerCase() === input.email;
+  if (!ownVerifiedEmail) await consumeVerifiedEmail(LEAD_OTP.enquiry.purpose, input.email);
 
   const enquiry = await Enquiry.create({
     provider: provider._id,

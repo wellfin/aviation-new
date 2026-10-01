@@ -3,7 +3,7 @@
 import { CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ApiError, apiPost, registerMock } from "@/lib/api/client";
-import { demoRequestSchema } from "@/lib/api/forms";
+import { demoRequestSchema, workEmail } from "@/lib/api/forms";
 import { MOCK_OTP } from "@/lib/auth/auth-context";
 import { useZodForm } from "@/lib/hooks/useZodForm";
 import { publicConfig } from "@/lib/public-config";
@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 const OTP_SEND_PATH = "/demo-requests/email-otp";
 const OTP_VERIFY_PATH = "/demo-requests/email-otp/verify";
 const RESEND_SECONDS = 60;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Mock mode: accept only the shared demo code so the error path can be exercised too.
 registerMock("POST", OTP_VERIFY_PATH, (body) => {
@@ -122,8 +121,10 @@ export function DemoRequestForm() {
 
   async function sendOtp() {
     const value = email.trim().toLowerCase();
-    if (!EMAIL_RE.test(value)) {
-      setErrors((e) => ({ ...e, email: "Enter a valid email address" }));
+    // Same rule as the form schema: a valid, professional (non-personal) address.
+    const checked = workEmail.safeParse(value);
+    if (!checked.success) {
+      setErrors((e) => ({ ...e, email: checked.error.issues[0]?.message ?? "Enter a valid email address" }));
       return;
     }
     setErrors(withoutEmailError);
@@ -135,7 +136,7 @@ export function DemoRequestForm() {
       setCode("");
       setResendIn(RESEND_SECONDS);
     } catch (err) {
-      setErrors((e) => ({ ...e, email: err instanceof ApiError ? err.body.message : "Couldn't send the code. Please try again." }));
+      setErrors((e) => ({ ...e, email: err instanceof ApiError ? (err.body.fieldErrors?.email ?? err.body.message) : "Couldn't send the code. Please try again." }));
     } finally {
       setOtpBusy(null);
     }

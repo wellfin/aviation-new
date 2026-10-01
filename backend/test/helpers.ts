@@ -6,6 +6,7 @@ import { hashPassword } from "../src/lib/crypto.js";
 import { testOutbox } from "../src/modules/notifications/mailer.js";
 import type { Role } from "../src/modules/rbac/permissions.js";
 import { User, type UserDoc } from "../src/modules/users/user.model.js";
+import { Otp, type OtpPurpose } from "../src/modules/otp/otp.model.js";
 
 export const app = createApp();
 
@@ -54,4 +55,16 @@ export function cookieValue(setCookie: string[] | string | undefined, name: stri
   const list = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
   const entry = list.find((c) => c.startsWith(`${name}=`));
   return entry?.split(";")[0]?.slice(name.length + 1);
+}
+
+/**
+ * Marks `email` as OTP-verified for `purpose` (what POST …/email-otp + …/verify leave behind),
+ * without the 30-second resend cooldown — for tests that submit the same form several times.
+ */
+export async function proveEmail(purpose: OtpPurpose, email: string): Promise<void> {
+  await Otp.findOneAndUpdate(
+    { purpose, email: email.toLowerCase() },
+    { $set: { codeHash: "test", attempts: 0, verifiedAt: new Date(), expiresAt: new Date(Date.now() + 30 * 60_000) }, $unset: { consumedAt: 1 } },
+    { upsert: true },
+  );
 }

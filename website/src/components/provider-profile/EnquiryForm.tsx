@@ -7,13 +7,18 @@ import { apiPost } from "@/lib/api/client";
 import { enquirySchema } from "@/lib/api/forms";
 import { useZodForm } from "@/lib/hooks/useZodForm";
 import { DialCodeSelect } from "@/components/contact/DialCodeSelect";
+import { EmailOtp, ENQUIRY_OTP } from "@/components/contact/EmailOtp";
+import { useEmailVerification } from "@/components/contact/useEmailVerification";
+import { useAuth } from "@/lib/auth/auth-context";
 
 const control = "h-11 rounded-xl border-brand/20 text-[15px]";
 
 /** Sidebar "Send Enquiry" card with the "Direct Call" link underneath. */
 export function EnquiryForm({ providerSlug, providerName, services, phoneHref }: { providerSlug: string; providerName: string; services: string[]; phoneHref: string }) {
+  const otp = useEmailVerification();
+  const { user } = useAuth();
   const { errors, submitting, result, handleSubmit } = useZodForm(enquirySchema, async (data) => {
-    await apiPost("/enquiries", data);
+    await otp.submitVerified(data.email, () => apiPost("/enquiries", data));
     return `Thanks — your enquiry has been sent to ${providerName}. They usually reply within one business day.`;
   });
 
@@ -25,7 +30,16 @@ export function EnquiryForm({ providerSlug, providerName, services, phoneHref }:
       <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-3">
         <input type="hidden" name="providerSlug" value={providerSlug} />
         <Input name="name" id="enq-name" aria-label="Your name" placeholder="Your Name" autoComplete="name" error={errors.name} className={control} />
-        <Input name="email" id="enq-email" type="email" aria-label="Email address" placeholder="Email Address" autoComplete="email" error={errors.email} className={control} />
+        {/* A signed-in user's own verified account email needs no code (the API applies the same rule). */}
+        <EmailOtp
+          key={otp.mountKey}
+          {...otp.fieldProps}
+          endpoints={ENQUIRY_OTP}
+          id="enq-email"
+          error={errors.email}
+          trustedEmail={user?.emailVerified ? user.email : undefined}
+          fieldClassName="h-11 pl-3.5"
+        />
         <div>
           <div className="flex gap-3">
             <DialCodeSelect id="enq-dial" className="h-11" />

@@ -3,6 +3,8 @@
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { DialCodeSelect } from "@/components/contact/DialCodeSelect";
+import { ADVERTISING_OTP, EmailOtp } from "@/components/contact/EmailOtp";
+import { useEmailVerification } from "@/components/contact/useEmailVerification";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Select, Textarea } from "@/components/ui/Field";
 import { apiPost } from "@/lib/api/client";
@@ -24,11 +26,12 @@ function str(fd: FormData, key: string): string {
 /** Mounted only while open; opens itself as a modal on mount. */
 export function AdvertiseEnquiryDialog({ placement, formats, onClose }: { placement: string; formats: AdFormat[]; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const otp = useEmailVerification();
 
   const { errors, submitting, result, handleSubmit } = useZodForm(
     advertiseSchema,
     async (data) => {
-      await apiPost("/advertising/enquiries", data);
+      await otp.submitVerified(data.email, () => apiPost("/advertising/enquiries", data));
       return "Thanks! Our media team will send your advertising package within one business day.";
     },
     {
@@ -77,7 +80,7 @@ export function AdvertiseEnquiryDialog({ placement, formats, onClose }: { placem
             <Input name="lastName" id="adv-last-name" autoComplete="family-name" placeholder="Last Name" aria-label="Last name" className={field} />
           </div>
           <Input name="company" id="adv-company" autoComplete="organization" placeholder="Company" aria-label="Company" className={field} error={errors.company} />
-          <Input name="email" id="adv-email" type="email" autoComplete="email" placeholder="Email Address" aria-label="Email address" className={field} error={errors.email} />
+          <EmailOtp key={otp.mountKey} {...otp.fieldProps} endpoints={ADVERTISING_OTP} id="adv-email" error={errors.email} fieldClassName="h-12" />
           <div className="flex gap-3">
             <DialCodeSelect id="adv-dial-code" />
             <Input

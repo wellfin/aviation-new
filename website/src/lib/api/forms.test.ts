@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { contactSchema, enquirySchema, fieldErrors, loginSchema, otpSchema, passwordStrength, resetPasswordSchema, signupSchema } from "./forms";
+import { isBusinessEmail } from "@/lib/business-email";
+import { advertiseSchema, contactSchema, dataLicenceSchema, demoRequestSchema, enquirySchema, fieldErrors, loginSchema, otpSchema, passwordStrength, resetPasswordSchema, signupSchema, workEmail } from "./forms";
 
 describe("signupSchema", () => {
   const valid = { firstName: "James", lastName: "Henderson", email: "captain@airline.com", password: "Flight123" };
@@ -70,5 +71,32 @@ describe("passwordStrength", () => {
     expect(passwordStrength("abcdefgh")).toBe(1);
     expect(passwordStrength("Abcdefg1")).toBe(3);
     expect(passwordStrength("Abcdefg1!")).toBe(4);
+  });
+});
+
+describe("business email only (enquiry forms)", () => {
+  it("accepts work addresses and rejects personal / disposable ones", () => {
+    for (const ok of ["ops@execujet.com", "sales@jet-fuel.aero", "a@company.co.in", "a@gmail-partners.com"]) expect(isBusinessEmail(ok), ok).toBe(true);
+    for (const bad of ["a@gmail.com", "A@Gmail.com", "a@yahoo.co.in", "a@hotmail.fr", "a@outlook.com", "a@icloud.com", "a@proton.me", "a@mailinator.com"]) expect(isBusinessEmail(bad), bad).toBe(false);
+    const r = workEmail.safeParse("someone@gmail.com");
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.issues[0]?.message).toMatch(/work email/i);
+  });
+
+  it("is applied to every enquiry form, but not to sign-up or login", () => {
+    const personal = "someone@gmail.com";
+    const forms = [
+      enquirySchema.safeParse({ providerSlug: "x", name: "Ann Lee", email: personal, service: "Fuel", message: "Need a fuel quote for Friday." }),
+      contactSchema.safeParse({ name: "Ann Lee", email: personal, subject: "Sales", message: "We would like to list our FBO." }),
+      advertiseSchema.safeParse({ name: "Ann Lee", email: personal, company: "Jet Fuel Inc", placement: "sidebar" }),
+      demoRequestSchema.safeParse({ firstName: "Ann", lastName: "Lee", email: personal, company: "Jet Fuel Inc", interest: "Advertising" }),
+      dataLicenceSchema.safeParse({ name: "Ann Lee", email: personal, company: "Jet Fuel Inc", datasets: ["airports"], useCase: "Enrich our trip planning tool." }),
+    ];
+    for (const r of forms) {
+      expect(r.success).toBe(false);
+      if (!r.success) expect(fieldErrors(r.error).email).toMatch(/work email/i);
+    }
+    expect(signupSchema.safeParse({ firstName: "Ann", lastName: "Lee", email: personal, password: "Flight123" }).success).toBe(true);
+    expect(loginSchema.safeParse({ email: personal, password: "x" }).success).toBe(true);
   });
 });

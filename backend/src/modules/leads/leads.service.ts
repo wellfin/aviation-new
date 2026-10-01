@@ -24,10 +24,16 @@ import { LEAD_LABELS, leadConfirmationEmail, staffLeadEmail } from "./leads.temp
 
 /* ---------- email ownership (OTP) ---------- */
 
-/** Contact uses the 4-box code UI, demo requests the 6-digit one (see the frontend forms). */
+/**
+ * Every public enquiry form proves the sender owns the email first. Demo requests use the
+ * 6-digit code UI; the others share the 4-box one (see the frontend forms).
+ */
 export const LEAD_OTP = {
   contact: { purpose: "contact_email", length: 4 },
   demo: { purpose: "demo_email", length: 6 },
+  advertising: { purpose: "advertising_email", length: 4 },
+  dataLicence: { purpose: "data_licence_email", length: 4 },
+  enquiry: { purpose: "enquiry_email", length: 4 },
 } as const satisfies Record<string, { purpose: OtpPurpose; length: number }>;
 export type OtpForm = keyof typeof LEAD_OTP;
 
@@ -147,6 +153,7 @@ export async function submitDemoRequest(input: DemoRequestInput): Promise<void> 
 
 export async function submitDataLicence(input: DataLicenceInput): Promise<void> {
   if (isBot(input.website)) return;
+  await consumeVerifiedEmail(LEAD_OTP.dataLicence.purpose, input.email);
   await createLead({
     type: "data_licence",
     name: input.name,
@@ -159,6 +166,7 @@ export async function submitDataLicence(input: DataLicenceInput): Promise<void> 
 
 export async function submitAdvertising(input: AdvertisingInput): Promise<void> {
   if (isBot(input.website)) return;
+  await consumeVerifiedEmail(LEAD_OTP.advertising.purpose, input.email);
   await createLead({
     type: "advertising",
     name: input.name,

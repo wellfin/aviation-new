@@ -2,10 +2,13 @@ import { Router } from "express";
 import { AppError, validationError } from "../../lib/errors.js";
 import { created, handler, ok, parse, zodFieldErrors } from "../../lib/http.js";
 import { currentUser, requirePermission } from "../../middleware/auth.js";
-import { formRateLimit } from "../../middleware/security.js";
+import { formRateLimit, otpRateLimit } from "../../middleware/security.js";
+import { sendLeadOtp, verifyLeadOtp } from "../leads/leads.service.js";
 import {
   adminListQuery,
   adminUpdateBody,
+  enquiryOtpRequestBody,
+  enquiryOtpVerifyBody,
   idParams,
   ownerListQuery,
   ownerUpdateBody,
@@ -60,6 +63,25 @@ enquiriesRouter.post(
     const { providerSlug } = parse(providerSlugBody, req.body ?? {});
     await submitEnquiry(providerSlug, input, req.user);
     created(res, RECEIVED);
+  }),
+);
+
+// Email ownership check required before an enquiry is accepted (see submitEnquiry).
+enquiriesRouter.post(
+  "/email-otp",
+  otpRateLimit,
+  handler({ body: enquiryOtpRequestBody }, async ({ body }, _req, res) => {
+    await sendLeadOtp("enquiry", body.email);
+    ok(res, { sent: true });
+  }),
+);
+
+enquiriesRouter.post(
+  "/email-otp/verify",
+  otpRateLimit,
+  handler({ body: enquiryOtpVerifyBody }, async ({ body }, _req, res) => {
+    await verifyLeadOtp("enquiry", body.email, body.code);
+    ok(res, { verified: true });
   }),
 );
 

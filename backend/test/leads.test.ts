@@ -1,10 +1,11 @@
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
+import { isBusinessEmail } from "../src/lib/business-email.js";
 import { csvCell } from "../src/modules/leads/csv.js";
 import { Lead } from "../src/modules/leads/lead.model.js";
 import { adminLeadsRouter, advertisingRouter, contactRouter, dataLicenceRouter, demoRequestsRouter } from "../src/modules/leads/leads.routes.js";
 import { testOutbox } from "../src/modules/notifications/mailer.js";
-import { appWith, createUser, lastCodeFor, ORIGIN, signedInAgent } from "./helpers.js";
+import { appWith, createUser, lastCodeFor, ORIGIN, proveEmail, signedInAgent } from "./helpers.js";
 
 const app = appWith(
   ["/contact", contactRouter],
@@ -33,10 +34,10 @@ const demoPayload = (email: string) => ({
 const dataLicencePayload = { name: "Dana Lee", email: "dana@data.example", company: "FlightData Co", datasets: ["airports", "providers"], useCase: "Enrich our trip planning tool with FBO data." };
 const advertisingPayload = { name: "Sam Ortiz", email: "sam@ads.example", company: "Jet Fuel Inc", phone: "", placement: "header-banner", message: "" };
 
-async function verifyEmail(form: "/contact" | "/demo-requests", email: string) {
+async function verifyEmail(form: "/contact" | "/demo-requests" | "/data-licence" | "/advertising", email: string) {
   expect((await post(`${form}/email-otp`, { email })).status).toBe(200);
   const code = lastCodeFor(email);
-  expect(code).toHaveLength(form === "/contact" ? 4 : 6);
+  expect(code).toHaveLength(form === "/demo-requests" ? 6 : 4);
   const r = await post(`${form}/email-otp/verify`, { email, code });
   expect(r.status).toBe(200);
   expect(r.body.data).toEqual({ verified: true });
@@ -132,13 +133,22 @@ describe("demo requests", () => {
 });
 
 describe("data licence and advertising", () => {
-  it("accepts data-licence requests without OTP", async () => {
+  it("accepts data-licence requests only after the email is verified", async () => {
+    const blocked = await post("/data-licence/requests", dataLicencePayload);
+    expect(blocked.status).toBe(400);
+    expect(blocked.body.error.code).toBe("EMAIL_NOT_VERIFIED");
+    expect(await Lead.countDocuments()).toBe(0);
+
+    await verifyEmail("/data-licence", dataLicencePayload.email);
     const r = await post("/data-licence/requests", dataLicencePayload);
     expect(r.status).toBe(201);
+    // The proof is single-use.
+    expect((await post("/data-licence/requests", dataLicencePayload)).body.error.code).toBe("EMAIL_NOT_VERIFIED");
     const lead = await Lead.findOne({ type: "data_licence" }).lean();
     expect(lead?.details?.datasets).toEqual(["airports", "providers"]);
     expect(lead?.message).toBe(dataLicencePayload.useCase);
-    await vi.waitFor(() => expect(mailsTo(dataLicencePayload.email)).toHaveLength(1));
+    // The verification code, then the confirmation.
+    await vi.waitFor(() => expect(mailsTo(dataLicencePayload.email)).toHaveLength(2));
   });
 
   it("validates datasets", async () => {
@@ -147,7 +157,13 @@ describe("data licence and advertising", () => {
     expect(r.body.error.fieldErrors).toHaveProperty("datasets");
   });
 
-  it("accepts advertising enquiries", async () => {
+  it("accepts advertising enquiries only after the email is verified", async () => {
+    expect((await post("/advertising/enquiries", advertisingPayload)).body.error.code).toBe("EMAIL_NOT_VERIFIED");
+    // A code verified for another form doesn't count.
+    await proveEmail("contact_email", advertisingPayload.email);
+    expect((await post("/advertising/enquiries", advertisingPayload)).body.error.code).toBe("EMAIL_NOT_VERIFIED");
+
+    await verifyEmail("/advertising", advertisingPayload.email);
     expect((await post("/advertising/enquiries", advertisingPayload)).status).toBe(201);
     const lead = await Lead.findOne({ type: "advertising" }).lean();
     expect(lead?.details?.placement).toBe("header-banner");
@@ -265,5 +281,39 @@ describe("admin leads", () => {
     expect(csvCell("@SUM(A1)")).toBe("'@SUM(A1)");
     expect(csvCell("plain")).toBe("plain");
     expect(csvCell(null)).toBe("");
+  });
+});
+
+describe("business email only", () => {
+  it("recognises personal and disposable mailbox domains", () => {
+    for (const personal of ["a@gmail.com", "A@GMAIL.COM", "a@googlemail.com", "a@yahoo.com", "a@yahoo.co.in", "a@hotmail.fr", "a@outlook.com", "a@live.co.uk", "a@icloud.com", "a@proton.me", "a@rediffmail.com", "a@mailinator.com", "a@qq.com"]) {
+      expect(isBusinessEmail(personal), personal).toBe(false);
+    }
+    for (const work of ["ops@execujet.com", "sales@jet-fuel.aero", "a@company.co.in", "a@gmail-partners.com", "a@yahoo-aviation.com", "parveen@marioxsoftware.com"]) {
+      expect(isBusinessEmail(work), work).toBe(true);
+    }
+    expect(isBusinessEmail("not-an-email")).toBe(false);
+  });
+
+  it("rejects personal addresses on every lead form and never sends them a code", async () => {
+    const personal = "someone@gmail.com";
+    const submissions: Array<[string, object]> = [
+      ["/contact", contactPayload(personal)],
+      ["/demo-requests", demoPayload(personal)],
+      ["/data-licence/requests", { ...dataLicencePayload, email: personal }],
+      ["/advertising/enquiries", { ...advertisingPayload, email: personal }],
+    ];
+    for (const [path, body] of submissions) {
+      const r = await post(path, body);
+      expect(r.status, path).toBe(422);
+      expect(r.body.error.fieldErrors.email, path).toMatch(/work email/i);
+    }
+    for (const form of ["/contact", "/demo-requests", "/data-licence", "/advertising"]) {
+      const r = await post(`${form}/email-otp`, { email: personal });
+      expect(r.status, form).toBe(422);
+      expect(r.body.error.fieldErrors.email, form).toMatch(/work email/i);
+    }
+    expect(mailsTo(personal)).toHaveLength(0);
+    expect(await Lead.countDocuments()).toBe(0);
   });
 });

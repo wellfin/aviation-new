@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isObjectId } from "../../lib/db.js";
+import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "../../lib/business-email.js";
 import { paginationQuery } from "../../lib/pagination.js";
 import { LEAD_STATUSES, LEAD_TYPES } from "./lead.model.js";
 
@@ -18,7 +19,15 @@ const noControl = (v: string) => {
 };
 const singleLine = (v: string) => noControl(v) && !/[\r\n]/.test(v);
 
-export const emailField = z.string().trim().min(1, "Email is required").max(254).pipe(z.email("Enter a valid email address")).transform((v) => v.toLowerCase());
+/** Enquiry forms take professional/business addresses only (no Gmail, Yahoo, Outlook…). */
+export const emailField = z
+  .string()
+  .trim()
+  .min(1, "Email is required")
+  .max(254)
+  .pipe(z.email("Enter a valid email address"))
+  .transform((v) => v.toLowerCase())
+  .refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE);
 const name = z.string().trim().min(2, "Please enter at least 2 characters").max(100).refine(singleLine, "Invalid characters");
 const phone = z
   .string()
@@ -84,6 +93,7 @@ export const advertisingBody = z.object({
 });
 
 export const otpRequestBody = z.object({ email: emailField });
+/** 4-digit code: contact, advertising, data-licence and provider-enquiry forms. */
 export const contactOtpVerifyBody = z.object({ email: emailField, code: z.string().trim().regex(/^\d{4}$/, "Enter the 4-digit code") });
 export const demoOtpVerifyBody = z.object({ email: emailField, code: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code") });
 

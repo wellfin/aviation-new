@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { workEmail } from "@/lib/api/forms";
 
 /** "Share Your Experience" review form on the provider profile. */
 export const reviewSchema = z.object({
@@ -28,7 +29,7 @@ export const fleetEnquirySchema = z.object({
   passengers: z.coerce.number().int().min(1, "At least 1 passenger").max(500),
   name: z.string().trim().min(2, "Please enter at least 2 characters").max(100),
   company: z.string().trim().max(120).optional().or(z.literal("")),
-  email: z.string().trim().min(1, "Email is required").email("Enter a valid email address").max(254),
+  email: workEmail,
   dialCode: z.string().max(6).optional(),
   phone: z
     .string()

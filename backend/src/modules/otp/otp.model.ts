@@ -1,6 +1,6 @@
 import { type InferSchemaType, Schema, model } from "mongoose";
 
-export const OTP_PURPOSES = ["email_verification", "password_reset", "contact_email", "demo_email"] as const;
+export const OTP_PURPOSES = ["email_verification", "password_reset", "contact_email", "demo_email", "advertising_email", "data_licence_email", "enquiry_email"] as const;
 export type OtpPurpose = (typeof OTP_PURPOSES)[number];
 
 /** One active code per (purpose, email). Codes are stored as keyed hashes only. */

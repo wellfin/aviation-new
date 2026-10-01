@@ -93,6 +93,24 @@ dataLicenceRouter.post(
   }),
 );
 
+dataLicenceRouter.post(
+  "/email-otp",
+  otpRateLimit,
+  handler({ body: otpRequestBody }, async ({ body }, _req, res) => {
+    await leads.sendLeadOtp("dataLicence", body.email);
+    ok(res, { sent: true });
+  }),
+);
+
+dataLicenceRouter.post(
+  "/email-otp/verify",
+  otpRateLimit,
+  handler({ body: contactOtpVerifyBody }, async ({ body }, _req, res) => {
+    await leads.verifyLeadOtp("dataLicence", body.email, body.code);
+    ok(res, { verified: true });
+  }),
+);
+
 /** Mounted at /advertising */
 export const advertisingRouter = Router();
 
@@ -102,6 +120,24 @@ advertisingRouter.post(
   handler({ body: advertisingBody }, async ({ body }, _req, res) => {
     await leads.submitAdvertising(body);
     created(res, RECEIVED);
+  }),
+);
+
+advertisingRouter.post(
+  "/email-otp",
+  otpRateLimit,
+  handler({ body: otpRequestBody }, async ({ body }, _req, res) => {
+    await leads.sendLeadOtp("advertising", body.email);
+    ok(res, { sent: true });
+  }),
+);
+
+advertisingRouter.post(
+  "/email-otp/verify",
+  otpRateLimit,
+  handler({ body: contactOtpVerifyBody }, async ({ body }, _req, res) => {
+    await leads.verifyLeadOtp("advertising", body.email, body.code);
+    ok(res, { verified: true });
   }),
 );
 

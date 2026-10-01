@@ -2,26 +2,51 @@
 
 import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
 import { ApiError, apiPost } from "@/lib/api/client";
-import { contactSchema } from "@/lib/api/forms";
+import { workEmail } from "@/lib/api/forms";
 import { cn } from "@/lib/utils";
 
 export const OTP_LENGTH = 4;
 
 type OtpState = "idle" | "sending" | "sent" | "verifying" | "verified";
 
+/** API paths of a form's email-ownership check (each enquiry form has its own pair). */
+export interface OtpEndpoints {
+  send: string;
+  verify: string;
+}
+
+export const CONTACT_OTP: OtpEndpoints = { send: "/contact/email-otp", verify: "/contact/email-otp/verify" };
+export const ADVERTISING_OTP: OtpEndpoints = { send: "/advertising/email-otp", verify: "/advertising/email-otp/verify" };
+export const DATA_LICENCE_OTP: OtpEndpoints = { send: "/data-licence/email-otp", verify: "/data-licence/email-otp/verify" };
+export const ENQUIRY_OTP: OtpEndpoints = { send: "/enquiries/email-otp", verify: "/enquiries/email-otp/verify" };
+
 /**
- * Email field with inline "Send OTP" and a 4-digit verification row (Figma 696:81).
- * Calls POST /contact/email-otp and POST /contact/email-otp/verify.
+ * Work-email field with inline "Send OTP" and a 4-digit verification row (Figma 696:81).
+ * Used by every enquiry form: only business addresses are accepted, and the address
+ * must be verified with the emailed code before the form can be sent.
  */
 export function EmailOtp({
+  endpoints = CONTACT_OTP,
+  id = "contact-email",
   error,
   onVerifiedChange,
   resetKey = 0,
+  trustedEmail,
+  fieldClassName,
+  placeholder = "Work Email Address",
 }: {
+  endpoints?: OtpEndpoints;
+  /** Input id (unique per form on the page). */
+  id?: string;
   error?: string;
   onVerifiedChange: (email: string | null) => void;
   /** Bump to discard a verification the server no longer accepts (e.g. it expired). */
   resetKey?: number;
+  /** The signed-in user's already-verified account email: typing it needs no code. */
+  trustedEmail?: string;
+  /** Height / radius overrides so the field matches the form it sits in. */
+  fieldClassName?: string;
+  placeholder?: string;
 }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<OtpState>("idle");
@@ -38,18 +63,22 @@ export function EmailOtp({
     setMessage(null);
   }
 
+  const isTrusted = (value: string) => Boolean(trustedEmail) && value.trim().toLowerCase() === trustedEmail?.toLowerCase();
+  const trusted = isTrusted(email);
+
   function changeEmail(value: string) {
     setEmail(value);
+    // Any message (a rejected address, "code sent"…) was about the previous value.
+    setMessage(null);
     if (state !== "idle") {
       setState("idle");
       setDigits(Array(OTP_LENGTH).fill(""));
-      setMessage(null);
-      onVerifiedChange(null);
     }
+    onVerifiedChange(isTrusted(value) ? value.trim() : null);
   }
 
   async function sendOtp() {
-    const parsed = contactSchema.shape.email.safeParse(email);
+    const parsed = workEmail.safeParse(email);
     if (!parsed.success) {
       setMessage({ tone: "error", text: parsed.error.issues[0]?.message ?? "Enter a valid email address" });
       return;
@@ -57,7 +86,7 @@ export function EmailOtp({
     setState("sending");
     setMessage(null);
     try {
-      await apiPost("/contact/email-otp", { email: parsed.data });
+      await apiPost(endpoints.send, { email: parsed.data });
       setState("sent");
       setMessage({ tone: "info", text: `We sent a ${OTP_LENGTH}-digit code to ${parsed.data}.` });
       requestAnimationFrame(() => refs.current[0]?.focus());
@@ -75,7 +104,7 @@ export function EmailOtp({
     }
     setState("verifying");
     try {
-      await apiPost("/contact/email-otp/verify", { email: email.trim(), code });
+      await apiPost(endpoints.verify, { email: email.trim(), code });
       setState("verified");
       setMessage({ tone: "success", text: "Email verified." });
       onVerifiedChange(email.trim());
@@ -107,39 +136,41 @@ export function EmailOtp({
     refs.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
   }
 
-  const verified = state === "verified";
-  const showCode = state === "sent" || state === "verifying";
+  const verified = state === "verified" || trusted;
+  const showCode = !trusted && (state === "sent" || state === "verifying");
   // A stale "please verify" error from the last submit no longer applies once verified.
   // …and once a code is on its way, the progress message replaces the form's "please verify" error.
   const ownError = message?.tone === "error" ? message.text : undefined;
   const shownError = verified ? undefined : (ownError ?? (state === "idle" ? error : undefined));
+  const statusId = `${id}-status`;
 
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <label htmlFor="contact-email" className="sr-only">
-          Email address
+        <label htmlFor={id} className="sr-only">
+          Work email address
         </label>
         <div
           className={cn(
             "flex h-[52px] items-center gap-2 rounded-xl border bg-white pr-1.5 pl-4 focus-within:ring-3 focus-within:ring-brand/15",
             shownError ? "border-danger" : "border-brand/20 focus-within:border-brand",
+            fieldClassName,
           )}
         >
           <input
-            id="contact-email"
+            id={id}
             name="email"
             type="email"
             autoComplete="email"
-            placeholder="Email Address"
+            placeholder={placeholder}
             value={email}
             onChange={(e) => changeEmail(e.target.value)}
             aria-invalid={shownError ? true : undefined}
-            aria-describedby="contact-email-status"
+            aria-describedby={statusId}
             className="min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none placeholder:text-subtle"
           />
           {verified ? (
-            <span className="rounded-3xl bg-success/12 px-3.5 py-1.5 text-sm font-semibold text-[#15803d]">✓ Verified</span>
+            <span className="shrink-0 rounded-3xl bg-success/12 px-3.5 py-1.5 text-sm font-semibold text-[#15803d]">✓ Verified</span>
           ) : (
             <button
               type="button"
@@ -186,7 +217,7 @@ export function EmailOtp({
       )}
 
       <p
-        id="contact-email-status"
+        id={statusId}
         role={shownError ? "alert" : "status"}
         className={cn("-mt-1 text-xs font-medium empty:hidden", shownError ? "text-danger" : message?.tone === "success" ? "text-[#15803d]" : "text-muted")}
       >

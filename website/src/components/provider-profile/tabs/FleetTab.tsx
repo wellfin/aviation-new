@@ -12,6 +12,9 @@ import type { FleetAircraft } from "@/lib/types";
 import { cn, formatNumber } from "@/lib/utils";
 import { Dialog } from "../Dialog";
 import { DialCodeSelect } from "@/components/contact/DialCodeSelect";
+import { EmailOtp, ENQUIRY_OTP } from "@/components/contact/EmailOtp";
+import { useEmailVerification } from "@/components/contact/useEmailVerification";
+import { useAuth } from "@/lib/auth/auth-context";
 import { fleetEnquirySchema } from "../schema";
 import { CARD_TITLE } from "../styles";
 
@@ -33,10 +36,12 @@ function Step({ n, children }: { n: number; children: string }) {
 function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: string; aircraft: FleetAircraft; onDone: () => void }) {
   const [trip, setTrip] = useState<(typeof TRIP_TYPES)[number]["value"]>("round-trip");
   const [pax, setPax] = useState(2);
+  const otp = useEmailVerification();
+  const { user } = useAuth();
   const { errors, submitting, result, handleSubmit } = useZodForm(
     fleetEnquirySchema,
     async (data) => {
-      await apiPost("/enquiries", data);
+      await otp.submitVerified(data.email, () => apiPost("/enquiries", data));
       return `Thanks — your ${aircraft.model} enquiry has been sent. The operator will reply with availability and a quote.`;
     },
     { resetOnSuccess: false },
@@ -107,7 +112,19 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
         <Input label="Full Name *" name="name" id="fe-name" placeholder="James Anderson" autoComplete="name" error={errors.name} />
         <Input label="Company Name" name="company" id="fe-company" placeholder="Optional" autoComplete="organization" error={errors.company} />
       </div>
-      <Input label="Email Address *" name="email" id="fe-email" type="email" placeholder="your@email.com" autoComplete="email" error={errors.email} />
+      <div>
+        <Label htmlFor="fe-email">Work Email Address *</Label>
+        <EmailOtp
+          key={otp.mountKey}
+          {...otp.fieldProps}
+          endpoints={ENQUIRY_OTP}
+          id="fe-email"
+          error={errors.email}
+          trustedEmail={user?.emailVerified ? user.email : undefined}
+          fieldClassName="h-12"
+          placeholder="you@company.com"
+        />
+      </div>
       <div>
         <Label htmlFor="fe-phone">Phone</Label>
         <div className="flex gap-3">

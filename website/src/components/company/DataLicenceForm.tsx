@@ -5,6 +5,8 @@ import { dataLicenceSchema } from "@/lib/api/forms";
 import { useZodForm } from "@/lib/hooks/useZodForm";
 import { Button } from "@/components/ui/Button";
 import { FieldError, FormStatus, Input, Textarea } from "@/components/ui/Field";
+import { DATA_LICENCE_OTP, EmailOtp } from "@/components/contact/EmailOtp";
+import { useEmailVerification } from "@/components/contact/useEmailVerification";
 import { cn } from "@/lib/utils";
 
 /** FormData → payload with `datasets` collected from every checked box. */
@@ -19,10 +21,11 @@ function toPayload(fd: FormData): Record<string, unknown> {
 }
 
 export function DataLicenceForm({ datasets }: { datasets: Array<{ id: string; name: string }> }) {
+  const otp = useEmailVerification();
   const { errors, submitting, result, handleSubmit } = useZodForm(
     dataLicenceSchema,
     async (data) => {
-      await apiPost("/data-licence/requests", data);
+      await otp.submitVerified(String(data.email), () => apiPost("/data-licence/requests", data));
       return "Thanks — our data team will send licence options and sample files for your selected datasets within one business day.";
     },
     { transform: toPayload },
@@ -34,7 +37,12 @@ export function DataLicenceForm({ datasets }: { datasets: Array<{ id: string; na
         <Input name="name" label="Full name *" autoComplete="name" placeholder="Sarah Mitchell" error={errors.name} />
         <Input name="company" label="Company *" autoComplete="organization" placeholder="SkyOps Software Ltd" error={errors.company} />
       </div>
-      <Input name="email" type="email" label="Work email *" autoComplete="email" placeholder="sarah@skyops.aero" error={errors.email} />
+      <div>
+        <label htmlFor="licence-email" className="mb-1.5 block text-xs font-semibold tracking-[0.6px] text-muted uppercase">
+          Work email *
+        </label>
+        <EmailOtp key={otp.mountKey} {...otp.fieldProps} endpoints={DATA_LICENCE_OTP} id="licence-email" error={errors.email} placeholder="sarah@skyops.aero" />
+      </div>
 
       <fieldset aria-describedby={errors.datasets ? "datasets-error" : undefined}>
         <legend className="mb-2 block text-xs font-semibold tracking-[0.6px] text-muted uppercase">Datasets *</legend>

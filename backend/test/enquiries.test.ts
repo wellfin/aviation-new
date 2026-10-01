@@ -10,7 +10,7 @@ import {
 import { testOutbox } from "../src/modules/notifications/mailer.js";
 import { Provider } from "../src/modules/providers/provider.model.js";
 import type { UserDoc } from "../src/modules/users/user.model.js";
-import { appWith, createUser, ORIGIN, signedInAgent } from "./helpers.js";
+import { appWith, createUser, lastCodeFor, ORIGIN, proveEmail, signedInAgent } from "./helpers.js";
 
 const app = appWith(
   ["/providers", providerEnquiriesRouter],
@@ -63,7 +63,14 @@ function uiFleet(slug: string, aircraftId: string) {
   };
 }
 
-const post = (path: string) => request(app).post(`/api/v1${path}`).set("Origin", ORIGIN);
+const rawPost = (path: string) => request(app).post(`/api/v1${path}`).set("Origin", ORIGIN);
+/** Submits like a visitor who has already verified their email with the one-time code. */
+const post = (path: string) => ({
+  send: async (body: Record<string, unknown>) => {
+    if (typeof body.email === "string") await proveEmail("enquiry_email", body.email);
+    return rawPost(path).send(body);
+  },
+});
 
 describe("POST /providers/:slug/enquiries", () => {
   it("stores a general enquiry and emails provider, owner and enquirer", async () => {
@@ -90,6 +97,7 @@ describe("POST /providers/:slug/enquiries", () => {
   it("emails a shared provider/owner address only once and links the signed-in user", async () => {
     const { agent, user } = await signedInAgent("USER", app);
     const provider = await makeProvider({ owner: user._id, contactEmail: user.email.toUpperCase() });
+    await proveEmail("enquiry_email", general.email);
     expect((await agent.post(`/api/v1/providers/${provider.slug}/enquiries`).send(general)).status).toBe(201);
     await new Promise((r) => setTimeout(r, 20));
     expect(testOutbox.filter((m) => m.to.toLowerCase() === user.email)).toHaveLength(1);
@@ -289,5 +297,54 @@ describe("admin enquiries", () => {
     expect((await agent.get("/api/v1/admin/enquiries?status=spam")).body.data.total).toBe(1);
     expect((await agent.get("/api/v1/admin/enquiries/0123456789abcdef01234567")).status).toBe(404);
     expect((await agent.patch(`/api/v1/admin/enquiries/${id}`).send({ status: "bogus" })).status).toBe(422);
+  });
+});
+
+describe("enquiry email rules", () => {
+  it("needs the email verified with a one-time code before an enquiry is accepted", async () => {
+    const provider = await makeProvider();
+    const path = `/providers/${provider.slug}/enquiries`;
+    const email = general.email.toLowerCase();
+
+    const blocked = await rawPost(path).send(general);
+    expect(blocked.status).toBe(400);
+    expect(blocked.body.error.code).toBe("EMAIL_NOT_VERIFIED");
+    expect(await Enquiry.countDocuments()).toBe(0);
+
+    expect((await rawPost("/enquiries/email-otp").send({ email })).status).toBe(200);
+    const code = lastCodeFor(email);
+    expect(code).toHaveLength(4);
+    expect((await rawPost("/enquiries/email-otp/verify").send({ email, code: code === "0000" ? "1111" : "0000" })).status).toBe(400);
+    expect((await rawPost(path).send(general)).body.error.code).toBe("EMAIL_NOT_VERIFIED");
+    expect((await rawPost("/enquiries/email-otp/verify").send({ email, code })).status).toBe(200);
+
+    expect((await rawPost(path).send(general)).status).toBe(201);
+    // The proof is single-use: a second enquiry needs a new code.
+    expect((await rawPost(path).send(general)).body.error.code).toBe("EMAIL_NOT_VERIFIED");
+    expect(await Enquiry.countDocuments()).toBe(1);
+  });
+
+  it("skips the code for a signed-in user enquiring from their own verified email", async () => {
+    const provider = await makeProvider();
+    const path = `/api/v1/providers/${provider.slug}/enquiries`;
+    const { agent, user } = await signedInAgent("USER", app);
+    expect((await agent.post(path).send({ ...general, email: user.email })).status).toBe(201);
+    // …but not when they enquire from a different address.
+    expect((await agent.post(path).send({ ...general, email: "colleague@example.com" })).body.error.code).toBe("EMAIL_NOT_VERIFIED");
+  });
+
+  it("rejects personal email addresses and never sends them a code", async () => {
+    const provider = await makeProvider();
+    for (const email of ["ann@gmail.com", "ann@yahoo.co.in", "ann@outlook.com", "ann@mailinator.com"]) {
+      const r = await rawPost(`/providers/${provider.slug}/enquiries`).send({ ...general, email });
+      expect(r.status, email).toBe(422);
+      expect(r.body.error.fieldErrors.email, email).toMatch(/work email/i);
+      const flat = await rawPost("/enquiries").send({ ...uiFleet(provider.slug, String(provider.fleet[0]!._id)), email });
+      expect(flat.status, email).toBe(422);
+      const otp = await rawPost("/enquiries/email-otp").send({ email });
+      expect(otp.status, email).toBe(422);
+      expect(testOutbox.filter((m) => m.to === email)).toHaveLength(0);
+    }
+    expect(await Enquiry.countDocuments()).toBe(0);
   });
 });

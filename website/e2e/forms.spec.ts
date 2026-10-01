@@ -16,12 +16,31 @@ test.describe("public forms", () => {
     await expect(form.getByText("Please enter at least 2 characters")).toBeVisible();
 
     await form.getByLabel("Your name").fill("Enquiry Tester");
-    await form.getByLabel("Email address").fill(email);
     await form.getByLabel("Phone number").fill("20 7946 0000");
     await form.getByLabel("Service").selectOption({ index: 1 });
     await form.getByLabel("Message or requirements").fill("Arriving OMDB next Tuesday with a G650, need handling and fuel.");
+
+    // Personal mailboxes are refused before any code is sent.
+    await form.locator("#enq-email").fill("someone@gmail.com");
+    await form.getByRole("button", { name: "Send OTP" }).click();
+    await expect(form.getByText(/use your work email/i)).toBeVisible();
+
+    // A work address must be verified with the emailed code before the enquiry is accepted.
+    await form.locator("#enq-email").fill(email);
     await form.getByRole("button", { name: "Send Enquiry" }).click();
-    await expect(form.getByRole("status")).toContainText("your enquiry has been sent to ExecuJet");
+    await expect(form.getByText(/verify your email address/i).first()).toBeVisible();
+
+    const since = Date.now();
+    await form.getByRole("button", { name: "Send OTP" }).click();
+    await expect(form.getByText(`We sent a 4-digit code to ${email}`)).toBeVisible();
+    const code = await readCode(email, { subject: "Confirm", since, digits: 4 });
+    await form.getByLabel("Digit 1", { exact: true }).click();
+    await page.keyboard.type(code);
+    await form.getByRole("button", { name: "Verify" }).click();
+    await expect(form.getByText("✓ Verified")).toBeVisible();
+
+    await form.getByRole("button", { name: "Send Enquiry" }).click();
+    await expect(form.getByRole("status").filter({ hasText: "your enquiry has been sent to ExecuJet" })).toBeVisible();
 
     // The provider's inbox (via the admin API) has it.
     const admin = await adminApi();

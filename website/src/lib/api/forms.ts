@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "@/lib/business-email";
 
 /**
  * Form schemas shared by every public form. The backend must validate the same
@@ -6,6 +7,8 @@ import { z } from "zod";
  */
 
 const email = z.string().trim().min(1, "Email is required").email("Enter a valid email address").max(254);
+/** Enquiry forms take professional/business addresses only (the API enforces the same rule). */
+export const workEmail = email.refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE);
 const name = z.string().trim().min(2, "Please enter at least 2 characters").max(100);
 const phone = z
   .string()
@@ -21,7 +24,7 @@ export const newsletterSchema = z.object({ email });
 export const enquirySchema = z.object({
   providerSlug: z.string().min(1),
   name,
-  email,
+  email: workEmail,
   dialCode: z.string().max(6).optional(),
   phone,
   service: z.string().trim().min(1, "Please select a service"),
@@ -30,7 +33,7 @@ export const enquirySchema = z.object({
 
 export const contactSchema = z.object({
   name,
-  email,
+  email: workEmail,
   phone,
   company: z.string().trim().max(120).optional().or(z.literal("")),
   subject: z.string().trim().min(1, "Please choose a subject").max(120),
@@ -39,7 +42,7 @@ export const contactSchema = z.object({
 
 export const advertiseSchema = z.object({
   name,
-  email,
+  email: workEmail,
   company: z.string().trim().min(2, "Company is required").max(120),
   phone,
   placement: z.string().trim().min(1, "Please choose an ad format"),
@@ -50,7 +53,7 @@ export const advertiseSchema = z.object({
 export const demoRequestSchema = z.object({
   firstName: name,
   lastName: name,
-  email,
+  email: workEmail,
   company: z.string().trim().min(2, "Company is required").max(120),
   role: z.string().trim().max(120).optional().or(z.literal("")),
   phone,
@@ -61,7 +64,7 @@ export const demoRequestSchema = z.object({
 
 export const dataLicenceSchema = z.object({
   name,
-  email,
+  email: workEmail,
   company: z.string().trim().min(2, "Company is required").max(120),
   datasets: z.array(z.string()).min(1, "Select at least one dataset"),
   useCase: message,
