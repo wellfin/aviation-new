@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 export interface InfoField {
   label: string;
@@ -10,9 +11,10 @@ export interface InfoField {
 function Row({ pair }: { pair: InfoField[] }) {
   return (
     <div className="grid gap-3 rounded-[20px] bg-white px-5 py-2 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] sm:min-h-[75px] sm:grid-cols-2 sm:items-center sm:gap-8 lg:px-[45px] xl:grid-cols-[254px_minmax(0,1fr)] xl:gap-[136px]">
-      {pair.map((f) => (
+      {pair.map((f, i) => (
         <div key={f.label} className="min-w-0">
-          <dt className="text-sm leading-5 font-semibold text-ink uppercase">{f.label}</dt>
+          {/* As drawn: a long left label stays on one line (it may run into the gap); the right label wraps at 270px. */}
+          <dt className={cn("text-sm leading-5 font-semibold text-ink uppercase", i === 0 ? "xl:whitespace-nowrap" : "xl:max-w-[270px]")}>{f.label}</dt>
           <dd className="text-[15px] leading-5 font-medium break-words text-[#757575] md:text-base">{f.value}</dd>
         </div>
       ))}

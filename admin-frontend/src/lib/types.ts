@@ -170,6 +170,11 @@ export interface Airport {
   airportCategory: string;
   slotsRequired: string;
   website: string;
+  /* Facilities shown on the airport page's "Airport Services" tab. */
+  cargoHandling: string;
+  hangarSpace: string;
+  restaurants: string;
+  medicalFacilities: string;
   customs: boolean;
   featured: boolean;
 }

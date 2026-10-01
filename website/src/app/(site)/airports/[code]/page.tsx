@@ -25,7 +25,7 @@ import { orFallback } from "@/lib/data/safe";
 import { getNotams } from "@/lib/integrations/notams";
 import { getMetar } from "@/lib/integrations/weather";
 import type { Airport, Provider, ServiceCategorySlug } from "@/lib/types";
-import { firstParam, formatNumber } from "@/lib/utils";
+import { cn, firstParam, formatNumber } from "@/lib/utils";
 
 const NEARBY_RADIUS_KM = 250;
 
@@ -102,23 +102,24 @@ function infoFields(a: Airport, providers: Provider[]): { fields: InfoField[]; m
   };
 }
 
-function serviceFields(providers: Provider[]): { fields: InfoField[]; more: InfoField[] } {
+/** "Airport Services" tab rows (Figma 752:7545). Facilities staff have not filled in yet show a dash. */
+function serviceFields(a: Airport, providers: Provider[]): { fields: InfoField[]; more: InfoField[] } {
   return {
     fields: [
-      { label: "FBO / GAT", value: providerLinks(providers, "fbo") },
+      { label: "FBO/GAT", value: providerLinks(providers, "fbo") },
       { label: "Handling", value: providerLinks(providers, "ground-handler") },
+      { label: "Cargo-Handling Facilities", value: a.cargoHandling || "—" },
       { label: "Fuel", value: providerLinks(providers, "fuel") },
       { label: "Catering", value: providerLinks(providers, "catering") },
-      { label: "Trip Support", value: providerLinks(providers, "trip-support") },
-      { label: "Permits", value: providerLinks(providers, "permit") },
-      { label: "Supervisory Agent", value: providerLinks(providers, "supervisory-agent") },
-      { label: "MRO or Repair Facilities", value: providerLinks(providers, "mro") },
+      { label: "De-icing Facilities", value: a.deicing || "—" },
+      { label: "Hangar Space for Visiting Aircraft", value: a.hangarSpace || "—" },
+      { label: "MRO or Repair Facilities for Visiting Aircraft", value: providerLinks(providers, "mro") },
     ],
     more: [
-      { label: "Charter Operators", value: providerLinks(providers, "charter-operator") },
-      { label: "Charter Brokers", value: providerLinks(providers, "charter-broker") },
+      { label: "Transit Hotel at the Airport", value: providerLinks(providers, "hotels") },
+      { label: "Restaurants", value: a.restaurants || "—" },
       { label: "Transportation", value: providerLinks(providers, "ground-transportation") },
-      { label: "Meet and Assist", value: providerLinks(providers, "meet-and-assist") },
+      { label: "Medical Facilities", value: a.medicalFacilities || "—" },
     ],
   };
 }
@@ -163,9 +164,10 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   const distanceError = from && to && !distance ? `We couldn't find ${from} or ${to}. Enter valid ICAO or IATA codes.` : undefined;
   const serviceName = service === "all" ? "Aviation service" : categories.find((c) => c.slug === service)?.name;
 
-  const calculator = (
-    <DistanceCalculator action={`/airports/${canonical}`} tab={tab} from={from || airport.icao} to={to} result={distance} error={distanceError} />
-  );
+  // Services and Nearby tabs end with the distance calculator, which spans the content and ad columns (Figma 752:7836).
+  const showCalculator = !service && (tab === "services" || tab === "nearby");
+  // The Airport Services frame has a taller side ad and no map section.
+  const servicesLayout = !service && tab === "services";
 
   let content: ReactNode;
   if (service) {
@@ -209,11 +211,11 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
       </div>
     );
   } else if (tab === "services") {
-    const svc = serviceFields(providers);
+    const svc = serviceFields(airport, providers);
+    // Figma 752:7545: rows sit directly under the tab bar (no card), 22px below it.
     content = (
-      <div className="space-y-8">
+      <div className="lg:pt-2.5">
         <InfoGrid fields={svc.fields} more={svc.more} moreLabel="More Airport Services Information" />
-        {calculator}
       </div>
     );
   } else if (tab === "runways") {
@@ -246,12 +248,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
       />
     );
   } else {
-    content = (
-      <div className="space-y-8">
-        <NearbyList results={nearby?.results ?? []} radiusKm={NEARBY_RADIUS_KM} />
-        {calculator}
-      </div>
-    );
+    content = <NearbyList results={nearby?.results ?? []} radiusKm={NEARBY_RADIUS_KM} />;
   }
 
   return (
@@ -259,29 +256,54 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
       <AdBanner ad={headerAd} className="pt-4" />
       <AirportHero airport={airport} />
 
-      <div className="container-site grid gap-5 py-8 lg:grid-cols-[minmax(0,1fr)_272px]">
-        <div className="min-w-0 space-y-6">
+      {/*
+        Columns (md+): service rail 248 · 12 · content · (lg+) 20 · ad 272. The calculator's row
+        spans content + ad; the rail spans both lower rows so it runs alongside the calculator.
+      */}
+      <div
+        className={cn(
+          "container-site grid gap-y-6 pt-8 md:grid-cols-[248px_12px_minmax(0,1fr)] lg:grid-cols-[248px_12px_minmax(0,1fr)_20px_272px]",
+          // Fixed 171px tiles row on desktop so the tall ad (rows 1–2) only stretches row 2; with the
+          // calculator, the flexible last row absorbs a long opened rail instead of pushing the calculator down.
+          showCalculator ? "md:grid-rows-[auto_auto_1fr] lg:grid-rows-[171px_auto_1fr]" : "lg:grid-rows-[171px_auto]",
+          servicesLayout ? "pb-6" : "pb-8",
+        )}
+      >
+        <div className="min-w-0 md:col-span-3">
           <ToolTiles icao={airport.icao} flightCategory={metar?.flightCategory ?? "N/A"} notamCount={notams.length} />
-          <div className="grid gap-3 md:grid-cols-[248px_minmax(0,1fr)]">
-            <div>
-              <ServiceSidebar icao={airport.icao} active={service} categories={categories} />
-            </div>
-            <div id="airport-content" className="min-w-0 scroll-mt-24 space-y-3">
-              <AirportTabs icao={airport.icao} active={service ? undefined : tab} />
-              {content}
-            </div>
-          </div>
         </div>
-        <aside className="hidden lg:block" aria-label="Advertisement">
-          <SkyscraperAd />
+        <div className={cn("min-w-0 md:col-start-1 md:row-start-2", showCalculator && "md:row-span-2")}>
+          <ServiceSidebar icao={airport.icao} active={service} categories={categories} />
+        </div>
+        <div id="airport-content" className="min-w-0 scroll-mt-24 space-y-3 md:col-start-3 md:row-start-2">
+          <AirportTabs icao={airport.icao} active={service ? undefined : tab} />
+          {content}
+        </div>
+        {showCalculator && (
+          <DistanceCalculator
+            action={`/airports/${canonical}`}
+            tab={tab}
+            from={from || airport.icao}
+            to={to}
+            result={distance}
+            error={distanceError}
+            className="min-w-0 md:col-start-3 md:row-start-3 lg:col-end-6 lg:mt-[69px]"
+          />
+        )}
+        <aside className="hidden lg:col-start-5 lg:row-span-2 lg:row-start-1 lg:block" aria-label="Advertisement">
+          <SkyscraperAd className={servicesLayout ? "h-[812px]" : undefined} />
         </aside>
       </div>
 
-      <AdBanner ad={headerAd} className="pb-8" height="h-[150px] sm:h-[189px]" />
-      <div className="container-site">
-        <LocationMap lat={airport.lat} lon={airport.lon} name={airport.name} />
-      </div>
-      <AdBanner ad={headerAd} className="py-10" height="h-[150px] sm:h-[222px]" />
+      {!servicesLayout && (
+        <>
+          <AdBanner ad={headerAd} className="pb-8" height="h-[150px] sm:h-[189px]" />
+          <div className="container-site">
+            <LocationMap lat={airport.lat} lon={airport.lon} name={airport.name} />
+          </div>
+        </>
+      )}
+      <AdBanner ad={headerAd} className={servicesLayout ? "pb-10" : "py-10"} height="h-[150px] sm:h-[222px]" />
     </>
   );
 }

@@ -68,7 +68,7 @@ export function ServiceSidebar({ icao, active, categories }: { icao: string; act
           aria-current={selected ? "page" : undefined}
           className={cn(
             // 6px right padding: the design lets the longest names ("Meet and Assist Service") run close to the edge.
-            "flex h-[46px] items-center gap-3 rounded-xl border-[0.755px] py-3 pr-1.5 pl-3 text-[13px] leading-[15px] font-bold text-white transition",
+            "flex h-[46px] items-center gap-2.5 rounded-xl border-[0.755px] py-3 pr-1 pl-3 text-[13px] leading-[15px] font-bold text-white transition",
             selected ? "bg-brand-gradient border-transparent shadow-soft" : "border-white/10 bg-navy-900 hover:bg-navy-800",
           )}
         >

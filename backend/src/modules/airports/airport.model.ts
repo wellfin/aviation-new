@@ -63,6 +63,11 @@ const airportSchema = new Schema(
     airportCategory: { type: String, trim: true, maxlength: 80, default: "" },
     slotsRequired: { type: String, trim: true, maxlength: 80, default: "" },
     website: { type: String, trim: true, maxlength: 200, default: "" },
+    /* Facilities shown on the "Airport Services" tab (optional free text). */
+    cargoHandling: { type: String, trim: true, maxlength: 120, default: "" },
+    hangarSpace: { type: String, trim: true, maxlength: 120, default: "" },
+    restaurants: { type: String, trim: true, maxlength: 120, default: "" },
+    medicalFacilities: { type: String, trim: true, maxlength: 120, default: "" },
     customs: { type: Boolean, default: false },
     featured: { type: Boolean, default: false },
     /** Number of published providers at this airport (denormalised; see recountAirportServices). */
@@ -122,6 +127,10 @@ export function toAirportDTO(a: AirportDoc | (AirportAttrs & { _id: unknown })) 
     airportCategory: a.airportCategory ?? "",
     slotsRequired: a.slotsRequired ?? "",
     website: a.website ?? "",
+    cargoHandling: a.cargoHandling ?? "",
+    hangarSpace: a.hangarSpace ?? "",
+    restaurants: a.restaurants ?? "",
+    medicalFacilities: a.medicalFacilities ?? "",
     customs: Boolean(a.customs),
     featured: Boolean(a.featured),
   };

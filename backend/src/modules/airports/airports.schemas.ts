@@ -123,6 +123,10 @@ const airportFields = {
     .max(200)
     .refine((v) => v === "" || /^https?:\/\/[^\s/]+\.[^\s]+$/i.test(v), "Enter a full web address starting with http:// or https://")
     .optional(),
+  cargoHandling: text(120).optional(),
+  hangarSpace: text(120).optional(),
+  restaurants: text(120).optional(),
+  medicalFacilities: text(120).optional(),
   customs: z.boolean().optional(),
   featured: z.boolean().optional(),
 };

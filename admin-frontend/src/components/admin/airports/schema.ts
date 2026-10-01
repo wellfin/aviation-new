@@ -79,6 +79,10 @@ export const airportSchema = z.object({
     .trim()
     .max(200)
     .refine((v) => v === "" || /^https?:\/\/[^\s/]+\.[^\s]+$/i.test(v), "Enter a full web address starting with http:// or https://"),
+  cargoHandling: text(120),
+  hangarSpace: text(120),
+  restaurants: text(120),
+  medicalFacilities: text(120),
   customs: z.boolean(),
   featured: z.boolean(),
 });
@@ -126,6 +130,10 @@ export interface AirportFormState {
   airportCategory: string;
   slotsRequired: string;
   website: string;
+  cargoHandling: string;
+  hangarSpace: string;
+  restaurants: string;
+  medicalFacilities: string;
   customs: boolean;
   featured: boolean;
 }
@@ -159,6 +167,10 @@ export function emptyAirportState(): AirportFormState {
     airportCategory: "",
     slotsRequired: "",
     website: "",
+    cargoHandling: "",
+    hangarSpace: "",
+    restaurants: "",
+    medicalFacilities: "",
     customs: false,
     featured: false,
   };
@@ -202,6 +214,10 @@ export function stateFromAirport(a: AdminAirport): AirportFormState {
     airportCategory: a.airportCategory ?? "",
     slotsRequired: a.slotsRequired ?? "",
     website: a.website ?? "",
+    cargoHandling: a.cargoHandling ?? "",
+    hangarSpace: a.hangarSpace ?? "",
+    restaurants: a.restaurants ?? "",
+    medicalFacilities: a.medicalFacilities ?? "",
     customs: a.customs,
     featured: a.featured,
   };
@@ -238,6 +254,10 @@ export function rawAirportPayload(s: AirportFormState, mode: "create" | "edit"):
     airportCategory: s.airportCategory,
     slotsRequired: s.slotsRequired,
     website: s.website,
+    cargoHandling: s.cargoHandling,
+    hangarSpace: s.hangarSpace,
+    restaurants: s.restaurants,
+    medicalFacilities: s.medicalFacilities,
     customs: s.customs,
     featured: s.featured,
   };

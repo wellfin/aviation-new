@@ -190,6 +190,11 @@ export interface Airport {
   airportCategory?: string;
   slotsRequired?: string;
   website?: string;
+  /* Facilities shown on the "Airport Services" tab (admin-managed). */
+  cargoHandling?: string;
+  hangarSpace?: string;
+  restaurants?: string;
+  medicalFacilities?: string;
   customs: boolean;
   featured: boolean;
 }

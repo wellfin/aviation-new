@@ -181,6 +181,7 @@ describe("admin airports", () => {
     const created = await agent.post(adm("")).send(NEW_AIRPORT);
     // Not provided → empty strings, never undefined.
     expect(created.body.data).toMatchObject({ trafficPermitted: "", lightIntensity: "", deicing: "", airportCategory: "", slotsRequired: "", website: "" });
+    expect(created.body.data).toMatchObject({ cargoHandling: "", hangarSpace: "", restaurants: "", medicalFacilities: "" });
 
     const details = {
       trafficPermitted: "IFR / VFR",
@@ -189,6 +190,10 @@ describe("admin airports", () => {
       airportCategory: "International",
       slotsRequired: "Yes — coordinated (Level 3)",
       website: "https://www.flughafen-zuerich.ch",
+      cargoHandling: "Cargo terminal with customs clearance",
+      hangarSpace: "Available on request",
+      restaurants: "Landside and airside",
+      medicalFacilities: "Airport medical centre",
     };
     const u = await agent.patch(adm("/LSZH")).send(details);
     expect(u.status).toBe(200);

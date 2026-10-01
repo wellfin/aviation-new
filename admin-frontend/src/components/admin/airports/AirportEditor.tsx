@@ -221,6 +221,15 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               <Input label="Slots required" name="slotsRequired" value={s.slotsRequired} maxLength={80} placeholder="Yes — coordinated (Level 3)" onChange={(ev) => set("slotsRequired", ev.target.value)} error={e("slotsRequired")} />
               <Input label="Airport website" name="website" type="url" value={s.website} maxLength={200} placeholder="https://www.heathrow.com" onChange={(ev) => set("website", ev.target.value)} error={e("website")} />
             </Grid>
+            {/* Shown on the airport page's "Airport Services" tab; blank fields show as "—". */}
+            <Grid>
+              <Input label="Cargo-handling facilities" name="cargoHandling" value={s.cargoHandling} maxLength={120} placeholder="Cargo terminal with customs clearance" onChange={(ev) => set("cargoHandling", ev.target.value)} error={e("cargoHandling")} />
+              <Input label="Hangar space for visiting aircraft" name="hangarSpace" value={s.hangarSpace} maxLength={120} placeholder="Available on request" onChange={(ev) => set("hangarSpace", ev.target.value)} error={e("hangarSpace")} />
+            </Grid>
+            <Grid>
+              <Input label="Restaurants" name="restaurants" value={s.restaurants} maxLength={120} placeholder="Landside and airside" onChange={(ev) => set("restaurants", ev.target.value)} error={e("restaurants")} />
+              <Input label="Medical facilities" name="medicalFacilities" value={s.medicalFacilities} maxLength={120} placeholder="Airport medical centre" onChange={(ev) => set("medicalFacilities", ev.target.value)} error={e("medicalFacilities")} />
+            </Grid>
             <ChipInput id="serviceTags" label="Service tags" values={s.serviceTags} onChange={(v) => set("serviceTags", v)} max={20} maxLength={30} placeholder="FBO, Fuel, Customs…" error={e("serviceTags")} />
             <UploadField id="image" label="Image" kind="image" value={s.image} onChange={(v) => set("image", v)} error={e("image")} />
           </FormSection>
