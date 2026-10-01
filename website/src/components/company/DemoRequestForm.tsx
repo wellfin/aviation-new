@@ -47,15 +47,7 @@ const DIAL_CODES = [
   { code: "+55", label: "Brazil (+55)" },
 ] as const;
 
-const INTERESTS = [
-  "Aviation directory & provider search",
-  "Aviation tools (weather, NOTAMs, runways)",
-  "Analytics dashboard",
-  "Data licence & API",
-  "Provider listing & membership",
-  "Advertising",
-  "Enterprise / team accounts",
-] as const;
+const INTERESTS = ["Aviation Directory Listing", "Charter Listing", "Advertising", "Data Licence & API"] as const;
 
 function withoutEmailError(errors: Record<string, string>): Record<string, string> {
   const next = { ...errors };
