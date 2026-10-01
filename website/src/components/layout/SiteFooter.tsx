@@ -59,8 +59,9 @@ const SOCIALS = [
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-brand-cyan/10 bg-navy-950 pb-16 md:pb-40">
-      <div className="container-site py-16">
+    <footer className="border-t border-brand-cyan/10 bg-navy-950">
+      {/* No extra bottom space here: the sticky footer ad adds its own spacer only while an ad is shown. */}
+      <div className="container-site pt-16 pb-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-6">
           <div className="col-span-2 md:col-span-4 lg:col-span-2">
             <Logo size="lg" />
