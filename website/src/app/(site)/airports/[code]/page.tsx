@@ -333,7 +333,8 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   const underRail = 70 + topListHeight - railHeight - 21;
   const adsUnderRail = underRail >= 400 ? adsFor(underRail) : 0;
   const topRightAds = adsFor(195 + Math.max(70 + topListHeight, railHeight));
-  const lowerAds = adsFor(basicOnPage.length * 235);
+  // A one-row list is too short for a side ad to read.
+  const lowerAds = basicOnPage.length >= 2 ? adsFor(basicOnPage.length * 235) : 0;
   const fillAd = "h-auto min-h-[400px] flex-1";
 
   // Without page links the lower list still keeps clear of the bottom banner.

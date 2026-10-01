@@ -43,7 +43,7 @@ export function ProviderRow({ provider: p }: { provider: Provider }) {
       <article className="font-open-sans border-b-[0.8px] border-[#6e788e] pt-[7px] pr-4 pb-4 pl-[15px]">
         {name}
         <dl className="max-w-[464px] space-y-1.5 pt-[30px]">
-          <Field label="Address" className="min-h-[47px]">
+          <Field label="Address" className="pb-[5px]">
             {contact.address}
           </Field>
           <Field label="Phone" className="min-h-7">
@@ -90,7 +90,7 @@ export function ProviderRow({ provider: p }: { provider: Provider }) {
       <div className="min-h-[42px] pt-[5.6px]">{name}</div>
 
       <dl className="max-w-[424px]">
-        <Field label="Address" className="min-h-[49px] pb-[7px]">
+        <Field label="Address" className="pb-[7px]">
           {contact.address}
         </Field>
         <Field label="Phone" className="min-h-[27px]">
