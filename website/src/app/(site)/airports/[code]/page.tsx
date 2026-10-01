@@ -215,7 +215,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
     // Figma 752:7545: rows sit directly under the tab bar (no card), 22px below it.
     content = (
       <div className="lg:pt-2.5">
-        <InfoGrid fields={svc.fields} more={svc.more} moreLabel="More Airport Services Information" />
+        <InfoGrid fields={svc.fields} more={svc.more} moreLabel="More Airport Services Information" openBar="square" />
       </div>
     );
   } else if (tab === "runways") {

@@ -29,7 +29,19 @@ function pairs(fields: InfoField[]): InfoField[][] {
 }
 
 /** Two-column key/value row cards with an optional "More … (Click to expand)" disclosure. */
-export function InfoGrid({ fields, more, moreLabel }: { fields: InfoField[]; more?: InfoField[]; moreLabel?: string }) {
+export function InfoGrid({
+  fields,
+  more,
+  moreLabel,
+  openBar = "rounded",
+}: {
+  fields: InfoField[];
+  more?: InfoField[];
+  moreLabel?: string;
+  /** How the bar is drawn once expanded: rounded with an up arrow (Figma 704:2393) or square with a wide down arrow (Figma 752:7568). */
+  openBar?: "rounded" | "square";
+}) {
+  const square = openBar === "square";
   return (
     <div className="space-y-2">
       <dl className="space-y-2">
@@ -39,15 +51,19 @@ export function InfoGrid({ fields, more, moreLabel }: { fields: InfoField[]; mor
       </dl>
       {more && more.length > 0 && (
         <details className="group">
-          {/* Closed: square top, 48px down arrow (Figma 752:589). Open: fully rounded, blue bottom rule, 61px up arrow (Figma 704:2393). */}
-          <summary className="flex min-h-[75px] cursor-pointer list-none items-center justify-between gap-4 rounded-b-[18px] border-b-[0.61px] border-transparent bg-brand/41 px-5 py-2 text-ink transition hover:bg-brand/50 group-open:rounded-[20px] group-open:border-[#0073e7] lg:px-[45px] [&::-webkit-details-marker]:hidden">
+          {/* Closed: square top, 48px down arrow (Figma 752:589). Open: blue bottom rule and a 61px arrow, drawn per `openBar`. */}
+          <summary className={cn("flex min-h-[75px] cursor-pointer list-none items-center justify-between gap-4 rounded-b-[18px] border-b-[0.61px] border-transparent bg-brand/41 px-5 py-2 text-ink transition hover:bg-brand/50 group-open:border-[#0073e7] lg:px-[45px] [&::-webkit-details-marker]:hidden", square ? "group-open:rounded-none" : "group-open:rounded-[20px]")}>
             <span className="text-base leading-5 font-bold md:text-xl">{moreLabel ?? "More Information"} (Click to expand)</span>
             {/* The arrow artwork overhangs its 19px-tall slot's bottom edge, as in the design. */}
             <span className="relative h-[19px] w-12 shrink-0 group-open:hidden" aria-hidden>
               <Image src="/images/airport/expand-arrow.svg" alt="" width={48} height={23} className="absolute top-0 left-0 h-[22.7px] w-12 max-w-none" />
             </span>
             <span className="relative hidden h-[19px] w-[61px] shrink-0 group-open:block" aria-hidden>
-              <Image src="/images/airport/collapse-arrow.svg" alt="" width={61} height={23} className="absolute top-0 left-0 h-[22.9px] w-[61px] max-w-none" />
+              {square ? (
+                <Image src="/images/airport/expand-arrow-wide.svg" alt="" width={61} height={29} className="absolute top-0 left-0 h-[29.2px] w-[61px] max-w-none" />
+              ) : (
+                <Image src="/images/airport/collapse-arrow.svg" alt="" width={61} height={23} className="absolute top-0 left-0 h-[22.9px] w-[61px] max-w-none" />
+              )}
             </span>
           </summary>
           <dl className="mt-2 space-y-2">
