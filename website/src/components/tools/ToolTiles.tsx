@@ -21,11 +21,14 @@ export function ToolTiles({
   icao,
   flightCategory = "VFR",
   notamCount = 3,
+  fill = false,
   className,
 }: {
   icao?: string;
   flightCategory?: string;
   notamCount?: number;
+  /** Let the tiles grow to fill the box when a parent stretches it (home page: level with the card beside it). */
+  fill?: boolean;
   className?: string;
 }) {
   const q = icao ? `?icao=${encodeURIComponent(icao)}` : "";
@@ -54,13 +57,16 @@ export function ToolTiles({
   ];
 
   return (
-    <div className={cn("rounded-[16px] bg-white p-[18px] shadow-card", className)}>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+    <div className={cn("rounded-[16px] bg-white p-[18px] shadow-card", fill && "flex flex-col", className)}>
+      <div className={cn("grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5", fill && "flex-1")}>
         {tiles.map((t) => (
           <Link
             key={t.key}
             href={t.href}
-            className="group flex h-[135px] flex-col items-start rounded-xl bg-[rgba(233,235,244,0.23)] px-2.5 py-3 transition hover:bg-brand/5 hover:shadow-soft"
+            className={cn(
+              "group flex h-[135px] flex-col items-start rounded-xl bg-[rgba(233,235,244,0.23)] px-2.5 py-3 transition hover:bg-brand/5 hover:shadow-soft",
+              fill && "lg:h-full",
+            )}
           >
             <span className={cn("mb-3 flex size-10 items-center justify-center rounded-xl border", t.tone)}>
               <Image src={t.icon} alt="" width={20} height={20} />

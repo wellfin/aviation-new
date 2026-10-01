@@ -35,7 +35,7 @@ function CodeField({
   labelClass: string;
 }) {
   return (
-    <div className="w-full md:w-[262px]">
+    <div className="w-full md:max-w-[262px] md:min-w-0 md:flex-1">
       <div
         className={cn(
           "flex h-[41px] overflow-hidden rounded-lg border bg-white transition focus-within:border-brand-cyan",
@@ -55,7 +55,8 @@ function CodeField({
           spellCheck={false}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `distance-${id}-error` : undefined}
-          className="min-w-0 flex-1 border-l border-line px-3 text-sm text-ink uppercase outline-none placeholder:text-muted placeholder:normal-case"
+          // w-0 + flex-1: the input never forces the field wider than the space it is given.
+          className="w-0 min-w-0 flex-1 border-l border-line px-2.5 text-[13px] text-ink uppercase outline-none placeholder:text-muted placeholder:normal-case 2xl:px-3 2xl:text-sm"
         />
       </div>
       {error && (
@@ -87,17 +88,20 @@ export function DistanceCalculator({ className }: { className?: string }) {
       onSubmit={onSubmit}
       noValidate
       aria-label="Airport distance calculator"
-      className={cn("flex flex-col gap-4 rounded-[10px] bg-navy-900 px-5 py-4 md:flex-row md:items-start md:gap-0 md:px-8", className)}
+      className={cn("flex flex-col gap-4 rounded-[10px] bg-navy-900 px-5 py-4 md:flex-row md:items-start md:gap-3 md:px-6 xl:gap-4 xl:px-8", className)}
     >
-      <h2 className="text-base font-semibold text-white md:mr-[26px] md:h-[41px] md:content-center md:whitespace-nowrap">Airport Distance Calculator</h2>
+      {/* Two lines on medium screens so the fields keep a usable width; one line from xl. */}
+      <h2 className="text-base font-semibold text-white md:flex md:h-[41px] md:w-[124px] md:shrink-0 md:items-center md:text-sm md:leading-5 xl:w-auto xl:text-base xl:whitespace-nowrap 2xl:mr-2.5">
+        Airport Distance Calculator
+      </h2>
       <CodeField id="from" label="From :" value={from} onChange={setFrom} placeholder="ICAO example : KJFK" error={errors.from} labelClass="bg-[#1862c1]" />
-      <span className="hidden h-[41px] w-[84px] shrink-0 items-center justify-center md:flex" aria-hidden>
+      <span className="hidden h-[41px] w-8 shrink-0 items-center justify-center md:flex xl:w-12 2xl:w-[84px]" aria-hidden>
         <Plane className="size-6 rotate-45 fill-white text-white" />
       </span>
       <CodeField id="to" label="To :" value={to} onChange={setTo} placeholder="ICAO example : KLAX" error={errors.to} labelClass="bg-brand-gradient" />
       <button
         type="submit"
-        className="h-[39px] shrink-0 rounded-[7px] bg-brand-gradient px-[13px] text-base font-semibold text-white transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-cyan md:mt-px md:ml-[26px] md:w-[100px]"
+        className="h-[39px] shrink-0 rounded-[7px] bg-brand-gradient px-[13px] text-base font-semibold text-white transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-cyan md:mt-px md:w-[100px] 2xl:ml-2.5"
       >
         Calculate
       </button>
