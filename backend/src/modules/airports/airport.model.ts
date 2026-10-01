@@ -56,6 +56,13 @@ const airportSchema = new Schema(
     frequencies: [frequencySchema],
     fireCategory: { type: String, trim: true, maxlength: 20, default: "" },
     operatingHours: { type: String, trim: true, maxlength: 120, default: "" },
+    /* Operational details shown under "More Airport Information" (all optional free text). */
+    trafficPermitted: { type: String, trim: true, maxlength: 80, default: "" },
+    lightIntensity: { type: String, trim: true, maxlength: 80, default: "" },
+    deicing: { type: String, trim: true, maxlength: 80, default: "" },
+    airportCategory: { type: String, trim: true, maxlength: 80, default: "" },
+    slotsRequired: { type: String, trim: true, maxlength: 80, default: "" },
+    website: { type: String, trim: true, maxlength: 200, default: "" },
     customs: { type: Boolean, default: false },
     featured: { type: Boolean, default: false },
     /** Number of published providers at this airport (denormalised; see recountAirportServices). */
@@ -109,6 +116,12 @@ export function toAirportDTO(a: AirportDoc | (AirportAttrs & { _id: unknown })) 
     frequencies: (a.frequencies ?? []).map((f) => ({ type: f.type, description: f.description, mhz: f.mhz })),
     fireCategory: a.fireCategory ?? "",
     operatingHours: a.operatingHours ?? "",
+    trafficPermitted: a.trafficPermitted ?? "",
+    lightIntensity: a.lightIntensity ?? "",
+    deicing: a.deicing ?? "",
+    airportCategory: a.airportCategory ?? "",
+    slotsRequired: a.slotsRequired ?? "",
+    website: a.website ?? "",
     customs: Boolean(a.customs),
     featured: Boolean(a.featured),
   };

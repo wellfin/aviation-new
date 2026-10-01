@@ -69,6 +69,16 @@ export const airportSchema = z.object({
     .max(40),
   fireCategory: text(20),
   operatingHours: text(120),
+  trafficPermitted: text(80),
+  lightIntensity: text(80),
+  deicing: text(80),
+  airportCategory: text(80),
+  slotsRequired: text(80),
+  website: z
+    .string()
+    .trim()
+    .max(200)
+    .refine((v) => v === "" || /^https?:\/\/[^\s/]+\.[^\s]+$/i.test(v), "Enter a full web address starting with http:// or https://"),
   customs: z.boolean(),
   featured: z.boolean(),
 });
@@ -110,6 +120,12 @@ export interface AirportFormState {
   frequencies: FrequencyRow[];
   fireCategory: string;
   operatingHours: string;
+  trafficPermitted: string;
+  lightIntensity: string;
+  deicing: string;
+  airportCategory: string;
+  slotsRequired: string;
+  website: string;
   customs: boolean;
   featured: boolean;
 }
@@ -137,6 +153,12 @@ export function emptyAirportState(): AirportFormState {
     frequencies: [],
     fireCategory: "",
     operatingHours: "",
+    trafficPermitted: "",
+    lightIntensity: "",
+    deicing: "",
+    airportCategory: "",
+    slotsRequired: "",
+    website: "",
     customs: false,
     featured: false,
   };
@@ -173,6 +195,13 @@ export function stateFromAirport(a: AdminAirport): AirportFormState {
     frequencies: a.frequencies.map((f) => ({ ...f })),
     fireCategory: a.fireCategory,
     operatingHours: a.operatingHours,
+    // Airports saved before these fields existed come back without them.
+    trafficPermitted: a.trafficPermitted ?? "",
+    lightIntensity: a.lightIntensity ?? "",
+    deicing: a.deicing ?? "",
+    airportCategory: a.airportCategory ?? "",
+    slotsRequired: a.slotsRequired ?? "",
+    website: a.website ?? "",
     customs: a.customs,
     featured: a.featured,
   };
@@ -203,6 +232,12 @@ export function rawAirportPayload(s: AirportFormState, mode: "create" | "edit"):
     frequencies: s.frequencies,
     fireCategory: s.fireCategory,
     operatingHours: s.operatingHours,
+    trafficPermitted: s.trafficPermitted,
+    lightIntensity: s.lightIntensity,
+    deicing: s.deicing,
+    airportCategory: s.airportCategory,
+    slotsRequired: s.slotsRequired,
+    website: s.website,
     customs: s.customs,
     featured: s.featured,
   };

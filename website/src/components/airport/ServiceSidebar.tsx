@@ -14,11 +14,13 @@ interface Item {
   icon: LucideIcon;
 }
 
-/** The airport page's rail order (Figma 752:249); categories not listed follow in the admin-defined order. */
-const RAIL_ORDER = ["fbo", "ground-handler", "supervisory-agent", "permit", "fuel", "catering", "trip-support", "charter-operator", "charter-broker"];
+/** The airport page's rail order (Figma 752:249). */
+const PRIMARY_ORDER = ["fbo", "ground-handler", "supervisory-agent", "permit", "fuel", "catering", "trip-support", "charter-operator", "charter-broker"];
+/** Order under "View All" (Figma 696:1642); anything else follows in the admin-defined order. */
+const RAIL_ORDER = [...PRIMARY_ORDER, "meet-and-assist", "ground-transportation", "hotels", "mro", "other-services"];
 
 /** Categories shown before the "View All" disclosure. */
-const PRIMARY_COUNT = RAIL_ORDER.length;
+const PRIMARY_COUNT = PRIMARY_ORDER.length;
 
 /** Icons drawn for this rail in the design. (The design reuses the ground-handler glyph for Permit.) */
 const RAIL_ICON: Record<string, string> = {
@@ -31,6 +33,8 @@ const RAIL_ICON: Record<string, string> = {
   "trip-support": "svc-trip-support",
   "charter-operator": "svc-charter",
   "charter-broker": "svc-broker",
+  "meet-and-assist": "svc-meet-assist",
+  "ground-transportation": "svc-transport",
   hotels: "svc-hotel",
   mro: "svc-mro",
   "other-services": "svc-other",
@@ -63,7 +67,8 @@ export function ServiceSidebar({ icao, active, categories }: { icao: string; act
           href={airportHref(icao, { service: item.slug, hash: "airport-content" })}
           aria-current={selected ? "page" : undefined}
           className={cn(
-            "flex h-[46px] items-center gap-3 rounded-xl border-[0.755px] p-3 text-[13px] leading-[15px] font-bold text-white transition",
+            // 6px right padding: the design lets the longest names ("Meet and Assist Service") run close to the edge.
+            "flex h-[46px] items-center gap-3 rounded-xl border-[0.755px] py-3 pr-1.5 pl-3 text-[13px] leading-[15px] font-bold text-white transition",
             selected ? "bg-brand-gradient border-transparent shadow-soft" : "border-white/10 bg-navy-900 hover:bg-navy-800",
           )}
         >
@@ -79,9 +84,8 @@ export function ServiceSidebar({ icao, active, categories }: { icao: string; act
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-1">{PRIMARY.map(renderItem)}</ul>
       <details className="group mt-2" open={moreOpen}>
         <summary className="flex h-[46px] cursor-pointer list-none items-center justify-center gap-3 rounded-xl border-[0.755px] border-white/10 bg-navy-900 text-[13px] leading-[15px] font-bold text-white transition hover:bg-navy-800 [&::-webkit-details-marker]:hidden">
-          <span className="group-open:hidden">View All</span>
-          <span className="hidden group-open:inline">Show Less</span>
-          <Image src="/images/airport/view-all-arrow.svg" alt="" width={17} height={17} className="size-[17px] transition group-open:rotate-180" />
+          View All
+          <Image src="/images/airport/view-all-arrow.svg" alt="" width={17} height={17} className="size-[17px]" />
         </summary>
         <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-1">{MORE.map(renderItem)}</ul>
       </details>

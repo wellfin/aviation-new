@@ -208,6 +208,19 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               <Input label="Operating hours" name="operatingHours" value={s.operatingHours} maxLength={120} placeholder="24/7" onChange={(ev) => set("operatingHours", ev.target.value)} error={e("operatingHours")} />
               <Input label="Fire category" name="fireCategory" value={s.fireCategory} maxLength={20} placeholder="CAT 9" onChange={(ev) => set("fireCategory", ev.target.value)} error={e("fireCategory")} />
             </Grid>
+            {/* Shown on the airport page under "More Airport Information"; blank fields show as "—". */}
+            <Grid>
+              <Input label="Type of traffic permitted" name="trafficPermitted" value={s.trafficPermitted} maxLength={80} placeholder="IFR / VFR" onChange={(ev) => set("trafficPermitted", ev.target.value)} error={e("trafficPermitted")} />
+              <Input label="Airport light intensity" name="lightIntensity" value={s.lightIntensity} maxLength={80} placeholder="High (HIRL)" onChange={(ev) => set("lightIntensity", ev.target.value)} error={e("lightIntensity")} />
+            </Grid>
+            <Grid>
+              <Input label="Deicing" name="deicing" value={s.deicing} maxLength={80} placeholder="Available" onChange={(ev) => set("deicing", ev.target.value)} error={e("deicing")} />
+              <Input label="Airport category" name="airportCategory" value={s.airportCategory} maxLength={80} placeholder="International" onChange={(ev) => set("airportCategory", ev.target.value)} error={e("airportCategory")} />
+            </Grid>
+            <Grid>
+              <Input label="Slots required" name="slotsRequired" value={s.slotsRequired} maxLength={80} placeholder="Yes — coordinated (Level 3)" onChange={(ev) => set("slotsRequired", ev.target.value)} error={e("slotsRequired")} />
+              <Input label="Airport website" name="website" type="url" value={s.website} maxLength={200} placeholder="https://www.heathrow.com" onChange={(ev) => set("website", ev.target.value)} error={e("website")} />
+            </Grid>
             <ChipInput id="serviceTags" label="Service tags" values={s.serviceTags} onChange={(v) => set("serviceTags", v)} max={20} maxLength={30} placeholder="FBO, Fuel, Customs…" error={e("serviceTags")} />
             <UploadField id="image" label="Image" kind="image" value={s.image} onChange={(v) => set("image", v)} error={e("image")} />
           </FormSection>

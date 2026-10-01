@@ -61,7 +61,6 @@ function providerLinks(providers: Provider[], ...categories: ServiceCategorySlug
 
 function infoFields(a: Airport, providers: Provider[]): { fields: InfoField[]; more: InfoField[] } {
   const ils = [...new Set(a.runways.map((r) => r.ils).filter(Boolean))];
-  const longest = a.runways.reduce<Airport["runways"][number] | null>((m, r) => (!m || r.lengthFt > m.lengthFt ? r : m), null);
   const lit = a.runways.filter((r) => r.lighting).length;
   return {
     fields: [
@@ -74,19 +73,31 @@ function infoFields(a: Airport, providers: Provider[]): { fields: InfoField[]; m
       { label: "Airport Type", value: AIRPORT_TYPE_LABEL[a.type] ?? a.type },
       { label: "Lat/Long", value: `${a.lat.toFixed(4)}, ${a.lon.toFixed(4)}` },
     ],
+    // Rows and order follow Figma 696:1642. Details staff have not filled in yet show a dash.
     more: [
-      { label: "Region", value: a.region },
+      { label: "Type of Traffic Permitted", value: a.trafficPermitted || "—" },
       { label: "Approaches", value: ils.length ? `ILS ${ils.join(", ")}` : "Visual / non-precision" },
       { label: "Elevation (ft)", value: `${formatNumber(a.elevationFt)} ft (${formatNumber(Math.round(a.elevationFt * 0.3048))} m)` },
       { label: "UTC", value: `${a.utcOffset} (${a.timezone})` },
-      { label: "Runway Lighting", value: a.runways.length ? `${lit} of ${a.runways.length} runways lit` : "—" },
+      { label: "Airport Light Intensity", value: a.lightIntensity || (a.runways.length ? `${lit} of ${a.runways.length} runways lit` : "—") },
       { label: "Airport of Entry", value: a.customs ? "Yes" : "No" },
-      { label: "FBO / GAT", value: providerLinks(providers, "fbo") },
+      { label: "FBO/ GAT", value: providerLinks(providers, "fbo") },
       { label: "Fuel", value: providerLinks(providers, "fuel") },
-      { label: "Fire Category", value: a.fireCategory },
-      { label: "Longest Runway", value: longest ? `${longest.designator} · ${formatNumber(longest.lengthFt)} ft` : "—" },
+      { label: "Fire Category", value: a.fireCategory || "—" },
+      { label: "Deicing", value: a.deicing || "—" },
       { label: "Customs and Immigration", value: a.customs ? "Available" : "Not available" },
-      { label: "Operating Hours", value: a.operatingHours },
+      { label: "Airport Category", value: a.airportCategory || "—" },
+      { label: "Slots Required", value: a.slotsRequired || "—" },
+      {
+        label: "Airport Website",
+        value: a.website ? (
+          <a href={a.website} target="_blank" rel="noopener noreferrer" className="break-all text-brand hover:underline">
+            {a.website.replace(/^https?:\/\//i, "").replace(/\/$/, "")}
+          </a>
+        ) : (
+          "—"
+        ),
+      },
     ],
   };
 }
@@ -191,8 +202,12 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
     );
   } else if (tab === "info") {
     const info = infoFields(airport, providers);
-    // Figma 752:566: the row cards sit directly under the tab bar (live weather is one click away on the Weather tile).
-    content = <InfoGrid fields={info.fields} more={info.more} moreLabel="More Airport Information" />;
+    // Figma 696:1642: the row cards sit inside one white card (808px wide; 24px left, 15px right padding).
+    content = (
+      <div className="rounded-[20px] bg-white p-2 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] sm:p-4 lg:pt-[34px] lg:pr-[15px] lg:pb-8 lg:pl-6">
+        <InfoGrid fields={info.fields} more={info.more} moreLabel="More Airport Information" />
+      </div>
+    );
   } else if (tab === "services") {
     const svc = serviceFields(providers);
     content = (
@@ -251,7 +266,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
             <div>
               <ServiceSidebar icao={airport.icao} active={service} categories={categories} />
             </div>
-            <div id="airport-content" className="min-w-0 scroll-mt-24 space-y-6">
+            <div id="airport-content" className="min-w-0 scroll-mt-24 space-y-3">
               <AirportTabs icao={airport.icao} active={service ? undefined : tab} />
               {content}
             </div>

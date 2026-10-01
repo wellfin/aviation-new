@@ -111,6 +111,18 @@ const airportFields = {
   frequencies: z.array(frequency).max(40).optional(),
   fireCategory: text(20).optional(),
   operatingHours: text(120).optional(),
+  trafficPermitted: text(80).optional(),
+  lightIntensity: text(80).optional(),
+  deicing: text(80).optional(),
+  airportCategory: text(80).optional(),
+  slotsRequired: text(80).optional(),
+  /** Official airport website: empty, or an absolute http(s) URL. */
+  website: z
+    .string()
+    .trim()
+    .max(200)
+    .refine((v) => v === "" || /^https?:\/\/[^\s/]+\.[^\s]+$/i.test(v), "Enter a full web address starting with http:// or https://")
+    .optional(),
   customs: z.boolean().optional(),
   featured: z.boolean().optional(),
 };

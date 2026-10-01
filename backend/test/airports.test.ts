@@ -176,6 +176,34 @@ describe("admin airports", () => {
     expect((await agent.delete(adm("/LSZH"))).status).toBe(404);
   });
 
+  it("stores the optional operational details and serves them publicly", async () => {
+    const { agent } = await signedInAgent("ADMIN", app);
+    const created = await agent.post(adm("")).send(NEW_AIRPORT);
+    // Not provided → empty strings, never undefined.
+    expect(created.body.data).toMatchObject({ trafficPermitted: "", lightIntensity: "", deicing: "", airportCategory: "", slotsRequired: "", website: "" });
+
+    const details = {
+      trafficPermitted: "IFR / VFR",
+      lightIntensity: "High (HIRL)",
+      deicing: "Available",
+      airportCategory: "International",
+      slotsRequired: "Yes — coordinated (Level 3)",
+      website: "https://www.flughafen-zuerich.ch",
+    };
+    const u = await agent.patch(adm("/LSZH")).send(details);
+    expect(u.status).toBe(200);
+    expect(u.body.data).toMatchObject(details);
+    expect((await request(app).get(pub("/lszh"))).body.data).toMatchObject(details);
+
+    for (const website of ["flughafen-zuerich.ch", "javascript:alert(1)", "ftp://example.com"]) {
+      const bad = await agent.patch(adm("/LSZH")).send({ website });
+      expect(bad.status, website).toBe(422);
+      expect(bad.body.error.fieldErrors).toHaveProperty("website");
+    }
+    // Clearing a value is allowed.
+    expect((await agent.patch(adm("/LSZH")).send({ website: "", deicing: "" })).body.data).toMatchObject({ website: "", deicing: "" });
+  });
+
   it("validates input with field errors", async () => {
     const { agent } = await signedInAgent("ADMIN", app);
     const r = await agent.post(adm("")).send({ ...NEW_AIRPORT, icao: "ZZ", lat: 95, continent: "Mars", frequencies: [{ type: "TWR", description: "x", mhz: "abc" }] });

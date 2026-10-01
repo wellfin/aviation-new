@@ -183,6 +183,13 @@ export interface Airport {
   frequencies: Frequency[];
   fireCategory: string;
   operatingHours: string;
+  /* Optional operational details (admin-managed), shown under "More Airport Information". */
+  trafficPermitted?: string;
+  lightIntensity?: string;
+  deicing?: string;
+  airportCategory?: string;
+  slotsRequired?: string;
+  website?: string;
   customs: boolean;
   featured: boolean;
 }

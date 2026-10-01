@@ -7,7 +7,9 @@ import type { CreateAirportInput } from "./airports.schemas.js";
  * directory). Image paths are served by the frontend. `servicesCount` is not
  * seeded — it is derived from published providers (see recountAirportServices).
  */
-type AirportSeed = Required<Omit<CreateAirportInput, "iata">> & { iata: string; servicesCount?: number };
+/** Optional operational details ("More Airport Information") are filled in by staff, not seeded. */
+type OptionalDetail = "trafficPermitted" | "lightIntensity" | "deicing" | "airportCategory" | "slotsRequired" | "website";
+type AirportSeed = Required<Omit<CreateAirportInput, "iata" | OptionalDetail>> & { iata: string; servicesCount?: number };
 
 const TAGS = ["Fuel", "FBO", "MRO", "Ground"];
 
