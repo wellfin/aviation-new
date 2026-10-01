@@ -4,23 +4,18 @@ export interface SimpleRow {
   key: string;
   label: ReactNode;
   value: ReactNode;
-  meta?: ReactNode;
 }
 
-/** White pill rows with a label on the left and a value on the right (frequencies, fire/RFFS). */
+/** 88px white row cards with a label on the left and a value on the right (Figma 949:5566 frequencies, 949:1022 fire/RFFS). */
 export function SimpleRows({ rows, caption }: { rows: SimpleRow[]; caption: string }) {
   return (
-    <dl aria-label={caption} className="space-y-3">
+    <dl aria-label={caption} className="space-y-2">
       {rows.map((r) => (
-        <div
-          key={r.key}
-          className="flex min-h-[52px] flex-col gap-1 rounded-[20px] bg-white px-5 py-3.5 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] sm:flex-row sm:items-center sm:justify-between sm:gap-6 md:px-[52px]"
-        >
-          <dt className="text-sm font-medium text-ink">
-            {r.label}
-            {r.meta && <span className="mt-0.5 block text-xs text-subtle">{r.meta}</span>}
-          </dt>
-          <dd className="text-sm font-medium text-muted sm:text-right">{r.value}</dd>
+        <div key={r.key} className="flex min-h-[88px] items-center gap-4 rounded-[20px] bg-white p-4 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)]">
+          {/* Invisible 56px lead-in the design keeps before the label. */}
+          <span className="hidden size-14 shrink-0 xl:block" aria-hidden />
+          <dt className="min-w-0 flex-1 text-sm leading-5 font-semibold text-ink">{r.label}</dt>
+          <dd className="max-w-[55%] shrink-0 px-3.5 text-right text-[15px] leading-5 font-medium break-words text-[#757575] md:text-base">{r.value}</dd>
         </div>
       ))}
     </dl>

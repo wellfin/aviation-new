@@ -63,6 +63,9 @@ const airportSchema = new Schema(
     frequencies: [frequencySchema],
     fireCategory: { type: String, trim: true, maxlength: 20, default: "" },
     operatingHours: { type: String, trim: true, maxlength: 120, default: "" },
+    /* Shown on the Fire/RFFS tab (optional free text). */
+    rescueEquipment: { type: String, trim: true, maxlength: 120, default: "" },
+    disabledAircraftRemoval: { type: String, trim: true, maxlength: 120, default: "" },
     /* Operational details shown under "More Airport Information" (all optional free text). */
     trafficPermitted: { type: String, trim: true, maxlength: 80, default: "" },
     lightIntensity: { type: String, trim: true, maxlength: 80, default: "" },
@@ -133,6 +136,8 @@ export function toAirportDTO(a: AirportDoc | (AirportAttrs & { _id: unknown })) 
     frequencies: (a.frequencies ?? []).map((f) => ({ type: f.type, description: f.description, mhz: f.mhz })),
     fireCategory: a.fireCategory ?? "",
     operatingHours: a.operatingHours ?? "",
+    rescueEquipment: a.rescueEquipment ?? "",
+    disabledAircraftRemoval: a.disabledAircraftRemoval ?? "",
     trafficPermitted: a.trafficPermitted ?? "",
     lightIntensity: a.lightIntensity ?? "",
     deicing: a.deicing ?? "",

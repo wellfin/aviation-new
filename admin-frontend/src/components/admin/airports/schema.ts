@@ -78,6 +78,8 @@ export const airportSchema = z.object({
     .max(40),
   fireCategory: text(20),
   operatingHours: text(120),
+  rescueEquipment: text(120),
+  disabledAircraftRemoval: text(120),
   trafficPermitted: text(80),
   lightIntensity: text(80),
   deicing: text(80),
@@ -138,6 +140,8 @@ export interface AirportFormState {
   frequencies: FrequencyRow[];
   fireCategory: string;
   operatingHours: string;
+  rescueEquipment: string;
+  disabledAircraftRemoval: string;
   trafficPermitted: string;
   lightIntensity: string;
   deicing: string;
@@ -176,6 +180,8 @@ export function emptyAirportState(): AirportFormState {
     frequencies: [],
     fireCategory: "",
     operatingHours: "",
+    rescueEquipment: "",
+    disabledAircraftRemoval: "",
     trafficPermitted: "",
     lightIntensity: "",
     deicing: "",
@@ -227,6 +233,8 @@ export function stateFromAirport(a: AdminAirport): AirportFormState {
     frequencies: a.frequencies.map((f) => ({ ...f })),
     fireCategory: a.fireCategory,
     operatingHours: a.operatingHours,
+    rescueEquipment: a.rescueEquipment ?? "",
+    disabledAircraftRemoval: a.disabledAircraftRemoval ?? "",
     // Airports saved before these fields existed come back without them.
     trafficPermitted: a.trafficPermitted ?? "",
     lightIntensity: a.lightIntensity ?? "",
@@ -269,6 +277,8 @@ export function rawAirportPayload(s: AirportFormState, mode: "create" | "edit"):
     frequencies: s.frequencies,
     fireCategory: s.fireCategory,
     operatingHours: s.operatingHours,
+    rescueEquipment: s.rescueEquipment,
+    disabledAircraftRemoval: s.disabledAircraftRemoval,
     trafficPermitted: s.trafficPermitted,
     lightIntensity: s.lightIntensity,
     deicing: s.deicing,

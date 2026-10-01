@@ -116,6 +116,8 @@ const airportFields = {
   frequencies: z.array(frequency).max(40).optional(),
   fireCategory: text(20).optional(),
   operatingHours: text(120).optional(),
+  rescueEquipment: text(120).optional(),
+  disabledAircraftRemoval: text(120).optional(),
   trafficPermitted: text(80).optional(),
   lightIntensity: text(80).optional(),
   deicing: text(80).optional(),

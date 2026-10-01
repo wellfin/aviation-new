@@ -11,7 +11,7 @@ import { InfoGrid, type InfoField } from "@/components/airport/InfoGrid";
 import { LocationMap } from "@/components/airport/LocationMap";
 import { NearbyList } from "@/components/airport/NearbyList";
 import { ProviderRow } from "@/components/airport/ProviderRow";
-import { AIRPORT_TYPE_LABEL, airportHref, parseTab } from "@/components/airport/routes";
+import { AIRPORT_TYPE_LABEL, airportHref, parseTab, type AirportTab } from "@/components/airport/routes";
 import { RunwaysPanel } from "@/components/airport/RunwaysPanel";
 import { ServiceSidebar } from "@/components/airport/ServiceSidebar";
 import { SimpleRows } from "@/components/airport/SimpleRows";
@@ -124,6 +124,46 @@ function serviceFields(a: Airport, providers: Provider[]): { fields: InfoField[]
   };
 }
 
+/** Rows of the Airport Communication tab, in the design's order (Figma 949:5566), with the frequency types that feed each. */
+const FREQUENCY_ROWS: [label: string, types: string[]][] = [
+  ["Approach Frequency", ["APP", "APCH"]],
+  ["Arrival Frequency", ["ARR"]],
+  ["Departure Frequency", ["DEP"]],
+  ["Clearance Delivery Frequency", ["DEL", "CLD", "CLR", "CLNC"]],
+  ["Ground Frequency", ["GND"]],
+  ["Tower Frequency", ["TWR"]],
+  ["ATIS", ["ATIS"]],
+];
+
+function frequencyRows(frequencies: Airport["frequencies"]) {
+  const mhz = (list: Airport["frequencies"]) => (list.length ? `${list.map((f) => f.mhz).join(", ")} MHz` : "—");
+  const known = new Set(FREQUENCY_ROWS.flatMap(([, types]) => types));
+  return [
+    ...FREQUENCY_ROWS.map(([label, types]) => ({ key: label, label, value: mhz(frequencies.filter((f) => types.includes(f.type.toUpperCase()))) })),
+    // Anything else staff have published (e.g. UNICOM) follows under its own name.
+    ...frequencies.filter((f) => !known.has(f.type.toUpperCase())).map((f) => ({ key: `${f.type}-${f.mhz}`, label: f.description, value: `${f.mhz} MHz` })),
+  ];
+}
+
+/** Right-rail ad heights per tab (Figma 696:1642, 752:7218, 960:469, 713:11343, 713:12052, 908:1355). */
+const SIDE_ADS: Record<AirportTab, string[]> = {
+  info: ["h-[688px]"],
+  services: ["h-[812px]"],
+  runways: ["h-[592px]", "h-[592px]"],
+  communication: ["h-[592px]", "h-[442px]"],
+  fire: ["h-[592px]", "h-[442px]"],
+  nearby: ["h-[624px]"],
+};
+/** Space between the main grid and the bottom banner. */
+const BOTTOM_PAD: Record<AirportTab, string> = {
+  info: "pb-8",
+  services: "pb-6",
+  runways: "pb-8 lg:pb-[62px]",
+  communication: "pb-10",
+  fire: "pb-10",
+  nearby: "pb-8 lg:pb-[34px]",
+};
+
 /** ICAO Annex 14 RFFS category → aeroplane overall length covered and minimum rescue vehicles. */
 function rffsDetails(fireCategory: string) {
   const cat = Number.parseInt(fireCategory.replace(/\D+/g, ""), 10);
@@ -166,10 +206,6 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
 
   // Services and Nearby tabs end with the distance calculator, which spans the content and ad columns (Figma 752:7836).
   const showCalculator = !service && (tab === "services" || tab === "nearby");
-  // The Airport Services frame has a taller side ad and no map section.
-  const servicesLayout = !service && tab === "services";
-  // The Runways frame (Figma 960:469) stacks two side ads and also has no map section.
-  const runwaysLayout = !service && tab === "runways";
 
   let content: ReactNode;
   if (service) {
@@ -228,35 +264,41 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
       </div>
     );
   } else if (tab === "communication") {
-    content =
-      airport.frequencies.length > 0 ? (
-        <SimpleRows
-          caption="Airport frequencies"
-          rows={airport.frequencies.map((f) => ({ key: `${f.type}-${f.mhz}`, label: f.description, meta: f.type, value: <span className="font-mono">{f.mhz} MHz</span> }))}
-        />
-      ) : (
-        <p className="rounded-[20px] bg-white p-6 text-sm text-muted shadow-card">No frequencies are published for this airport.</p>
-      );
+    // Figma 949:5566: the list starts 24px below the tab bar.
+    content = (
+      <div className="lg:pt-3">
+        <SimpleRows caption="Airport frequencies" rows={frequencyRows(airport.frequencies)} />
+      </div>
+    );
   } else if (tab === "fire") {
     const rffs = rffsDetails(airport.fireCategory);
+    // Figma 949:1022 (rows, 22px below the tab bar) followed by two in-column banners.
     content = (
-      <SimpleRows
-        caption="Fire and rescue"
-        rows={[
-          { key: "cat", label: "CATEGORY FOR FIRE", value: airport.fireCategory },
-          ...(rffs
-            ? [
-                { key: "len", label: "AEROPLANE LENGTH COVERED", value: rffs.length, meta: "ICAO Annex 14 aerodrome category" },
-                { key: "veh", label: "RESCUE EQUIPMENT", value: `Min. ${rffs.vehicles} RFFS vehicle${rffs.vehicles > 1 ? "s" : ""}`, meta: "ICAO Annex 14 minimum" },
-              ]
-            : []),
-          { key: "hours", label: "OPERATING HOURS", value: airport.operatingHours },
-        ]}
-      />
+      <div className="lg:pt-2.5">
+        <SimpleRows
+          caption="Fire and rescue"
+          rows={[
+            { key: "cat", label: "CATEGORY FOR FIRE", value: airport.fireCategory || "—" },
+            {
+              key: "equipment",
+              label: "RESCUE EQUIPMENT’S",
+              value: airport.rescueEquipment || (rffs ? `Min. ${rffs.vehicles} RFFS vehicle${rffs.vehicles > 1 ? "s" : ""}` : "—"),
+            },
+            { key: "removal", label: "CAPABILITY FOR REMOVAL OF DISABLED AIRCRAFT", value: airport.disabledAircraftRemoval || "—" },
+          ]}
+        />
+        <AdBanner bare ad={headerAd} className="mt-[23px]" height="h-[150px] sm:h-[230px]" />
+        <AdBanner bare ad={headerAd} className="mt-7" height="h-[150px] sm:h-[230px]" />
+      </div>
     );
   } else {
     content = <NearbyList results={nearby?.results ?? []} radiusKm={NEARBY_RADIUS_KM} />;
   }
+
+  // Page furniture per tab, as drawn in each tab's Figma frame. Provider lists (?service=) keep the Airport Information furniture.
+  const view: AirportTab = service ? "info" : tab;
+  const sideAds = SIDE_ADS[view];
+  const nearbyLayout = view === "nearby";
 
   return (
     <>
@@ -264,28 +306,34 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
       <AirportHero airport={airport} />
 
       {/*
-        Columns (md+): service rail 248 · 12 · content · (lg+) 20 · ad 272. The calculator's row
-        spans content + ad; the rail spans both lower rows so it runs alongside the calculator.
+        Columns (md+): service rail 248 · 12 · content · (lg+) 20 · ad 272. The calculator's row (and,
+        on the Nearby tab, a banner row above it) spans content + ad; the rail spans those rows too.
       */}
       <div
         className={cn(
           "container-site grid gap-y-6 pt-8 md:grid-cols-[248px_12px_minmax(0,1fr)] lg:grid-cols-[248px_12px_minmax(0,1fr)_20px_272px]",
           // Fixed 171px tiles row on desktop so the tall ad (rows 1–2) only stretches row 2; with the
           // calculator, the flexible last row absorbs a long opened rail instead of pushing the calculator down.
-          showCalculator ? "md:grid-rows-[auto_auto_1fr] lg:grid-rows-[171px_auto_1fr]" : "lg:grid-rows-[171px_auto]",
-          servicesLayout ? "pb-6" : runwaysLayout ? "pb-8 lg:pb-[62px]" : "pb-8",
+          nearbyLayout
+            ? "md:grid-rows-[auto_auto_auto_1fr] lg:grid-rows-[171px_auto_auto_1fr]"
+            : showCalculator
+              ? "md:grid-rows-[auto_auto_1fr] lg:grid-rows-[171px_auto_1fr]"
+              : "lg:grid-rows-[171px_auto]",
+          BOTTOM_PAD[view],
         )}
       >
         <div className="min-w-0 md:col-span-3">
           <ToolTiles icao={airport.icao} flightCategory={metar?.flightCategory ?? "N/A"} notamCount={notams.length} />
         </div>
-        <div className={cn("min-w-0 md:col-start-1 md:row-start-2", showCalculator && "md:row-span-2")}>
+        <div className={cn("min-w-0 md:col-start-1 md:row-start-2", nearbyLayout ? "md:row-span-3" : showCalculator && "md:row-span-2")}>
           <ServiceSidebar icao={airport.icao} active={service} categories={categories} />
         </div>
-        <div id="airport-content" className="min-w-0 scroll-mt-24 space-y-3 md:col-start-3 md:row-start-2">
+        <div id="airport-content" className={cn("min-w-0 scroll-mt-24 space-y-3 md:col-start-3 md:row-start-2", nearbyLayout && "lg:-mb-[11px]")}>
           <AirportTabs icao={airport.icao} active={service ? undefined : tab} />
           {content}
         </div>
+        {/* Nearby tab (Figma 908:1714): a 230px banner across content + ad, 13px under the list and 34px under the side ad. */}
+        {nearbyLayout && <AdBanner bare ad={headerAd} className="min-w-0 md:col-start-3 md:row-start-3 lg:col-end-6" height="h-[150px] sm:h-[230px]" />}
         {showCalculator && (
           <DistanceCalculator
             action={`/airports/${canonical}`}
@@ -294,22 +342,21 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
             to={to}
             result={distance}
             error={distanceError}
-            className="min-w-0 md:col-start-3 md:row-start-3 lg:col-end-6 lg:mt-[69px]"
+            tight={nearbyLayout}
+            className={cn("min-w-0 md:col-start-3 lg:col-end-6", nearbyLayout ? "md:row-start-4 lg:mt-1" : "md:row-start-3 lg:mt-[69px]")}
           />
         )}
-        <aside className="hidden lg:col-start-5 lg:row-span-2 lg:row-start-1 lg:block" aria-label="Advertisement">
-          {runwaysLayout ? (
-            <div className="space-y-[23px]">
-              <SkyscraperAd className="h-[592px]" />
-              <SkyscraperAd className="h-[592px]" />
-            </div>
-          ) : (
-            <SkyscraperAd className={servicesLayout ? "h-[812px]" : undefined} />
-          )}
+        <aside className={cn("hidden lg:col-start-5 lg:row-span-2 lg:row-start-1 lg:block", nearbyLayout && "lg:pb-2.5")} aria-label="Advertisement">
+          <div className="space-y-[23px]">
+            {sideAds.map((height, i) => (
+              <SkyscraperAd key={i} className={height} />
+            ))}
+          </div>
         </aside>
       </div>
 
-      {!servicesLayout && !runwaysLayout && (
+      {/* Only the Airport Information frame has the middle banner and the map. */}
+      {view === "info" && (
         <>
           <AdBanner ad={headerAd} className="pb-8" height="h-[150px] sm:h-[189px]" />
           <div className="container-site">
@@ -317,7 +364,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
           </div>
         </>
       )}
-      <AdBanner ad={headerAd} className={servicesLayout || runwaysLayout ? "pb-10" : "py-10"} height="h-[150px] sm:h-[222px]" />
+      <AdBanner ad={headerAd} className={view === "info" ? "py-10" : "pb-10"} height="h-[150px] sm:h-[222px]" />
     </>
   );
 }

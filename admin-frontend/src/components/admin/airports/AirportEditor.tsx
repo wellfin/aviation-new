@@ -208,6 +208,11 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               <Input label="Operating hours" name="operatingHours" value={s.operatingHours} maxLength={120} placeholder="24/7" onChange={(ev) => set("operatingHours", ev.target.value)} error={e("operatingHours")} />
               <Input label="Fire category" name="fireCategory" value={s.fireCategory} maxLength={20} placeholder="CAT 9" onChange={(ev) => set("fireCategory", ev.target.value)} error={e("fireCategory")} />
             </Grid>
+            {/* Shown on the airport page's Fire/RFFS tab. */}
+            <Grid>
+              <Input label="Rescue equipment" name="rescueEquipment" value={s.rescueEquipment} maxLength={120} placeholder="3 RFFS vehicles" onChange={(ev) => set("rescueEquipment", ev.target.value)} error={e("rescueEquipment")} />
+              <Input label="Removal of disabled aircraft" name="disabledAircraftRemoval" value={s.disabledAircraftRemoval} maxLength={120} placeholder="Up to B747 (recovery kit on site)" onChange={(ev) => set("disabledAircraftRemoval", ev.target.value)} error={e("disabledAircraftRemoval")} />
+            </Grid>
             {/* Shown on the airport page under "More Airport Information"; blank fields show as "—". */}
             <Grid>
               <Input label="Type of traffic permitted" name="trafficPermitted" value={s.trafficPermitted} maxLength={80} placeholder="IFR / VFR" onChange={(ev) => set("trafficPermitted", ev.target.value)} error={e("trafficPermitted")} />

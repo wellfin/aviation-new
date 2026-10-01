@@ -6,12 +6,13 @@ import { adLinkProps, isRemoteImage } from "./ad-link";
 /**
  * Full-width banner. The image is a text-free background; the advertiser name,
  * headline, body and call-to-action come from the ad's admin-panel fields and
- * are drawn on top. The whole banner is the click target.
+ * are drawn on top. The whole banner is the click target. `bare` drops the page
+ * container so the banner can sit inside a column.
  */
-export function AdBanner({ ad, className, height = "h-[150px]" }: { ad: Advertisement | null; className?: string; height?: string }) {
+export function AdBanner({ ad, className, height = "h-[150px]", bare = false }: { ad: Advertisement | null; className?: string; height?: string; bare?: boolean }) {
   if (!ad) return null;
   return (
-    <div className={cn("container-site", className)}>
+    <div className={cn(!bare && "container-site", className)}>
       <a
         {...adLinkProps(ad)}
         // Below `sm` a fixed ratio keeps the banner proportional on narrow screens.

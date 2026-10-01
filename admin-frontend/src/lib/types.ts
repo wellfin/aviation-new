@@ -168,6 +168,9 @@ export interface Airport {
   frequencies: Frequency[];
   fireCategory: string;
   operatingHours: string;
+  /* Shown on the Fire/RFFS tab. */
+  rescueEquipment?: string;
+  disabledAircraftRemoval?: string;
   /* Optional operational details shown under "More Airport Information". */
   trafficPermitted: string;
   lightIntensity: string;

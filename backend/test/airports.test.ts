@@ -181,7 +181,7 @@ describe("admin airports", () => {
     const created = await agent.post(adm("")).send(NEW_AIRPORT);
     // Not provided → empty strings, never undefined.
     expect(created.body.data).toMatchObject({ trafficPermitted: "", lightIntensity: "", deicing: "", airportCategory: "", slotsRequired: "", website: "" });
-    expect(created.body.data).toMatchObject({ cargoHandling: "", hangarSpace: "", restaurants: "", medicalFacilities: "", runwayDiagram: "" });
+    expect(created.body.data).toMatchObject({ cargoHandling: "", hangarSpace: "", restaurants: "", medicalFacilities: "", runwayDiagram: "", rescueEquipment: "", disabledAircraftRemoval: "" });
     expect(created.body.data.runways[0]).toMatchObject({ pcn: "", coordinates: "", elevation: "", displacedThreshold: "" });
 
     const details = {
@@ -195,6 +195,8 @@ describe("admin airports", () => {
       hangarSpace: "Available on request",
       restaurants: "Landside and airside",
       medicalFacilities: "Airport medical centre",
+      rescueEquipment: "3 RFFS vehicles, rescue boat",
+      disabledAircraftRemoval: "Up to A380 (recovery kit on site)",
     };
     const u = await agent.patch(adm("/LSZH")).send(details);
     expect(u.status).toBe(200);

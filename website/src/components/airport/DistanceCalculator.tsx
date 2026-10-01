@@ -37,6 +37,7 @@ export function DistanceCalculator({
   result,
   error,
   className,
+  tight = false,
 }: {
   action: string;
   tab: string;
@@ -45,10 +46,12 @@ export function DistanceCalculator({
   result: DistanceResult | null;
   error?: string;
   className?: string;
+  /** 20px between the bar and the button (Nearby tab, Figma 908:1740) instead of 32px. */
+  tight?: boolean;
 }) {
   return (
     <section aria-labelledby="distance-heading" id="distance" className={cn("scroll-mt-24", className)}>
-      <form action={`${action}#distance`} method="get" className="flex flex-col items-center gap-6 xl:gap-8">
+      <form action={`${action}#distance`} method="get" className={cn("flex flex-col items-center", tight ? "gap-5" : "gap-6 xl:gap-8")}>
         <input type="hidden" name="tab" value={tab} />
         <div className="flex w-full flex-col gap-4 rounded-[10px] bg-navy-900 p-5 xl:h-[97px] xl:flex-row xl:items-center xl:gap-0 xl:px-7 xl:pt-[22px] xl:pb-[15px]">
           {/* 294px title column at full width, so the first field starts where the design puts it. */}
