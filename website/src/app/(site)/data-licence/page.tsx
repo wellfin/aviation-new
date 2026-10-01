@@ -18,20 +18,6 @@ const API_FEATURES = [
   { icon: ShieldCheck, title: "99.9% uptime SLA", text: "Enterprise licences carry an uptime SLA, versioned endpoints and 12 months' deprecation notice." },
 ] as const;
 
-const SAMPLE_RESPONSE = `curl https://api.gasdirectory.aero/v1/airports/EGLL \\
-  -H "Authorization: Bearer $GAS_API_KEY"
-
-{
-  "icao": "EGLL",
-  "iata": "LHR",
-  "name": "London Heathrow Airport",
-  "country": "GB",
-  "elevationFt": 83,
-  "timezone": "Europe/London",
-  "runways": 2,
-  "providers": 64
-}`;
-
 export default function DataLicencePage() {
   return (
     <PageShell
@@ -118,7 +104,7 @@ export default function DataLicencePage() {
               API Documentation
             </h2>
             <p className="mt-3 text-[15px] leading-6 text-muted">
-              Every licensed dataset is exposed through a versioned REST API at <code className="font-mono text-sm break-all text-ink">api.gasdirectory.aero/v1</code>.
+              Every licensed dataset is exposed through a versioned REST API.
               Full reference documentation, SDKs and a sandbox key are issued with your licence.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -139,10 +125,6 @@ export default function DataLicencePage() {
                 </li>
               ))}
             </ul>
-            <h3 className="mt-8 text-sm font-bold text-ink">Example request</h3>
-            <pre className="mt-3 overflow-x-auto rounded-xl bg-navy-950 p-5 font-mono text-xs leading-5 text-[#cbd5e1]">
-              <code>{SAMPLE_RESPONSE}</code>
-            </pre>
           </section>
 
           <section id="request-data" className="scroll-mt-24 rounded-3xl border border-line/60 bg-white p-6 shadow-card sm:p-8" aria-labelledby="request-heading">
