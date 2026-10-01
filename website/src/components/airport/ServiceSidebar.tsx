@@ -40,6 +40,12 @@ const RAIL_ICON: Record<string, string> = {
   "other-services": "svc-other",
 };
 
+/**
+ * Permit is drawn differently from its neighbours (Figma 812:1900): icon 13px in, a 6px gap before a
+ * label that starts with a space, ExtraBold text and no border.
+ */
+const PERMIT_SLUG = "permit";
+
 function railPosition(slug: string): number {
   const i = RAIL_ORDER.indexOf(slug);
   return i === -1 ? RAIL_ORDER.length : i;
@@ -60,6 +66,7 @@ export function ServiceSidebar({ icao, active, categories }: { icao: string; act
 
   const renderItem = (item: Item) => {
     const selected = item.slug === active;
+    const permit = item.slug === PERMIT_SLUG;
     return (
       <li key={item.slug}>
         <Link
@@ -69,10 +76,11 @@ export function ServiceSidebar({ icao, active, categories }: { icao: string; act
             // 6px right padding: the design lets the longest names ("Meet and Assist Service") run close to the edge.
             "flex h-[46px] items-center gap-2.5 rounded-xl border-[0.755px] py-3 pr-1 pl-3 text-[13px] leading-[15px] font-bold text-white transition",
             selected ? "bg-brand-gradient border-transparent shadow-soft" : "border-white/10 bg-navy-900 hover:bg-navy-800",
+            permit && "gap-1.5 border-0 pl-[13px] font-extrabold",
           )}
         >
           {item.image ? <Image src={item.image} alt="" width={18} height={18} className="size-[18px] shrink-0" /> : <item.icon className="size-[18px] shrink-0" aria-hidden />}
-          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          <span className={cn("min-w-0 flex-1 truncate", permit && "whitespace-pre")}>{permit ? ` ${item.label}` : item.label}</span>
         </Link>
       </li>
     );
