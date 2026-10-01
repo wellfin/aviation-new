@@ -69,7 +69,7 @@ export default async function DirectoryPage({ searchParams }: PageProps<"/direct
                 <Fragment key={provider.id}>
                   {isGrid ? <ProviderCard provider={provider} /> : <ProviderListRow provider={provider} />}
                   {i === stripAfter - 1 && result.items.length > stripAfter && (
-                    <SponsoredStrip ad={stripAd} className="col-span-full" />
+                    <SponsoredStrip ad={stripAd} className="col-span-full h-[164px]" />
                   )}
                 </Fragment>
               ))}
