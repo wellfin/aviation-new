@@ -11,13 +11,13 @@ function NewsCard({ article }: { article: NewsArticle }) {
       href={`/news/${article.slug}`}
       className="group flex flex-col overflow-hidden rounded-[14px] bg-white shadow-[0_2px_12px_rgba(11,31,58,0.07)] transition hover:-translate-y-0.5 hover:shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
-      <div className="relative h-[140px] bg-navy-900">
+      <div className="relative h-[140px] overflow-hidden bg-navy-900">
         <Image
           src={article.image}
           alt=""
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 33vw, 336px"
-          className="object-cover opacity-90 transition duration-300 group-hover:opacity-100"
+          className="object-cover opacity-90 transition duration-500 ease-out group-hover:scale-110 group-hover:opacity-100 motion-reduce:group-hover:scale-100"
         />
       </div>
       <div className="px-3.5 py-3">

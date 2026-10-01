@@ -14,12 +14,12 @@ export function NewsListCard({ article, stacked = false }: { article: NewsArticl
   return (
     <article
       className={cn(
-        "relative flex flex-col gap-4 rounded-[20px] bg-white p-4 shadow-[0_4px_24px_rgba(11,31,58,0.08),0_1px_4px_rgba(11,31,58,0.04)] transition hover:shadow-[0_8px_28px_rgba(11,31,58,0.12)] sm:p-5",
+        "group relative flex flex-col gap-4 rounded-[20px] bg-white p-4 shadow-[0_4px_24px_rgba(11,31,58,0.08),0_1px_4px_rgba(11,31,58,0.04)] transition hover:shadow-[0_8px_28px_rgba(11,31,58,0.12)] sm:p-5",
         !stacked && "sm:flex-row sm:gap-5",
       )}
     >
       <div className={cn("relative aspect-[10/7] w-full shrink-0 overflow-hidden rounded-xl bg-navy-900", !stacked && "sm:aspect-auto sm:h-28 sm:w-40")}>
-        <Image src={article.image} alt="" fill sizes={stacked ? "(max-width: 1024px) 100vw, 440px" : "(max-width: 640px) 100vw, 160px"} className="object-cover" />
+        <Image src={article.image} alt="" fill sizes={stacked ? "(max-width: 1024px) 100vw, 440px" : "(max-width: 640px) 100vw, 160px"} className="object-cover transition duration-500 ease-out group-hover:scale-110 motion-reduce:group-hover:scale-100" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
         <NewsBadges article={article} />
