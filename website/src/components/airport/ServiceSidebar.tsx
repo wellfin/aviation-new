@@ -57,7 +57,6 @@ export function ServiceSidebar({ icao, active, categories }: { icao: string; act
   }));
   const PRIMARY = items.slice(0, PRIMARY_COUNT);
   const MORE = items.slice(PRIMARY_COUNT);
-  const moreOpen = MORE.some((m) => m.slug === active);
 
   const renderItem = (item: Item) => {
     const selected = item.slug === active;
@@ -82,7 +81,8 @@ export function ServiceSidebar({ icao, active, categories }: { icao: string; act
   return (
     <nav aria-label="Services at this airport" className="rounded-[20px] bg-white p-4 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] md:p-6">
       <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-1">{PRIMARY.map(renderItem)}</ul>
-      <details className="group mt-2" open={moreOpen}>
+      {/* Open on load, as every tab frame draws it (Figma 908:1355); "View All" folds the extra categories away. */}
+      <details className="group mt-2" open>
         <summary className="flex h-[46px] cursor-pointer list-none items-center justify-center gap-3 rounded-xl border-[0.755px] border-white/10 bg-navy-900 text-[13px] leading-[15px] font-bold text-white transition hover:bg-navy-800 [&::-webkit-details-marker]:hidden">
           View All
           <Image src="/images/airport/view-all-arrow.svg" alt="" width={17} height={17} className="size-[17px]" />
