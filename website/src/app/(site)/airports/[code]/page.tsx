@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { AdBanner } from "@/components/ads/AdBanner";
-import { SidebarAd } from "@/components/ads/SidebarAd";
 import { AirportHero } from "@/components/airport/AirportHero";
 import { AirportTabs } from "@/components/airport/AirportTabs";
 import { DistanceCalculator } from "@/components/airport/DistanceCalculator";
@@ -17,7 +16,6 @@ import { RunwaysPanel } from "@/components/airport/RunwaysPanel";
 import { ServiceSidebar } from "@/components/airport/ServiceSidebar";
 import { SimpleRows } from "@/components/airport/SimpleRows";
 import { SkyscraperAd } from "@/components/airport/SkyscraperAd";
-import { WeatherPanels } from "@/components/airport/WeatherPanels";
 import { ToolTiles } from "@/components/tools/ToolTiles";
 import { getAirport, getDistance, getNearbyAirports } from "@/lib/data/airports";
 import { listCategories } from "@/lib/data/categories";
@@ -25,7 +23,7 @@ import { getAdvertisement } from "@/lib/data/content";
 import { getProvidersAtAirport } from "@/lib/data/providers";
 import { orFallback } from "@/lib/data/safe";
 import { getNotams } from "@/lib/integrations/notams";
-import { getMetar, getTaf } from "@/lib/integrations/weather";
+import { getMetar } from "@/lib/integrations/weather";
 import type { Airport, Provider, ServiceCategorySlug } from "@/lib/types";
 import { firstParam, formatNumber } from "@/lib/utils";
 
@@ -141,20 +139,16 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   const from = (firstParam(sp.from) ?? "").trim().toUpperCase();
   const to = (firstParam(sp.to) ?? "").trim().toUpperCase();
 
-  const [metar, taf, notams, providers, selectedProviders, nearby, distance, headerAd, sidebarAd] = await Promise.all([
+  const [metar, notams, providers, selectedProviders, nearby, distance, headerAd] = await Promise.all([
     getMetar(airport.icao),
-    getTaf(airport.icao),
     getNotams(airport.icao),
     orFallback(getProvidersAtAirport(airport.icao), []),
     service ? orFallback(getProvidersAtAirport(airport.icao, service === "all" ? undefined : service), []) : Promise.resolve([]),
     tab === "nearby" && !service ? orFallback(getNearbyAirports(airport.icao, NEARBY_RADIUS_KM), null) : Promise.resolve(null),
     from && to ? orFallback(getDistance(from, to), null) : Promise.resolve(null),
     getAdvertisement("header-banner"),
-    getAdvertisement("sidebar"),
   ]);
 
-  const counts: Record<string, number> = {};
-  for (const p of providers) counts[p.category] = (counts[p.category] ?? 0) + 1;
   const distanceError = from && to && !distance ? `We couldn't find ${from} or ${to}. Enter valid ICAO or IATA codes.` : undefined;
   const serviceName = service === "all" ? "Aviation service" : categories.find((c) => c.slug === service)?.name;
 
@@ -197,14 +191,8 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
     );
   } else if (tab === "info") {
     const info = infoFields(airport, providers);
-    content = (
-      <div className="space-y-6">
-        <div className="rounded-[20px] bg-white p-2 shadow-card sm:p-4 md:p-6">
-          <InfoGrid fields={info.fields} more={info.more} moreLabel="More Airport Information" />
-        </div>
-        <WeatherPanels icao={airport.icao} metar={metar} taf={taf} />
-      </div>
-    );
+    // Figma 752:566: the row cards sit directly under the tab bar (live weather is one click away on the Weather tile).
+    content = <InfoGrid fields={info.fields} more={info.more} moreLabel="More Airport Information" />;
   } else if (tab === "services") {
     const svc = serviceFields(providers);
     content = (
@@ -261,25 +249,24 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
           <ToolTiles icao={airport.icao} flightCategory={metar?.flightCategory ?? "N/A"} notamCount={notams.length} />
           <div className="grid gap-3 md:grid-cols-[248px_minmax(0,1fr)]">
             <div>
-              <ServiceSidebar icao={airport.icao} active={service} counts={counts} categories={categories} />
+              <ServiceSidebar icao={airport.icao} active={service} categories={categories} />
             </div>
-            <div id="airport-content" className="min-w-0 scroll-mt-24 space-y-3">
+            <div id="airport-content" className="min-w-0 scroll-mt-24 space-y-6">
               <AirportTabs icao={airport.icao} active={service ? undefined : tab} />
               {content}
             </div>
           </div>
         </div>
-        <aside className="hidden space-y-5 lg:block" aria-label="Advertisements">
+        <aside className="hidden lg:block" aria-label="Advertisement">
           <SkyscraperAd />
-          <SidebarAd ad={sidebarAd} />
         </aside>
       </div>
 
-      <AdBanner ad={headerAd} className="pb-8" />
+      <AdBanner ad={headerAd} className="pb-8" height="h-[150px] sm:h-[189px]" />
       <div className="container-site">
         <LocationMap lat={airport.lat} lon={airport.lon} name={airport.name} />
       </div>
-      <AdBanner ad={headerAd} className="py-10" />
+      <AdBanner ad={headerAd} className="py-10" height="h-[150px] sm:h-[222px]" />
     </>
   );
 }
