@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/directory", dropdown: true },
-  { label: "Directory", href: "/directory" },
+  { label: "Airport Directory", href: "/airports" },
   { label: "News", href: "/news" },
   { label: "Pricing", href: "/pricing" },
   { label: "Advertise", href: "/advertise" },
@@ -23,7 +23,8 @@ const NAV = [
 
 function isActive(pathname: string, href: string, label: string): boolean {
   if (href === "/") return pathname === "/";
-  if (label === "Services") return pathname.startsWith("/providers");
+  // The providers directory has no tab of its own; it belongs to Services.
+  if (label === "Services") return pathname.startsWith("/providers") || pathname === "/directory" || pathname.startsWith("/directory/");
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
