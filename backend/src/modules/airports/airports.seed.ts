@@ -493,6 +493,68 @@ export const AIRPORT_SEED: AirportSeed[] = [
   },
 ];
 
+type NeighbourInput = Pick<
+  AirportSeed,
+  "icao" | "iata" | "name" | "shortName" | "city" | "region" | "country" | "countryCode" | "continent" | "lat" | "lon" | "elevationFt" | "timezone" | "utcOffset" | "runways"
+> &
+  Partial<Pick<AirportSeed, "type" | "customs" | "image" | "serviceTags">>;
+
+/** Shorthand for the neighbouring airports below; details staff have not confirmed stay blank. */
+function neighbour(a: NeighbourInput): AirportSeed {
+  return { type: "large_airport", customs: true, image: "/images/airports/lhr.png", serviceTags: ["Fuel", "Ground"], frequencies: [], fireCategory: "", operatingHours: "", featured: false, ...a };
+}
+const rwy = (designator: string, lengthFt: number, widthFt: number, headingDeg: number, surface = "Asphalt") => ({ designator, lengthFt, widthFt, surface, lighting: true, headingDeg });
+
+/**
+ * Airports near the demo ones, so every airport page has a "Nearby Airport" list.
+ * Kept out of AIRPORT_SEED: they are only ever inserted when missing (see seedMissingAirports).
+ */
+export const NEIGHBOUR_AIRPORT_SEED: AirportSeed[] = [
+  // Near Delhi (VIDP)
+  neighbour({ icao: "VIJP", iata: "JAI", name: "Jaipur International Airport", shortName: "Jaipur", city: "Jaipur", region: "Rajasthan", country: "India", countryCode: "IN", continent: "Asia", lat: 26.8242, lon: 75.8122, elevationFt: 1263, timezone: "Asia/Kolkata", utcOffset: "UTC+5:30", image: "/images/airports/sin.png", runways: [rwy("08/26", 11483, 148, 87)] }),
+  neighbour({ icao: "VICG", iata: "IXC", name: "Chandigarh International Airport", shortName: "Chandigarh", city: "Chandigarh", region: "Chandigarh", country: "India", countryCode: "IN", continent: "Asia", lat: 30.6735, lon: 76.7885, elevationFt: 1012, timezone: "Asia/Kolkata", utcOffset: "UTC+5:30", image: "/images/airports/sin.png", runways: [rwy("11/29", 10400, 150, 110)] }),
+  neighbour({ icao: "VIAG", iata: "AGR", name: "Agra Airport", shortName: "Agra", city: "Agra", region: "Uttar Pradesh", country: "India", countryCode: "IN", continent: "Asia", type: "medium_airport", customs: false, lat: 27.1558, lon: 77.9609, elevationFt: 551, timezone: "Asia/Kolkata", utcOffset: "UTC+5:30", image: "/images/airports/sin.png", runways: [rwy("05/23", 9000, 148, 50)] }),
+  neighbour({ icao: "VIDX", iata: "HDO", name: "Hindon Airport", shortName: "Hindon", city: "Ghaziabad", region: "Uttar Pradesh", country: "India", countryCode: "IN", continent: "Asia", type: "medium_airport", customs: false, lat: 28.7077, lon: 77.3589, elevationFt: 700, timezone: "Asia/Kolkata", utcOffset: "UTC+5:30", image: "/images/airports/sin.png", runways: [rwy("09/27", 9000, 148, 90)] }),
+  // Near Mumbai (VABB)
+  neighbour({ icao: "VAPO", iata: "PNQ", name: "Pune International Airport", shortName: "Pune", city: "Pune", region: "Maharashtra", country: "India", countryCode: "IN", continent: "Asia", lat: 18.5822, lon: 73.9197, elevationFt: 1942, timezone: "Asia/Kolkata", utcOffset: "UTC+5:30", image: "/images/airports/sin.png", runways: [rwy("10/28", 8329, 148, 100)] }),
+  neighbour({ icao: "VAOZ", iata: "ISK", name: "Nashik Airport", shortName: "Nashik", city: "Nashik", region: "Maharashtra", country: "India", countryCode: "IN", continent: "Asia", type: "medium_airport", customs: false, lat: 20.1191, lon: 73.9129, elevationFt: 1959, timezone: "Asia/Kolkata", utcOffset: "UTC+5:30", image: "/images/airports/sin.png", runways: [rwy("09/27", 9843, 148, 90)] }),
+  // Near Paris CDG (LFPG)
+  neighbour({ icao: "LFPO", iata: "ORY", name: "Paris Orly Airport", shortName: "Paris Orly", city: "Paris", region: "Île-de-France", country: "France", countryCode: "FR", continent: "Europe", lat: 48.7233, lon: 2.3794, elevationFt: 291, timezone: "Europe/Paris", utcOffset: "UTC+1", image: "/images/airports/cdg.png", runways: [rwy("06/24", 11975, 148, 62, "Concrete"), rwy("08/26", 10892, 148, 75, "Concrete")] }),
+  neighbour({ icao: "LFPB", iata: "LBG", name: "Paris–Le Bourget Airport", shortName: "Paris Le Bourget", city: "Paris", region: "Île-de-France", country: "France", countryCode: "FR", continent: "Europe", type: "medium_airport", lat: 48.9694, lon: 2.4414, elevationFt: 218, timezone: "Europe/Paris", utcOffset: "UTC+1", image: "/images/airports/cdg.png", serviceTags: ["Fuel", "FBO", "MRO", "Ground"], runways: [rwy("07/25", 9843, 148, 70), rwy("03/21", 8743, 197, 26)] }),
+  // Near Frankfurt (EDDF)
+  neighbour({ icao: "EDFH", iata: "HHN", name: "Frankfurt-Hahn Airport", shortName: "Frankfurt-Hahn", city: "Lautzenhausen", region: "Rhineland-Palatinate", country: "Germany", countryCode: "DE", continent: "Europe", type: "medium_airport", lat: 49.9487, lon: 7.2639, elevationFt: 1649, timezone: "Europe/Berlin", utcOffset: "UTC+1", image: "/images/airports/cdg.png", runways: [rwy("03/21", 12467, 148, 30, "Concrete")] }),
+  neighbour({ icao: "EDDK", iata: "CGN", name: "Cologne Bonn Airport", shortName: "Cologne Bonn", city: "Cologne", region: "North Rhine-Westphalia", country: "Germany", countryCode: "DE", continent: "Europe", lat: 50.8659, lon: 7.1427, elevationFt: 302, timezone: "Europe/Berlin", utcOffset: "UTC+1", image: "/images/airports/cdg.png", runways: [rwy("14L/32R", 12516, 197, 138)] }),
+  neighbour({ icao: "EDDS", iata: "STR", name: "Stuttgart Airport", shortName: "Stuttgart", city: "Stuttgart", region: "Baden-Württemberg", country: "Germany", countryCode: "DE", continent: "Europe", lat: 48.6899, lon: 9.222, elevationFt: 1276, timezone: "Europe/Berlin", utcOffset: "UTC+1", image: "/images/airports/cdg.png", runways: [rwy("07/25", 10974, 148, 73, "Concrete")] }),
+  // Near Los Angeles (KLAX)
+  neighbour({ icao: "KVNY", iata: "VNY", name: "Van Nuys Airport", shortName: "Van Nuys", city: "Los Angeles", region: "California", country: "United States", countryCode: "US", continent: "North America", type: "medium_airport", lat: 34.2098, lon: -118.49, elevationFt: 802, timezone: "America/Los_Angeles", utcOffset: "UTC-8", image: "/images/airports/jfk.png", serviceTags: ["Fuel", "FBO", "MRO", "Ground"], runways: [rwy("16R/34L", 8001, 150, 175)] }),
+  neighbour({ icao: "KBUR", iata: "BUR", name: "Hollywood Burbank Airport", shortName: "Burbank", city: "Burbank", region: "California", country: "United States", countryCode: "US", continent: "North America", type: "medium_airport", customs: false, lat: 34.2007, lon: -118.3587, elevationFt: 778, timezone: "America/Los_Angeles", utcOffset: "UTC-8", image: "/images/airports/jfk.png", runways: [rwy("15/33", 6886, 150, 165), rwy("08/26", 5802, 150, 91)] }),
+  neighbour({ icao: "KLGB", iata: "LGB", name: "Long Beach Airport", shortName: "Long Beach", city: "Long Beach", region: "California", country: "United States", countryCode: "US", continent: "North America", type: "medium_airport", customs: false, lat: 33.8177, lon: -118.1516, elevationFt: 60, timezone: "America/Los_Angeles", utcOffset: "UTC-8", image: "/images/airports/jfk.png", runways: [rwy("12/30", 10000, 200, 136)] }),
+  // Near Singapore Changi (WSSS)
+  neighbour({ icao: "WSSL", iata: "XSP", name: "Seletar Airport", shortName: "Seletar", city: "Singapore", region: "Singapore", country: "Singapore", countryCode: "SG", continent: "Asia", type: "medium_airport", lat: 1.417, lon: 103.868, elevationFt: 36, timezone: "Asia/Singapore", utcOffset: "UTC+8", image: "/images/airports/sin.png", serviceTags: ["Fuel", "FBO", "MRO", "Ground"], runways: [rwy("03/21", 6024, 151, 30)] }),
+  neighbour({ icao: "WMKJ", iata: "JHB", name: "Senai International Airport", shortName: "Johor Bahru", city: "Johor Bahru", region: "Johor", country: "Malaysia", countryCode: "MY", continent: "Asia", lat: 1.6413, lon: 103.6696, elevationFt: 135, timezone: "Asia/Kuala_Lumpur", utcOffset: "UTC+8", image: "/images/airports/sin.png", runways: [rwy("16/34", 12467, 148, 160)] }),
+  // Near Tokyo Haneda (RJTT)
+  neighbour({ icao: "RJAA", iata: "NRT", name: "Narita International Airport", shortName: "Tokyo Narita", city: "Narita", region: "Chiba", country: "Japan", countryCode: "JP", continent: "Asia", lat: 35.7647, lon: 140.3864, elevationFt: 141, timezone: "Asia/Tokyo", utcOffset: "UTC+9", image: "/images/airports/hnd.png", runways: [rwy("16R/34L", 13123, 197, 157), rwy("16L/34R", 8202, 197, 157)] }),
+  // Near Rome Fiumicino
+  neighbour({ icao: "LIRA", iata: "CIA", name: "Rome Ciampino Airport", shortName: "Rome Ciampino", city: "Rome", region: "Lazio", country: "Italy", countryCode: "IT", continent: "Europe", type: "medium_airport", lat: 41.7994, lon: 12.5949, elevationFt: 427, timezone: "Europe/Rome", utcOffset: "UTC+1", image: "/images/airports/cdg.png", runways: [rwy("15/33", 7244, 154, 150)] }),
+];
+
+/**
+ * Inserts any demo or neighbouring airport that is not in the database yet and leaves existing
+ * ones untouched, so it is safe to run against a database staff have been editing.
+ */
+export async function seedMissingAirports(): Promise<string[]> {
+  const candidates = [...AIRPORT_SEED, ...NEIGHBOUR_AIRPORT_SEED];
+  const existing = new Set((await Airport.find({ icao: { $in: candidates.map((c) => c.icao) } }, { icao: 1 }).lean()).map((doc) => doc.icao));
+  const added: string[] = [];
+  for (const { lat, lon, servicesCount: _derived, ...fields } of candidates) {
+    if (existing.has(fields.icao)) continue;
+    await new Airport({ ...fields, location: { type: "Point", coordinates: [lon, lat] } }).save();
+    added.push(fields.icao);
+  }
+  logger.info({ added: added.length }, "Seeded missing airports");
+  return added;
+}
+
 /** Upserts the demo airports by ICAO (idempotent; keeps each airport's derived servicesCount). */
 export async function seedAirports(): Promise<number> {
   for (const { lat, lon, servicesCount: _derived, ...fields } of AIRPORT_SEED) {

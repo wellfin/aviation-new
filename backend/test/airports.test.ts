@@ -2,7 +2,7 @@ import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { Airport } from "../src/modules/airports/airport.model.js";
 import { adminAirportsRouter, airportsRouter } from "../src/modules/airports/airports.routes.js";
-import { seedAirports } from "../src/modules/airports/airports.seed.js";
+import { NEIGHBOUR_AIRPORT_SEED, seedAirports, seedMissingAirports } from "../src/modules/airports/airports.seed.js";
 import { haversineKm, initialBearingDeg, recountAirportServices } from "../src/modules/airports/airports.service.js";
 import { Provider } from "../src/modules/providers/provider.model.js";
 import { appWith, signedInAgent } from "./helpers.js";
@@ -51,6 +51,20 @@ describe("public airports", () => {
   it("seeds idempotently", async () => {
     await seedAirports();
     expect(await Airport.countDocuments()).toBe(15);
+  });
+
+  it("adds missing neighbour airports without touching existing ones", async () => {
+    await Airport.updateOne({ icao: "EGLL" }, { $set: { name: "Edited by staff" } });
+    const added = await seedMissingAirports();
+    expect(added.sort()).toEqual(NEIGHBOUR_AIRPORT_SEED.map((n) => n.icao).sort());
+    expect((await Airport.findOne({ icao: "EGLL" }).lean())?.name).toBe("Edited by staff");
+    expect(await seedMissingAirports()).toEqual([]);
+    // Every demo airport now has at least one neighbour within 250 km.
+    for (const code of ["vidp", "vabb", "lfpg", "eddf", "klax", "wsss", "rjtt"]) {
+      const r = await request(app).get(pub(`/${code}/nearby?radiusKm=250`));
+      expect(r.status, code).toBe(200);
+      expect(r.body.data.length, code).toBeGreaterThan(0);
+    }
   });
 
   it("lists with pagination and filters, matching the frontend Airport shape", async () => {

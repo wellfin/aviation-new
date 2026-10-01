@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { NearbyAirport } from "@/lib/types";
-import { KM_TO_NM, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 
 /** Nearby Airport tab: 88px row cards with the ICAO tile, name and a "View →" button (Figma 908:1661). */
 export function NearbyList({ results, radiusKm }: { results: NearbyAirport[]; radiusKm: number }) {
@@ -17,14 +17,14 @@ export function NearbyList({ results, radiusKm }: { results: NearbyAirport[]; ra
   }
   return (
     <ul className="space-y-2">
-      {results.map(({ airport: a, distanceKm, bearingDeg }) => (
+      {results.map(({ airport: a }) => (
         <li key={a.icao} className="flex min-h-[88px] items-center gap-4 rounded-[20px] bg-white p-4 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)]">
           <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-brand/7 font-mono text-sm leading-5 font-extrabold text-brand">{a.icao}</span>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm leading-5 font-bold text-ink">{a.name}</p>
             <p className="pt-0.5 text-xs leading-4 text-[#64748b]">
               {a.city}, {a.country}
-              {a.iata && <> · IATA: {a.iata}</>} · {formatNumber(Math.round(distanceKm))} km / {formatNumber(Math.round(distanceKm * KM_TO_NM))} NM · {Math.round(bearingDeg)}°
+              {a.iata && <> · IATA: {a.iata}</>}
             </p>
           </div>
           <Link

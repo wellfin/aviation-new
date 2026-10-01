@@ -11,6 +11,7 @@
     "test": "vitest run",
     "db:start": "node scripts/dev-mongo.mjs",
     "seed": "tsx --env-file-if-exists=.env src/scripts/seed.ts",
+    "seed:airports": "tsx --env-file-if-exists=.env src/scripts/seed-missing-airports.ts",
     "create-admin": "tsx --env-file-if-exists=.env src/scripts/create-admin.ts"
   },
   "type": "module",
