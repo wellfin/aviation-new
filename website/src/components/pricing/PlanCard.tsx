@@ -1,7 +1,6 @@
 import { Check } from "lucide-react";
 import type { PricingPlan } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import type { Billing } from "./BillingToggle";
 import { PlanCta } from "./PlanCta";
 
 const THEME: Record<PricingPlan["id"], { name: string; check: string; cta: string; card: string }> = {
@@ -31,16 +30,17 @@ const THEME: Record<PricingPlan["id"], { name: string; check: string; cta: strin
   },
 };
 
-function priceFor(plan: PricingPlan, billing: Billing): { amount: string; suffix: string } | null {
-  const price = billing === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
+/** Plans are sold per year (the pricing page shows yearly prices only). */
+function priceFor(plan: PricingPlan): { amount: string; suffix: string } | null {
+  const price = plan.yearlyPrice;
   if (price === null) return null;
   if (price === 0) return { amount: "$0", suffix: "forever" };
-  return { amount: `$${price}`, suffix: billing === "yearly" ? "/Yr" : "/Mo" };
+  return { amount: `$${price}`, suffix: "/Yr" };
 }
 
-export function PlanCard({ plan, billing }: { plan: PricingPlan; billing: Billing }) {
+export function PlanCard({ plan }: { plan: PricingPlan }) {
   const theme = THEME[plan.id];
-  const price = priceFor(plan, billing);
+  const price = priceFor(plan);
 
   return (
     <article className={cn("relative flex flex-col rounded-[20px] bg-white p-7", theme.card)} aria-labelledby={`plan-${plan.id}`}>
@@ -63,7 +63,7 @@ export function PlanCard({ plan, billing }: { plan: PricingPlan; billing: Billin
           <span className="text-[28px] leading-10 font-extrabold text-ink">Custom</span>
         )}
       </p>
-      <PlanCta plan={plan} billing={billing} className={cn("flex h-[52px] items-center rounded-xl px-7 text-[15px] font-semibold transition", theme.cta)} />
+      <PlanCta plan={plan} className={cn("flex h-[52px] items-center rounded-xl px-7 text-[15px] font-semibold transition", theme.cta)} />
       <ul className="mt-5 flex flex-col gap-2.5">
         {plan.features.map((f) => (
           <li key={f} className="flex items-start gap-2.5 text-sm leading-5 text-muted">

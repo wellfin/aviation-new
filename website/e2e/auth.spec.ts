@@ -36,8 +36,8 @@ test.describe("authentication", () => {
     await expect(page.getByRole("menu")).toContainText(email);
 
     // Signed-in providers go from pricing straight to billing with the plan preselected.
-    await page.goto("/pricing?billing=monthly");
-    await expect(page.locator('a[href="/account/billing?plan=pro&billing=monthly"]')).toBeVisible();
+    await page.goto("/pricing");
+    await expect(page.locator('a[href="/account/billing?plan=pro&billing=yearly"]')).toBeVisible();
   });
 
   test("login, logout and wrong password", async ({ page }) => {
