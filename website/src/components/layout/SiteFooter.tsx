@@ -23,7 +23,7 @@ const COLUMNS = [
       { label: "Runway Diagram", href: "/tools/runway-diagram" },
       { label: "Satellite Map", href: "/tools/satellite-map" },
       { label: "Nearby Airports", href: "/tools/nearby-airports" },
-      { label: "Advanced Search", href: "/charter-operators" },
+      { label: "Distance Calculator", href: "/tools/distance" },
     ],
   },
   {
