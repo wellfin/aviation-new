@@ -132,6 +132,11 @@ export interface Runway {
   lighting: boolean;
   headingDeg: number;
   ils?: string;
+  /* Optional details shown when the runway row is expanded on the airport page. */
+  pcn?: string;
+  coordinates?: string;
+  elevation?: string;
+  displacedThreshold?: string;
 }
 
 export interface Frequency {
@@ -170,6 +175,8 @@ export interface Airport {
   airportCategory: string;
   slotsRequired: string;
   website: string;
+  /** Runway diagram / airport chart shown on the Runways tab. */
+  runwayDiagram?: string;
   /* Facilities shown on the airport page's "Airport Services" tab. */
   cargoHandling: string;
   hangarSpace: string;

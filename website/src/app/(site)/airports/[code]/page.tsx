@@ -168,6 +168,8 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   const showCalculator = !service && (tab === "services" || tab === "nearby");
   // The Airport Services frame has a taller side ad and no map section.
   const servicesLayout = !service && tab === "services";
+  // The Runways frame (Figma 960:469) stacks two side ads and also has no map section.
+  const runwaysLayout = !service && tab === "runways";
 
   let content: ReactNode;
   if (service) {
@@ -219,7 +221,12 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
       </div>
     );
   } else if (tab === "runways") {
-    content = <RunwaysPanel runways={airport.runways} />;
+    // Figma 960:966: the list starts 16px below the tab bar.
+    content = (
+      <div className="lg:pt-1">
+        <RunwaysPanel runways={airport.runways} diagram={airport.runwayDiagram} airportName={airport.name} />
+      </div>
+    );
   } else if (tab === "communication") {
     content =
       airport.frequencies.length > 0 ? (
@@ -266,7 +273,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
           // Fixed 171px tiles row on desktop so the tall ad (rows 1–2) only stretches row 2; with the
           // calculator, the flexible last row absorbs a long opened rail instead of pushing the calculator down.
           showCalculator ? "md:grid-rows-[auto_auto_1fr] lg:grid-rows-[171px_auto_1fr]" : "lg:grid-rows-[171px_auto]",
-          servicesLayout ? "pb-6" : "pb-8",
+          servicesLayout ? "pb-6" : runwaysLayout ? "pb-8 lg:pb-[62px]" : "pb-8",
         )}
       >
         <div className="min-w-0 md:col-span-3">
@@ -291,11 +298,18 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
           />
         )}
         <aside className="hidden lg:col-start-5 lg:row-span-2 lg:row-start-1 lg:block" aria-label="Advertisement">
-          <SkyscraperAd className={servicesLayout ? "h-[812px]" : undefined} />
+          {runwaysLayout ? (
+            <div className="space-y-[23px]">
+              <SkyscraperAd className="h-[592px]" />
+              <SkyscraperAd className="h-[592px]" />
+            </div>
+          ) : (
+            <SkyscraperAd className={servicesLayout ? "h-[812px]" : undefined} />
+          )}
         </aside>
       </div>
 
-      {!servicesLayout && (
+      {!servicesLayout && !runwaysLayout && (
         <>
           <AdBanner ad={headerAd} className="pb-8" height="h-[150px] sm:h-[189px]" />
           <div className="container-site">
@@ -303,7 +317,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
           </div>
         </>
       )}
-      <AdBanner ad={headerAd} className={servicesLayout ? "pb-10" : "py-10"} height="h-[150px] sm:h-[222px]" />
+      <AdBanner ad={headerAd} className={servicesLayout || runwaysLayout ? "pb-10" : "py-10"} height="h-[150px] sm:h-[222px]" />
     </>
   );
 }

@@ -10,6 +10,11 @@ const runwaySchema = new Schema(
     lighting: { type: Boolean, default: false },
     headingDeg: { type: Number, required: true, min: 0, max: 360 },
     ils: { type: String, trim: true, maxlength: 20 },
+    /* Optional details shown when a runway row is expanded on the airport page. */
+    pcn: { type: String, trim: true, maxlength: 40, default: "" },
+    coordinates: { type: String, trim: true, maxlength: 80, default: "" },
+    elevation: { type: String, trim: true, maxlength: 40, default: "" },
+    displacedThreshold: { type: String, trim: true, maxlength: 40, default: "" },
   },
   { _id: false },
 );
@@ -51,6 +56,8 @@ const airportSchema = new Schema(
     timezone: { type: String, trim: true, maxlength: 60, default: "UTC" },
     utcOffset: { type: String, trim: true, maxlength: 12, default: "UTC+0" },
     image: { type: String, trim: true, maxlength: 500, default: "" },
+    /* Runway diagram / airport chart shown on the Runways tab (optional). */
+    runwayDiagram: { type: String, trim: true, maxlength: 500, default: "" },
     serviceTags: [{ type: String, trim: true, maxlength: 30 }],
     runways: [runwaySchema],
     frequencies: [frequencySchema],
@@ -107,6 +114,7 @@ export function toAirportDTO(a: AirportDoc | (AirportAttrs & { _id: unknown })) 
     timezone: a.timezone ?? "UTC",
     utcOffset: a.utcOffset ?? "UTC+0",
     image: a.image ?? "",
+    runwayDiagram: a.runwayDiagram ?? "",
     servicesCount: a.servicesCount ?? 0,
     serviceTags: a.serviceTags ?? [],
     runways: (a.runways ?? []).map((r) => ({
@@ -117,6 +125,10 @@ export function toAirportDTO(a: AirportDoc | (AirportAttrs & { _id: unknown })) 
       lighting: Boolean(r.lighting),
       headingDeg: r.headingDeg,
       ...(r.ils ? { ils: r.ils } : {}),
+      pcn: r.pcn ?? "",
+      coordinates: r.coordinates ?? "",
+      elevation: r.elevation ?? "",
+      displacedThreshold: r.displacedThreshold ?? "",
     })),
     frequencies: (a.frequencies ?? []).map((f) => ({ type: f.type, description: f.description, mhz: f.mhz })),
     fireCategory: a.fireCategory ?? "",

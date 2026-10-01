@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Manrope } from "next/font/google";
+import { Inter, JetBrains_Mono, Manrope, Poppins } from "next/font/google";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import "./globals.css";
 
 const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"], display: "swap" });
 const jetbrainsMono = JetBrains_Mono({ variable: "--font-jetbrains-mono", subsets: ["latin"], display: "swap" });
 const inter = Inter({ variable: "--font-inter-face", subsets: ["latin"], display: "swap" });
+const poppins = Poppins({ variable: "--font-poppins-face", subsets: ["latin"], weight: "600", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
@@ -22,7 +23,7 @@ export const viewport: Viewport = { themeColor: "#0b1f3a" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${manrope.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${manrope.variable} ${jetbrainsMono.variable} ${inter.variable} ${poppins.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <AuthProvider>{children}</AuthProvider>
       </body>

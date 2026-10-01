@@ -181,7 +181,8 @@ describe("admin airports", () => {
     const created = await agent.post(adm("")).send(NEW_AIRPORT);
     // Not provided → empty strings, never undefined.
     expect(created.body.data).toMatchObject({ trafficPermitted: "", lightIntensity: "", deicing: "", airportCategory: "", slotsRequired: "", website: "" });
-    expect(created.body.data).toMatchObject({ cargoHandling: "", hangarSpace: "", restaurants: "", medicalFacilities: "" });
+    expect(created.body.data).toMatchObject({ cargoHandling: "", hangarSpace: "", restaurants: "", medicalFacilities: "", runwayDiagram: "" });
+    expect(created.body.data.runways[0]).toMatchObject({ pcn: "", coordinates: "", elevation: "", displacedThreshold: "" });
 
     const details = {
       trafficPermitted: "IFR / VFR",
@@ -199,6 +200,16 @@ describe("admin airports", () => {
     expect(u.status).toBe(200);
     expect(u.body.data).toMatchObject(details);
     expect((await request(app).get(pub("/lszh"))).body.data).toMatchObject(details);
+
+    // Runways tab: the expandable runway details and the diagram image.
+    const runway = { ...NEW_AIRPORT.runways[0], pcn: "80/F/A/W/T", coordinates: "N47 28.9 E008 32.2", elevation: "1,402 ft", displacedThreshold: "492 ft" };
+    const rw = await agent.patch(adm("/LSZH")).send({ runways: [runway], runwayDiagram: "/images/airports/lszh-chart.png" });
+    expect(rw.status).toBe(200);
+    expect(rw.body.data.runways[0]).toMatchObject(runway);
+    expect((await request(app).get(pub("/lszh"))).body.data).toMatchObject({ runwayDiagram: "/images/airports/lszh-chart.png", runways: [runway] });
+    const badDiagram = await agent.patch(adm("/LSZH")).send({ runwayDiagram: "javascript:alert(1)" });
+    expect(badDiagram.status).toBe(422);
+    expect(badDiagram.body.error.fieldErrors).toHaveProperty("runwayDiagram");
 
     for (const website of ["flughafen-zuerich.ch", "javascript:alert(1)", "ftp://example.com"]) {
       const bad = await agent.patch(adm("/LSZH")).send({ website });

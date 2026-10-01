@@ -75,6 +75,10 @@ const runway = z.object({
   lighting: z.boolean().optional(),
   headingDeg: z.number().min(0).max(360),
   ils: text(20).optional(),
+  pcn: text(40).optional(),
+  coordinates: text(80).optional(),
+  elevation: text(40).optional(),
+  displacedThreshold: text(40).optional(),
 });
 
 const frequency = z.object({
@@ -106,6 +110,7 @@ const airportFields = {
     .regex(/^UTC([+-]\d{1,2}(:\d{2})?)?$/, "Use a format like UTC+5:30")
     .optional(),
   image: imagePath.optional(),
+  runwayDiagram: imagePath.optional(),
   serviceTags: z.array(text(30).min(1)).max(20).optional(),
   runways: z.array(runway).max(20).optional(),
   frequencies: z.array(frequency).max(40).optional(),

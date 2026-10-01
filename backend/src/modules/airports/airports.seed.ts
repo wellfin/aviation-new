@@ -18,7 +18,8 @@ type OptionalDetail =
   | "cargoHandling"
   | "hangarSpace"
   | "restaurants"
-  | "medicalFacilities";
+  | "medicalFacilities"
+  | "runwayDiagram";
 type AirportSeed = Required<Omit<CreateAirportInput, "iata" | OptionalDetail>> & { iata: string; servicesCount?: number };
 
 const TAGS = ["Fuel", "FBO", "MRO", "Ground"];

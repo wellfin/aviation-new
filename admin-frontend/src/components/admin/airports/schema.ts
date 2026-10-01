@@ -41,6 +41,11 @@ export const airportSchema = z.object({
     .trim()
     .max(500)
     .refine((v) => v === "" || /^\/[^/]/.test(v) || /^https?:\/\//i.test(v), "Use a site path (/images/…) or an http(s) URL"),
+  runwayDiagram: z
+    .string()
+    .trim()
+    .max(500)
+    .refine((v) => v === "" || /^\/[^/]/.test(v) || /^https?:\/\//i.test(v), "Use a site path (/images/…) or an http(s) URL"),
   serviceTags: z.array(text(30).min(1)).max(20),
   runways: z
     .array(
@@ -52,6 +57,10 @@ export const airportSchema = z.object({
         lighting: z.boolean(),
         headingDeg: num(0, 360),
         ils: text(20),
+        pcn: text(40),
+        coordinates: text(80),
+        elevation: text(40),
+        displacedThreshold: text(40),
       }),
     )
     .max(20),
@@ -95,6 +104,10 @@ export interface RunwayRow {
   lighting: boolean;
   headingDeg: string;
   ils: string;
+  pcn: string;
+  coordinates: string;
+  elevation: string;
+  displacedThreshold: string;
 }
 export interface FrequencyRow {
   type: string;
@@ -119,6 +132,7 @@ export interface AirportFormState {
   timezone: string;
   utcOffset: string;
   image: string;
+  runwayDiagram: string;
   serviceTags: string[];
   runways: RunwayRow[];
   frequencies: FrequencyRow[];
@@ -156,6 +170,7 @@ export function emptyAirportState(): AirportFormState {
     timezone: "",
     utcOffset: "",
     image: "",
+    runwayDiagram: "",
     serviceTags: [],
     runways: [],
     frequencies: [],
@@ -194,6 +209,7 @@ export function stateFromAirport(a: AdminAirport): AirportFormState {
     timezone: a.timezone,
     utcOffset: a.utcOffset,
     image: a.image,
+    runwayDiagram: a.runwayDiagram ?? "",
     serviceTags: a.serviceTags,
     runways: a.runways.map((r) => ({
       designator: r.designator,
@@ -202,6 +218,10 @@ export function stateFromAirport(a: AdminAirport): AirportFormState {
       surface: r.surface,
       lighting: r.lighting,
       headingDeg: String(r.headingDeg),
+      pcn: r.pcn ?? "",
+      coordinates: r.coordinates ?? "",
+      elevation: r.elevation ?? "",
+      displacedThreshold: r.displacedThreshold ?? "",
       ils: r.ils ?? "",
     })),
     frequencies: a.frequencies.map((f) => ({ ...f })),
@@ -243,6 +263,7 @@ export function rawAirportPayload(s: AirportFormState, mode: "create" | "edit"):
     timezone: s.timezone,
     utcOffset: s.utcOffset,
     image: s.image,
+    runwayDiagram: s.runwayDiagram,
     serviceTags: s.serviceTags,
     runways: s.runways.map((r) => ({ ...r, lengthFt: toNum(r.lengthFt), widthFt: toNum(r.widthFt), headingDeg: toNum(r.headingDeg) })),
     frequencies: s.frequencies,

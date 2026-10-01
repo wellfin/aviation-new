@@ -235,10 +235,19 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
           </FormSection>
 
           <FormSection title="Runways">
+            <UploadField
+              id="runwayDiagram"
+              label="Runway diagram"
+              kind="image"
+              value={s.runwayDiagram}
+              onChange={(v) => set("runwayDiagram", v)}
+              error={e("runwayDiagram")}
+              hint="Airport chart shown on the Runways tab. Landscape, about 1614×978 px. Without one, a simple drawing is made from the runways below."
+            />
             <Repeater
               items={s.runways}
               onChange={(v) => set("runways", v)}
-              create={() => ({ designator: "", lengthFt: "", widthFt: "", surface: "Asphalt", lighting: true, headingDeg: "", ils: "" })}
+              create={() => ({ designator: "", lengthFt: "", widthFt: "", surface: "Asphalt", lighting: true, headingDeg: "", ils: "", pcn: "", coordinates: "", elevation: "", displacedThreshold: "" })}
               max={20}
               addLabel="Add runway"
               itemLabel={(r, i) => (r.designator ? `Runway ${r.designator}` : `Runway ${i + 1}`)}
@@ -258,6 +267,15 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                       <Input label="Length (ft) *" name={`${p}.lengthFt`} type="number" min={0} max={30000} value={r.lengthFt} onChange={(ev) => update({ lengthFt: ev.target.value })} error={e(`${p}.lengthFt`)} />
                       <Input label="Width (ft) *" name={`${p}.widthFt`} type="number" min={0} max={1000} value={r.widthFt} onChange={(ev) => update({ widthFt: ev.target.value })} error={e(`${p}.widthFt`)} />
                       <Input label="Heading (°) *" name={`${p}.headingDeg`} type="number" step="any" min={0} max={360} value={r.headingDeg} onChange={(ev) => update({ headingDeg: ev.target.value })} error={e(`${p}.headingDeg`)} />
+                    </Grid>
+                    {/* Shown when the runway row is expanded on the airport page; blank fields show as "—". */}
+                    <Grid cols={2}>
+                      <Input label="PCN" name={`${p}.pcn`} value={r.pcn} maxLength={40} placeholder="80/F/A/W/T" onChange={(ev) => update({ pcn: ev.target.value })} error={e(`${p}.pcn`)} />
+                      <Input label="Coordinates" name={`${p}.coordinates`} value={r.coordinates} maxLength={80} placeholder="N51 28.6 W000 29.1" onChange={(ev) => update({ coordinates: ev.target.value })} error={e(`${p}.coordinates`)} />
+                    </Grid>
+                    <Grid cols={2}>
+                      <Input label="Elevation" name={`${p}.elevation`} value={r.elevation} maxLength={40} placeholder="79 ft" onChange={(ev) => update({ elevation: ev.target.value })} error={e(`${p}.elevation`)} />
+                      <Input label="Displaced threshold" name={`${p}.displacedThreshold`} value={r.displacedThreshold} maxLength={40} placeholder="1,007 ft" onChange={(ev) => update({ displacedThreshold: ev.target.value })} error={e(`${p}.displacedThreshold`)} />
                     </Grid>
                     <Toggle id={`${p}.lighting`} label="Runway lighting" checked={r.lighting} onChange={(lighting) => update({ lighting })} />
                   </div>
