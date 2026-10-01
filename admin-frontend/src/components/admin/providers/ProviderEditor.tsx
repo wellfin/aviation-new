@@ -233,6 +233,9 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
               <Input label="Email" name="contact.email" type="email" value={s.contact.email} maxLength={254} onChange={(ev) => set("contact", { ...s.contact, email: ev.target.value })} error={e("contact.email")} />
               <Input label="Website" name="contact.website" value={s.contact.website} maxLength={200} onChange={(ev) => set("contact", { ...s.contact, website: ev.target.value })} error={e("contact.website")} />
               <Input label="Fax" name="contact.fax" value={s.contact.fax} maxLength={30} onChange={(ev) => set("contact", { ...s.contact, fax: ev.target.value })} error={e("contact.fax")} />
+              <Input label="Second phone" name="contact.phone2" value={s.contact.phone2} maxLength={30} onChange={(ev) => set("contact", { ...s.contact, phone2: ev.target.value })} error={e("contact.phone2")} />
+              <Input label="Second email" name="contact.email2" type="email" value={s.contact.email2} maxLength={254} onChange={(ev) => set("contact", { ...s.contact, email2: ev.target.value })} error={e("contact.email2")} />
+              <Input label="SITA" name="contact.sita" value={s.contact.sita} maxLength={30} placeholder="LHRXH7X" onChange={(ev) => set("contact", { ...s.contact, sita: ev.target.value })} error={e("contact.sita")} />
               <Input label="Location" name="contact.location" value={s.contact.location} maxLength={120} placeholder="Terminal 2, General Aviation" onChange={(ev) => set("contact", { ...s.contact, location: ev.target.value })} error={e("contact.location")} />
               <Input label="Address" name="contact.address" value={s.contact.address} maxLength={300} onChange={(ev) => set("contact", { ...s.contact, address: ev.target.value })} error={e("contact.address")} />
             </Grid>

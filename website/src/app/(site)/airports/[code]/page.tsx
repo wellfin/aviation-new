@@ -10,6 +10,7 @@ import { DistanceCalculator } from "@/components/airport/DistanceCalculator";
 import { InfoGrid, type InfoField } from "@/components/airport/InfoGrid";
 import { LocationMap } from "@/components/airport/LocationMap";
 import { NearbyList } from "@/components/airport/NearbyList";
+import { Pagination } from "@/components/ui/Pagination";
 import { ProviderRow } from "@/components/airport/ProviderRow";
 import { AIRPORT_TYPE_LABEL, airportHref, parseTab, type AirportTab } from "@/components/airport/routes";
 import { RunwaysPanel } from "@/components/airport/RunwaysPanel";
@@ -28,6 +29,8 @@ import type { Airport, Provider, ServiceCategorySlug } from "@/lib/types";
 import { cn, firstParam, formatNumber } from "@/lib/utils";
 
 const NEARBY_RADIUS_KM = 250;
+/** Basic-tier listings per page on the provider list (Figma 1021:3977 draws five). */
+const BASIC_PAGE_SIZE = 5;
 
 export async function generateMetadata({ params }: PageProps<"/airports/[code]">): Promise<Metadata> {
   const { code } = await params;
@@ -207,22 +210,41 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // Services and Nearby tabs end with the distance calculator, which spans the content and ad columns (Figma 752:7836).
   const showCalculator = !service && (tab === "services" || tab === "nearby");
 
+  // Provider list (?service=), Figma 752:9750: Ultra Pro and Pro listings first, then the Basic ones, paged.
+  const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
+  const premiumProviders = selectedProviders.filter((p) => p.tier !== "basic").sort((x, y) => TIER_ORDER[x.tier] - TIER_ORDER[y.tier]);
+  const basicProviders = selectedProviders.filter((p) => p.tier === "basic");
+  const basicPages = Math.max(1, Math.ceil(basicProviders.length / BASIC_PAGE_SIZE));
+  const page = Math.min(basicPages, Math.max(1, Number.parseInt(firstParam(sp.page) ?? "1", 10) || 1));
+  const basicOnPage = basicProviders.slice((page - 1) * BASIC_PAGE_SIZE, page * BASIC_PAGE_SIZE);
+  const basicList = basicOnPage.length > 0 && (
+    <div className="space-y-[5px]">
+      {basicOnPage.map((p) => (
+        <ProviderRow key={p.slug} provider={p} />
+      ))}
+    </div>
+  );
+  // With premium listings the Basic ones get their own section under the middle banner.
+  const basicBelow = premiumProviders.length > 0 && basicOnPage.length > 0;
+
   let content: ReactNode;
   if (service) {
+    // The list starts 24px below the tab bar.
     content = (
-      <section aria-labelledby="providers-heading">
-        <h2 id="providers-heading" className="px-1 text-lg font-bold text-ink">
-          {serviceName} providers at {airport.shortName}{" "}
-          <span className="font-medium text-muted">({selectedProviders.length})</span>
+      <section aria-labelledby="providers-heading" className="lg:pt-3">
+        <h2 id="providers-heading" className="sr-only">
+          {serviceName} providers at {airport.shortName} ({selectedProviders.length})
         </h2>
-        {selectedProviders.length > 0 ? (
-          <div className="mt-3 overflow-hidden rounded-[20px] bg-white shadow-card">
-            {selectedProviders.map((p) => (
+        {premiumProviders.length > 0 ? (
+          <div className="space-y-[5px]">
+            {premiumProviders.map((p) => (
               <ProviderRow key={p.slug} provider={p} />
             ))}
           </div>
+        ) : basicList ? (
+          basicList
         ) : (
-          <div className="mt-3 rounded-[20px] border border-dashed border-line bg-white px-6 py-12 text-center">
+          <div className="rounded-[20px] border border-dashed border-line bg-white px-6 py-12 text-center">
             <p className="text-3xl" aria-hidden>
               🛂
             </p>
@@ -295,10 +317,31 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
     content = <NearbyList results={nearby?.results ?? []} radiusKm={NEARBY_RADIUS_KM} />;
   }
 
-  // Page furniture per tab, as drawn in each tab's Figma frame. Provider lists (?service=) keep the Airport Information furniture.
-  const view: AirportTab = service ? "info" : tab;
-  const sideAds = SIDE_ADS[view];
+  // Page furniture per tab, as drawn in each tab's Figma frame.
+  const view: AirportTab | "providers" = service ? "providers" : tab;
+  const providersLayout = view === "providers";
   const nearbyLayout = view === "nearby";
+
+  // Provider list: the side ads fill the height of the list (Figma 752:10052 right, 752:10063 under the rail),
+  // so their number follows an estimate of that height — roughly one ad per 650px, as drawn.
+  const adsFor = (height: number) => Math.max(1, Math.round(height / 650));
+  const extraLines = (p: Provider) => (p.contact.fax ? 27 : 0) + (p.contact.phone2 ? 29 : 0) + (p.contact.email2 ? 31 : 0) + (p.contact.sita ? 27 : 0);
+  const topListHeight = premiumProviders.length
+    ? premiumProviders.reduce((h, p) => h + (p.tier === "ultra_pro" ? 360 : 301) + extraLines(p), 0)
+    : basicOnPage.length * 235;
+  const railHeight = 40 + (categories.length + 1) * 54;
+  const underRail = 70 + topListHeight - railHeight - 21;
+  const adsUnderRail = underRail >= 400 ? adsFor(underRail) : 0;
+  const topRightAds = adsFor(195 + Math.max(70 + topListHeight, railHeight));
+  const lowerAds = adsFor(basicOnPage.length * 235);
+  const fillAd = "h-auto min-h-[400px] flex-1";
+
+  // Without page links the lower list still keeps clear of the bottom banner.
+  const pagination = !providersLayout ? null : basicPages > 1 ? (
+    <Pagination page={page} totalPages={basicPages} basePath={`/airports/${canonical}`} params={{ service }} className="container-site pt-6 pb-[22px]" />
+  ) : basicBelow ? (
+    <div className="h-10" aria-hidden />
+  ) : null;
 
   return (
     <>
@@ -319,14 +362,21 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
             : showCalculator
               ? "md:grid-rows-[auto_auto_1fr] lg:grid-rows-[171px_auto_1fr]"
               : "lg:grid-rows-[171px_auto]",
-          BOTTOM_PAD[view],
+          providersLayout ? "pb-7" : BOTTOM_PAD[view],
         )}
       >
         <div className="min-w-0 md:col-span-3">
           <ToolTiles icao={airport.icao} flightCategory={metar?.flightCategory ?? "N/A"} notamCount={notams.length} />
         </div>
-        <div className={cn("min-w-0 md:col-start-1 md:row-start-2", nearbyLayout ? "md:row-span-3" : showCalculator && "md:row-span-2")}>
+        <div
+          className={cn(
+            "min-w-0 md:col-start-1 md:row-start-2",
+            nearbyLayout ? "md:row-span-3" : showCalculator && "md:row-span-2",
+            providersLayout && "flex flex-col gap-[21px]",
+          )}
+        >
           <ServiceSidebar icao={airport.icao} active={service} categories={categories} />
+          {providersLayout && Array.from({ length: adsUnderRail }, (_, i) => <SkyscraperAd key={i} className={cn(fillAd, "hidden lg:block")} />)}
         </div>
         <div id="airport-content" className={cn("min-w-0 scroll-mt-24 space-y-3 md:col-start-3 md:row-start-2", nearbyLayout && "lg:-mb-[11px]")}>
           <AirportTabs icao={airport.icao} active={service ? undefined : tab} />
@@ -347,11 +397,19 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
           />
         )}
         <aside className={cn("hidden lg:col-start-5 lg:row-span-2 lg:row-start-1 lg:block", nearbyLayout && "lg:pb-2.5")} aria-label="Advertisement">
-          <div className="space-y-[23px]">
-            {sideAds.map((height, i) => (
-              <SkyscraperAd key={i} className={height} />
-            ))}
-          </div>
+          {providersLayout ? (
+            <div className="flex h-full flex-col gap-6">
+              {Array.from({ length: topRightAds }, (_, i) => (
+                <SkyscraperAd key={i} className={fillAd} />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-[23px]">
+              {SIDE_ADS[view].map((height, i) => (
+                <SkyscraperAd key={i} className={height} />
+              ))}
+            </div>
+          )}
         </aside>
       </div>
 
@@ -364,6 +422,26 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
           </div>
         </>
       )}
+
+      {/* Provider list, lower half (Figma 1021:3977): banner, then the Basic listings between two ad columns. */}
+      {basicBelow && (
+        <>
+          <AdBanner ad={headerAd} className="pb-8 lg:pb-[45px]" height="h-[150px] sm:h-[222px]" />
+          <div className="container-site grid md:grid-cols-[248px_12px_minmax(0,1fr)] lg:grid-cols-[248px_12px_minmax(0,1fr)_20px_272px]">
+            {[1, 5].map((col) => (
+              <aside key={col} className={cn("hidden flex-col gap-[35px] lg:flex", col === 1 ? "lg:col-start-1" : "lg:col-start-5")} aria-label="Advertisement">
+                {Array.from({ length: lowerAds }, (_, i) => (
+                  <SkyscraperAd key={i} className="h-auto min-h-[230px] flex-1" />
+                ))}
+              </aside>
+            ))}
+            <section aria-label={`More ${serviceName?.toLowerCase()} providers`} className="min-w-0 md:col-span-3 lg:col-span-1 lg:col-start-3 lg:row-start-1">
+              {basicList}
+            </section>
+          </div>
+        </>
+      )}
+      {pagination}
       <AdBanner ad={headerAd} className={view === "info" ? "py-10" : "pb-10"} height="h-[150px] sm:h-[222px]" />
     </>
   );

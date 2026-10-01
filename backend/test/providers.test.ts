@@ -222,6 +222,13 @@ describe("my listing (provider owner)", () => {
     expect(r.status).toBe(200);
     expect(r.body.data).toMatchObject({ city: "Luton", tier: "basic", verified: false, status: "draft" });
     expect(r.body.data.contact).toMatchObject({ email: "a@b.co", phone: "+44 1" });
+
+    // Second phone / email and SITA are optional extras on the same contact block.
+    const extra = await agent.patch(mine()).send({ contact: { phone2: "+44 2", email2: "Ops@B.co", sita: "LHRXH7X" } });
+    expect(extra.body.data.contact).toMatchObject({ email: "a@b.co", phone: "+44 1", phone2: "+44 2", email2: "ops@b.co", sita: "LHRXH7X" });
+    const badExtra = await agent.patch(mine()).send({ contact: { email2: "nope" } });
+    expect(badExtra.status).toBe(422);
+    expect(badExtra.body.error.fieldErrors).toHaveProperty("contact.email2");
     expect(r.body.data.fleet[0]).toMatchObject({ model: "Phenom 300", baseIcao: "EGKK", id: expect.stringMatching(/^[a-f\d]{24}$/) });
 
     // Existing aircraft ids survive a re-save.

@@ -74,6 +74,10 @@ const providerSchema = new Schema(
       website: { type: String, trim: true, maxlength: 200, default: "" },
       address: { type: String, trim: true, maxlength: 300, default: "" },
       fax: { type: String, trim: true, maxlength: 30 },
+      /* Extra contact lines shown on the airport page's provider listing. */
+      phone2: { type: String, trim: true, maxlength: 30 },
+      email2: { type: String, trim: true, lowercase: true, maxlength: 254 },
+      sita: { type: String, trim: true, maxlength: 30 },
       location: { type: String, trim: true, maxlength: 120, default: "" },
     },
     socials: {
@@ -170,6 +174,9 @@ export function toProviderDTO(p: ProviderLike, opts: { reviews?: ReviewDTO[] } =
       address: p.contact?.address ?? "",
       location: p.contact?.location ?? "",
       ...(p.contact?.fax ? { fax: p.contact.fax } : {}),
+      ...(p.contact?.phone2 ? { phone2: p.contact.phone2 } : {}),
+      ...(p.contact?.email2 ? { email2: p.contact.email2 } : {}),
+      ...(p.contact?.sita ? { sita: p.contact.sita } : {}),
     },
     socials: Object.fromEntries(Object.entries(p.socials ?? {}).filter(([, v]) => typeof v === "string" && v)),
     ...(p.locationsLabel ? { locationsLabel: p.locationsLabel } : {}),

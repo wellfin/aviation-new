@@ -8,6 +8,7 @@
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-inter: var(--font-inter-face), ui-sans-serif, system-ui, sans-serif;
+  --font-open-sans: var(--font-open-sans-face), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --font-poppins: var(--font-poppins-face), var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 
   /* Brand */

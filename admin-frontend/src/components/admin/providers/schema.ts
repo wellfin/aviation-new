@@ -77,6 +77,13 @@ export const providerSchema = z.object({
     website: text(200),
     address: text(300),
     fax: text(30),
+    phone2: z
+      .string()
+      .trim()
+      .max(30)
+      .regex(/^[+\d\s().A-Za-z-]*$/, "Enter a valid phone number"),
+    email2: z.union([z.email("Enter a valid email").max(254), z.literal("")]),
+    sita: text(30),
     location: text(120),
   }),
   socials: z.object({ linkedin: httpsUrl, instagram: httpsUrl, facebook: httpsUrl, x: httpsUrl }),
@@ -192,7 +199,7 @@ export interface ProviderFormState {
   coverImage: string;
   logo: string;
   gallery: string[];
-  contact: { phone: string; email: string; website: string; address: string; fax: string; location: string };
+  contact: { phone: string; email: string; website: string; address: string; fax: string; phone2: string; email2: string; sita: string; location: string };
   socials: { linkedin: string; instagram: string; facebook: string; x: string };
   locationsLabel: string;
   services: ServiceRow[];
@@ -222,7 +229,7 @@ export function emptyProviderState(): ProviderFormState {
     coverImage: "",
     logo: "",
     gallery: [],
-    contact: { phone: "", email: "", website: "", address: "", fax: "", location: "" },
+    contact: { phone: "", email: "", website: "", address: "", fax: "", phone2: "", email2: "", sita: "", location: "" },
     socials: { linkedin: "", instagram: "", facebook: "", x: "" },
     locationsLabel: "",
     services: [],
@@ -253,7 +260,7 @@ export function stateFromProvider(p: AdminProvider): ProviderFormState {
     coverImage: p.coverImage,
     logo: p.logo,
     gallery: p.gallery,
-    contact: { phone: p.contact.phone, email: p.contact.email, website: p.contact.website, address: p.contact.address, fax: p.contact.fax ?? "", location: p.contact.location },
+    contact: { phone: p.contact.phone, email: p.contact.email, website: p.contact.website, address: p.contact.address, fax: p.contact.fax ?? "", phone2: p.contact.phone2 ?? "", email2: p.contact.email2 ?? "", sita: p.contact.sita ?? "", location: p.contact.location },
     socials: { linkedin: p.socials.linkedin ?? "", instagram: p.socials.instagram ?? "", facebook: p.socials.facebook ?? "", x: p.socials.x ?? "" },
     locationsLabel: p.locationsLabel ?? "",
     services: p.services.map((s) => ({ name: s.name, description: s.description, icon: s.icon })),

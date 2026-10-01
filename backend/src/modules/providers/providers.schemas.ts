@@ -98,6 +98,13 @@ const contact = z
     website: text(200),
     address: text(300),
     fax: text(30),
+    phone2: z
+      .string()
+      .trim()
+      .max(30)
+      .regex(/^[+\d\s().A-Za-z-]*$/, "Enter a valid phone number"),
+    email2: z.union([z.email("Enter a valid email").max(254), z.literal("")]),
+    sita: text(30),
     location: text(120),
   })
   .partial();

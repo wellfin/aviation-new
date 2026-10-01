@@ -25,6 +25,10 @@ export interface ContactInfo {
   website: string;
   address: string;
   fax?: string;
+  /* Extra contact lines shown on the airport page's provider listing. */
+  phone2?: string;
+  email2?: string;
+  sita?: string;
   location: string;
 }
 

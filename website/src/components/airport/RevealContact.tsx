@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-/** "Show Phone Number" style pill that reveals the contact value (as a link) on click. */
+/** "Show Phone Number" style pill (Figma 1021:4120) that reveals the contact value (as a link) on click. */
 export function RevealContact({ label, value, href }: { label: string; value: string; href: string }) {
   const [shown, setShown] = useState(false);
   if (shown) {
@@ -16,7 +16,7 @@ export function RevealContact({ label, value, href }: { label: string; value: st
     <button
       type="button"
       onClick={() => setShown(true)}
-      className="rounded-full border border-[#1b9df5] bg-white px-4 py-0.5 text-sm text-[#1b9df5] transition hover:bg-[#1b9df5]/8"
+      className="flex h-[25px] items-center rounded-3xl border border-[#1b9df5] bg-white pr-[21px] pl-[19px] text-sm leading-none text-[#1b9df5] transition hover:bg-[#1b9df5]/8"
     >
       {label}
     </button>

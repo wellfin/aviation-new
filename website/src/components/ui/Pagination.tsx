@@ -31,12 +31,15 @@ export function Pagination({
     else if (pages[pages.length - 1] !== "gap") pages.push("gap");
   }
 
-  const cell = "flex h-9 min-w-9 items-center justify-center rounded-[10px] border border-line bg-white px-3 text-sm font-medium text-ink shadow-soft";
+  // 40px cells as drawn (Figma 752:10376).
+  const cell = "flex h-10 min-w-10 items-center justify-center rounded-xl border-[0.755px] border-[#e2e8f0] bg-white px-2 text-sm leading-5 font-semibold text-[#64748b] transition hover:border-brand hover:text-brand";
+  const active = "bg-[linear-gradient(135deg,#2f80ed_0%,#00c2ff_100%)] text-white hover:text-white";
+  const step = "px-4 text-[13px]";
 
   return (
     <nav aria-label="Pagination" className={cn("flex flex-wrap items-center justify-center gap-2", className)}>
       {page > 1 && (
-        <Link href={href(page - 1)} className={cell} rel="prev">
+        <Link href={href(page - 1)} className={cn(cell, step)} rel="prev">
           ← Prev
         </Link>
       )}
@@ -50,14 +53,14 @@ export function Pagination({
             key={p}
             href={href(p)}
             aria-current={p === page ? "page" : undefined}
-            className={cn(cell, p === page && "bg-brand-gradient border-transparent text-white")}
+            className={cn(cell, p === page && active)}
           >
             {p}
           </Link>
         ),
       )}
       {page < totalPages && (
-        <Link href={href(page + 1)} className={cn(cell, "bg-brand-gradient border-transparent text-white")} rel="next">
+        <Link href={href(page + 1)} className={cn(cell, step, active, "border-transparent")} rel="next">
           Next →
         </Link>
       )}
