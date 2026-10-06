@@ -39,29 +39,46 @@ function RuledHeading({ id, children }: { id: string; children: string }) {
   );
 }
 
-/** "Our Clients" logo bar and "Featured In" press row. */
+/**
+ * Logos scrolling right to left without a seam: the track holds the list twice and slides by
+ * one copy. Hovering pauses it; reduced-motion users see a still row. The copy is hidden from
+ * assistive tech so each logo is announced once.
+ */
+function LogoMarquee({ logos, label, divided = false, duration }: { logos: Array<Logo & { h: string }>; label: string; divided?: boolean; duration: string }) {
+  const copy = (hidden: boolean) => (
+    <ul aria-hidden={hidden || undefined} aria-label={hidden ? undefined : label} className={`flex shrink-0 items-center ${divided ? "divide-x divide-line" : ""}`}>
+      {logos.map((l) => (
+        <li key={l.name} className={`flex w-[180px] shrink-0 justify-center sm:w-[206px] ${divided ? "px-6" : "px-8"}`}>
+          <Image src={l.src} alt={hidden ? "" : l.name} width={l.width} height={l.height} className={`${l.h} w-auto max-w-full object-contain`} />
+        </li>
+      ))}
+    </ul>
+  );
+  return (
+    <div className="group overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+      <div className="animate-marquee flex w-max group-hover:[animation-play-state:paused]" style={{ ["--marquee-duration" as string]: duration }}>
+        {copy(false)}
+        {copy(true)}
+      </div>
+    </div>
+  );
+}
+
+/** "Our Clients" logo bar and "Featured In" press row, both scrolling right to left. */
 export function LogoShowcase() {
   return (
     <div className="bg-white py-16 md:pt-[100px] md:pb-[100px]">
       <section aria-labelledby="clients-heading" className="container-site">
         <RuledHeading id="clients-heading">Our Clients</RuledHeading>
-        <ul className="mx-auto mt-4 grid max-w-[1032px] grid-cols-2 items-center gap-6 rounded-[16px] border border-line/70 bg-white px-6 py-7 sm:grid-cols-3 md:flex md:justify-between md:divide-x md:divide-line md:gap-0 md:px-0">
-          {CLIENTS.map((l) => (
-            <li key={l.name} className="flex flex-1 justify-center md:px-6">
-              <Image src={l.src} alt={l.name} width={l.width} height={l.height} className={`${l.h} w-auto max-w-full object-contain`} />
-            </li>
-          ))}
-        </ul>
+        <div className="mx-auto mt-4 max-w-[1032px] rounded-[16px] border border-line/70 bg-white py-7">
+          <LogoMarquee logos={CLIENTS} label="Our clients" divided duration="28s" />
+        </div>
       </section>
       <section aria-labelledby="featured-in-heading" className="container-site mt-16 md:mt-[112px]">
         <RuledHeading id="featured-in-heading">Featured In</RuledHeading>
-        <ul className="mx-auto mt-6 flex max-w-[1015px] flex-wrap items-center justify-center gap-x-12 gap-y-6 md:justify-between md:gap-x-6">
-          {FEATURED_IN.map((l) => (
-            <li key={l.name}>
-              <Image src={l.src} alt={l.name} width={l.width} height={l.height} className={`${l.h} w-auto object-contain`} />
-            </li>
-          ))}
-        </ul>
+        <div className="mx-auto mt-6 max-w-[1015px]">
+          <LogoMarquee logos={FEATURED_IN} label="Featured in" duration="32s" />
+        </div>
       </section>
     </div>
   );
