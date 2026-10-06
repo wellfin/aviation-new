@@ -17,7 +17,7 @@ const NAV = [
   { label: "Airport Directory", href: "/airports" },
   { label: "News", href: "/news" },
   { label: "Pricing", href: "/pricing" },
-  { label: "Advertise", href: "/advertise" },
+  // "Advertise" is hidden from the header; the page stays reachable from the footer (Company → Advertise).
   { label: "Contact", href: "/contact" },
 ] as const;
 
