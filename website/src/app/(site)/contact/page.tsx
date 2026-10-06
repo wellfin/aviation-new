@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { ContactForm } from "@/components/contact/ContactForm";
-import { FaqAccordion } from "@/components/sections/FaqAccordion";
 import { MapEmbed } from "@/components/tools/MapEmbed";
-import { orFallback } from "@/lib/data/safe";
-import { getAdvertisement, listFaqs } from "@/lib/data/content";
+import { getAdvertisement } from "@/lib/data/content";
 
 export const metadata: Metadata = {
   title: "Contact Us — Get In Touch",
@@ -27,7 +24,7 @@ const DETAILS = [
 ];
 
 export default async function ContactPage() {
-  const [faqs, banner] = await Promise.all([orFallback(listFaqs(), []), getAdvertisement("header-banner")]);
+  const banner = await getAdvertisement("header-banner");
 
   return (
     <div className="bg-[#f7fafc]">
@@ -65,20 +62,6 @@ export default async function ContactPage() {
           <ContactForm />
         </div>
       </div>
-
-      {faqs.length > 0 && (
-        <section aria-labelledby="contact-faq-title" className="mx-auto max-w-[1000px] px-4 pb-12 md:px-6">
-          <div className="flex flex-wrap items-end justify-between gap-3 pb-5">
-            <h2 id="contact-faq-title" className="text-2xl leading-8 font-bold text-ink">
-              Frequently asked questions
-            </h2>
-            <Link href="/faq" className="text-sm font-semibold text-brand hover:underline">
-              View all FAQs →
-            </Link>
-          </div>
-          <FaqAccordion items={faqs.slice(0, 4)} defaultOpen={null} />
-        </section>
-      )}
 
       <AdBanner ad={banner} height="h-[72px] sm:h-[120px] md:h-[222px]" className="pb-9" />
     </div>
