@@ -9,8 +9,6 @@ interface Tile {
   icon: string;
   href: string;
   tone: string;
-  badge?: { label: string; className: string };
-  arrowClass?: string;
 }
 
 /**
@@ -19,14 +17,10 @@ interface Tile {
  */
 export function ToolTiles({
   icao,
-  flightCategory = "VFR",
-  notamCount = 3,
   fill = false,
   className,
 }: {
   icao?: string;
-  flightCategory?: string;
-  notamCount?: number;
   /** Let the tiles grow to fill the box when a parent stretches it (home page: level with the card beside it). */
   fill?: boolean;
   className?: string;
@@ -40,7 +34,6 @@ export function ToolTiles({
       icon: "/images/shared/ico-weather.svg",
       href: `/tools/weather${q}`,
       tone: "bg-brand/8 border-brand/19",
-      badge: { label: flightCategory, className: "bg-success/10 border-success/27 text-success" },
     },
     {
       key: "notam",
@@ -49,11 +42,10 @@ export function ToolTiles({
       icon: "/images/shared/ico-notam.svg",
       href: `/tools/notams${q}`,
       tone: "bg-warning/8 border-warning/19",
-      badge: { label: `${notamCount} New`, className: "bg-warning/10 border-warning/27 text-warning" },
     },
-    { key: "runway", title: "Runway Diagrams", subtitle: "Surfaces & Radio", icon: "/images/shared/ico-runway.svg", href: `/tools/runway-diagram${q}`, tone: "bg-brand-cyan/8 border-brand-cyan/19", arrowClass: "text-brand-cyan" },
-    { key: "satellite", title: "Satellite Map", subtitle: "Live Terrain View", icon: "/images/shared/ico-satellite.svg", href: `/tools/satellite-map${q}`, tone: "bg-success/8 border-success/19", arrowClass: "text-success" },
-    { key: "nearby", title: "Nearby Airports", subtitle: "FBOs & Handlers", icon: "/images/shared/ico-nearby.svg", href: `/tools/nearby-airports${q}`, tone: "bg-brand/8 border-brand/19", arrowClass: "text-brand" },
+    { key: "runway", title: "Runway Diagrams", subtitle: "Surfaces & Radio", icon: "/images/shared/ico-runway.svg", href: `/tools/runway-diagram${q}`, tone: "bg-brand-cyan/8 border-brand-cyan/19" },
+    { key: "satellite", title: "Satellite Map", subtitle: "Live Terrain View", icon: "/images/shared/ico-satellite.svg", href: `/tools/satellite-map${q}`, tone: "bg-success/8 border-success/19" },
+    { key: "nearby", title: "Nearby Airports", subtitle: "FBOs & Handlers", icon: "/images/shared/ico-nearby.svg", href: `/tools/nearby-airports${q}`, tone: "bg-brand/8 border-brand/19" },
   ];
 
   return (
@@ -72,14 +64,7 @@ export function ToolTiles({
               <Image src={t.icon} alt="" width={20} height={20} />
             </span>
             <span className="pb-0.5 text-xs font-bold text-ink">{t.title}</span>
-            <span className="pb-2 text-[10px] text-subtle">{t.subtitle}</span>
-            {t.badge ? (
-              <span className={cn("rounded-full border px-2 py-0.5 text-[9px] font-bold", t.badge.className)}>{t.badge.label}</span>
-            ) : (
-              <span className={cn("text-[10px] font-bold transition group-hover:translate-x-0.5", t.arrowClass)} aria-hidden>
-                ›
-              </span>
-            )}
+            <span className="text-[10px] text-subtle">{t.subtitle}</span>
           </Link>
         ))}
       </div>

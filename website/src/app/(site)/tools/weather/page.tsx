@@ -7,7 +7,6 @@ import { attempt, lookupAirport, readCode } from "@/components/tools-pages/looku
 import { icaoQuickPicks, ToolLayout } from "@/components/tools-pages/ToolLayout";
 import { LookupFallback, ServiceErrorPanel, ToolMessage } from "@/components/tools-pages/ToolStates";
 import { FlightCategoryBadge, FlightCategoryLegend, MetarCard, TafCard } from "@/components/tools-pages/WeatherReport";
-import { getNotams } from "@/lib/integrations/notams";
 import { getMetar, getTaf } from "@/lib/integrations/weather";
 import type { Airport } from "@/lib/types";
 
@@ -50,10 +49,9 @@ export default async function WeatherPage({ searchParams }: PageProps<"/tools/we
 }
 
 async function WeatherResults({ icao, airport }: { icao: string; airport: Airport }) {
-  const [metar, taf, notams] = await Promise.all([
+  const [metar, taf] = await Promise.all([
     attempt(`getMetar(${icao})`, () => getMetar(icao)),
     attempt(`getTaf(${icao})`, () => getTaf(icao)),
-    attempt(`getNotams(${icao})`, () => getNotams(icao)),
   ]);
 
   const category = metar.ok && metar.data ? metar.data.flightCategory : undefined;
@@ -93,7 +91,7 @@ async function WeatherResults({ icao, airport }: { icao: string; airport: Airpor
         <h2 id="more-tools" className="mb-3 text-base font-bold text-ink">
           More tools for {icao}
         </h2>
-        <ToolTiles icao={icao} flightCategory={category ?? "—"} notamCount={notams.ok ? notams.data.length : 0} />
+        <ToolTiles icao={icao} />
       </section>
     </div>
   );

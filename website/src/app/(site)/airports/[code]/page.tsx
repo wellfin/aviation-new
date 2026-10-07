@@ -23,8 +23,6 @@ import { listCategories } from "@/lib/data/categories";
 import { getAdvertisement } from "@/lib/data/content";
 import { getProvidersAtAirport } from "@/lib/data/providers";
 import { orFallback } from "@/lib/data/safe";
-import { getNotams } from "@/lib/integrations/notams";
-import { getMetar } from "@/lib/integrations/weather";
 import type { Airport, Provider, ServiceCategorySlug } from "@/lib/types";
 import { cn, firstParam, formatNumber } from "@/lib/utils";
 
@@ -194,9 +192,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   const from = (firstParam(sp.from) ?? "").trim().toUpperCase();
   const to = (firstParam(sp.to) ?? "").trim().toUpperCase();
 
-  const [metar, notams, providers, selectedProviders, nearby, distance, headerAd] = await Promise.all([
-    getMetar(airport.icao),
-    getNotams(airport.icao),
+  const [providers, selectedProviders, nearby, distance, headerAd] = await Promise.all([
     orFallback(getProvidersAtAirport(airport.icao), []),
     service ? orFallback(getProvidersAtAirport(airport.icao, service === "all" ? undefined : service), []) : Promise.resolve([]),
     tab === "nearby" && !service ? orFallback(getNearbyAirports(airport.icao, NEARBY_RADIUS_KM), null) : Promise.resolve(null),
@@ -367,7 +363,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
         )}
       >
         <div className="min-w-0 md:col-span-3">
-          <ToolTiles icao={airport.icao} flightCategory={metar?.flightCategory ?? "N/A"} notamCount={notams.length} />
+          <ToolTiles icao={airport.icao} />
         </div>
         <div
           className={cn(
