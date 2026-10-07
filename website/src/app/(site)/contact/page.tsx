@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { MapEmbed } from "@/components/tools/MapEmbed";
@@ -18,9 +19,9 @@ const OFFICE = {
 };
 
 const DETAILS = [
-  { icon: "✉️", value: OFFICE.email, label: "Email", href: `mailto:${OFFICE.email}` },
-  { icon: "📞", value: OFFICE.phone, label: "Call", href: `tel:${OFFICE.phone.replace(/\s/g, "")}` },
-  { icon: "📍", value: OFFICE.address, label: "Map", href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(OFFICE.address)}` },
+  { icon: Mail, value: OFFICE.email, label: "Email", href: `mailto:${OFFICE.email}` },
+  { icon: Phone, value: OFFICE.phone, label: "Call", href: `tel:${OFFICE.phone.replace(/\s/g, "")}` },
+  { icon: MapPin, value: OFFICE.address, label: "Map", href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(OFFICE.address)}` },
 ];
 
 export default async function ContactPage() {
@@ -42,15 +43,14 @@ export default async function ContactPage() {
                 <a
                   href={d.href}
                   {...(d.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  aria-label={`${d.label}: ${d.value}`}
                   className="group flex items-center gap-4"
                 >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand/8 text-base" aria-hidden>
-                    {d.icon}
+                  {/* Brand-blue line icons, vertically centred on the single line of text. */}
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand transition group-hover:bg-brand group-hover:text-white" aria-hidden>
+                    <d.icon className="size-[18px]" strokeWidth={2} />
                   </span>
-                  <span>
-                    <span className="block text-sm leading-5 font-semibold text-ink group-hover:text-brand">{d.value}</span>
-                    <span className="block text-xs leading-4 text-subtle">{d.label}</span>
-                  </span>
+                  <span className="text-sm leading-5 font-semibold text-ink group-hover:text-brand">{d.value}</span>
                 </a>
               </li>
             ))}
