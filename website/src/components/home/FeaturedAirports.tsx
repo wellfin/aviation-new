@@ -15,9 +15,6 @@ function AirportCard({ airport }: { airport: Airport }) {
       <div className="relative h-[180px] overflow-hidden bg-navy-900">
         <Image src={airport.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 450px" className="object-cover transition duration-500 ease-out group-hover:scale-110 motion-reduce:group-hover:scale-100" />
         <div className="absolute inset-0 bg-gradient-to-b from-navy-900/10 via-navy-900/25 to-navy-900/70" aria-hidden />
-        <span className="absolute top-3.5 right-3.5 rounded-lg border border-brand-cyan/25 bg-brand/25 px-2.5 py-1 text-xs font-semibold text-brand-cyan/90 backdrop-blur-sm">
-          {airport.servicesCount} services
-        </span>
         <span className="absolute bottom-3.5 left-3.5 flex items-center gap-2 font-mono">
           <span className="rounded-lg border border-brand-cyan/40 bg-brand-cyan/15 px-2 py-1 text-xs font-bold text-brand-cyan">{airport.iata}</span>
           <span className="rounded-md bg-white/10 px-2 py-1 text-[10px] text-white/70">{airport.icao}</span>

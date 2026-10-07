@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Airport } from "@/lib/types";
-import { formatNumber } from "@/lib/utils";
 
 /** Airport tile in the "World's Busiest Hubs" style: photo with code chips, name, country and service tags. */
 export function AirportCard({ airport }: { airport: Airport }) {
@@ -25,9 +24,6 @@ export function AirportCard({ airport }: { airport: Airport }) {
           )}
           <span className="rounded-md bg-white/12 px-2 py-0.5 font-mono text-[10px] leading-[15px] text-white/75">{airport.icao}</span>
         </div>
-        <span className="absolute top-3 right-3 rounded-lg border border-brand/30 bg-brand/20 px-2.5 py-1 text-xs leading-4 font-bold text-[#90c5ff] backdrop-blur-sm">
-          {formatNumber(airport.servicesCount)} services
-        </span>
       </div>
       <div className="flex flex-1 flex-col px-4 pt-3.5 pb-4">
         <h3 className="text-sm leading-5 font-bold text-ink">
