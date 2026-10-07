@@ -13,6 +13,32 @@ function compact(n: number): string {
 
 const providers = (n: number) => `${compact(n)} provider${n === 1 ? "" : "s"}`;
 
+/**
+ * The categories the Services menu shows, in the design's order (Figma 46:3402). Categories added
+ * later in the admin panel are left out here and reached through "Browse All Providers".
+ */
+const MENU_ORDER = [
+  "fbo",
+  "ground-handler",
+  "trip-support",
+  "permit",
+  "fuel",
+  "catering",
+  "ground-transportation",
+  "meet-and-assist",
+  "charter-operator",
+  "charter-broker",
+  "supervisory-agent",
+  "hotels",
+  "mro",
+  "other-services",
+];
+
+/** Design categories that exist (and are enabled for the menu), in design order. */
+export function designMenuCategories(categories: ServiceCategory[]): ServiceCategory[] {
+  return MENU_ORDER.flatMap((slug) => categories.find((c) => c.slug === slug) ?? []);
+}
+
 export function serviceHref(slug: string): string {
   return slug === "charter-operator" ? "/charter-operators" : `/directory?category=${encodeURIComponent(slug)}`;
 }
@@ -21,10 +47,12 @@ export function serviceHref(slug: string): string {
  * Header "Services" mega-menu (Figma 46:3402): category grid on the left with
  * provider counts; the hovered/focused category is previewed on the right.
  */
-export function ServicesMenu({ categories, onNavigate }: { categories: ServiceCategory[]; onNavigate: () => void }) {
+export function ServicesMenu({ categories: all, onNavigate }: { categories: ServiceCategory[]; onNavigate: () => void }) {
+  const categories = designMenuCategories(all);
   const [activeSlug, setActiveSlug] = useState(categories[0]?.slug);
   const active = categories.find((c) => c.slug === activeSlug) ?? categories[0];
-  const total = categories.reduce((sum, c) => sum + (c.providerCount ?? 0), 0);
+  // Totals cover every category, including ones only reachable through "Browse All".
+  const total = all.reduce((sum, c) => sum + (c.providerCount ?? 0), 0);
 
   return (
     <div

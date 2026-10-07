@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Building2, Inbox, LogOut, Menu, User, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/ui/Logo";
-import { ServicesMenu, serviceHref } from "./ServicesMenu";
+import { ServicesMenu, designMenuCategories, serviceHref } from "./ServicesMenu";
 import { can, useAuth } from "@/lib/auth/auth-context";
 import { useCategories } from "@/components/categories/CategoriesContext";
 import { cn } from "@/lib/utils";
@@ -185,7 +185,7 @@ export function SiteHeader() {
             ))}
             <p className="px-3 pt-4 pb-2 text-xs font-bold tracking-[1px] text-white/40 uppercase">Services</p>
             <div className="grid grid-cols-2 gap-1">
-              {menuCategories.map((c) => (
+              {designMenuCategories(menuCategories).map((c) => (
                 <Link key={c.slug} href={serviceHref(c.slug)} className="rounded-lg px-3 py-2 text-sm text-white/70">
                   {c.name}
                 </Link>
