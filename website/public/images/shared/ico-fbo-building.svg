@@ -1,0 +1,23 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="IcoFboBuilding" stroke="#F4B400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<!-- Terminal building: tall centre block, two wings, roof caps, windows and entrance -->
+<path d="M5.75 18.25V2.75H14.25V18.25"/>
+<path d="M5 2.75H15"/>
+<path d="M1.75 18.25V7.75H5.75 M14.25 7.75H18.25V18.25"/>
+<path d="M1 7.75H5.75 M14.25 7.75H19"/>
+<path d="M1 18.25H19"/>
+<path d="M8 15.25V18.25 M12 15.25V18.25 M7.5 15.25H12.5"/>
+<g stroke-width="0.9">
+<rect x="7.75" y="4.5" width="1.5" height="1.75" rx="0.3"/>
+<rect x="10.75" y="4.5" width="1.5" height="1.75" rx="0.3"/>
+<rect x="7.75" y="8" width="1.5" height="1.75" rx="0.3"/>
+<rect x="10.75" y="8" width="1.5" height="1.75" rx="0.3"/>
+<rect x="7.75" y="11.5" width="1.5" height="1.75" rx="0.3"/>
+<rect x="10.75" y="11.5" width="1.5" height="1.75" rx="0.3"/>
+<rect x="3" y="10" width="1.5" height="2" rx="0.3"/>
+<rect x="3" y="14" width="1.5" height="2" rx="0.3"/>
+<rect x="15.5" y="10" width="1.5" height="2" rx="0.3"/>
+<rect x="15.5" y="14" width="1.5" height="2" rx="0.3"/>
+</g>
+</g>
+</svg>

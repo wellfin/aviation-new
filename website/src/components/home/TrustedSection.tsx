@@ -11,8 +11,8 @@ const AMBER = "bg-warning/8 border-warning/19";
 const svgIcon = (src: string) => <Image src={src} alt="" width={20} height={20} />;
 
 const FEATURES: Array<{ title: string; body: string; href: string; icon: ReactNode; tone: string }> = [
-  { title: "Airport Data", body: "Essential airport information for smarter flight planning.", href: "/airports", icon: svgIcon("/images/shared/ico-weather.svg"), tone: BLUE },
-  { title: "FBO Information", body: "Find detailed FBO facilities and services.", href: "/directory?category=fbo", icon: svgIcon("/images/shared/ico-notam.svg"), tone: AMBER },
+  { title: "Airport Data", body: "Essential airport information for smarter flight planning.", href: "/airports", icon: svgIcon("/images/shared/ico-airport-search.svg"), tone: BLUE },
+  { title: "FBO Information", body: "Find detailed FBO facilities and services.", href: "/directory?category=fbo", icon: svgIcon("/images/shared/ico-fbo-building.svg"), tone: AMBER },
   { title: "Aviation Services", body: "Access essential services for seamless operations.", href: "/directory", icon: <Headset className="size-5 text-brand" strokeWidth={1.75} />, tone: BLUE },
   { title: "Weather", body: "Real-time weather insights for safer planning.", href: "/tools/weather", icon: svgIcon("/images/shared/ico-weather.svg"), tone: BLUE },
   { title: "NOTAMs", body: "Stay updated on critical operational notices.", href: "/tools/notams", icon: svgIcon("/images/shared/ico-notam.svg"), tone: AMBER },
