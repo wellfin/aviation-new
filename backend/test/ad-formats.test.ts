@@ -10,7 +10,7 @@ describe("advertising formats", () => {
     await seedAdFormats();
     const r = await request(app).get(api("/advertising/formats"));
     expect(r.status).toBe(200);
-    expect(r.body.data).toHaveLength(4);
+    expect(r.body.data).toHaveLength(6);
     expect(r.body.data[0]).toMatchObject({ id: "header-banner", title: "Header Banner" });
   });
 
@@ -28,9 +28,9 @@ describe("advertising formats", () => {
     expect((await agent.post(api("/admin/ad-formats")).send({ key: "podcast", title: "Dup", description: "Duplicate one" })).status).toBe(409);
     expect((await agent.post(api("/admin/ad-formats")).send({ key: "x", title: "", description: "" })).status).toBe(422);
 
-    expect((await agent.patch(api("/admin/ad-formats/sticky-footer")).send({ active: false })).body.data.active).toBe(false);
+    expect((await agent.patch(api("/admin/ad-formats/newsletter")).send({ active: false })).body.data.active).toBe(false);
     const pub = (await request(app).get(api("/advertising/formats"))).body.data.map((f: { id: string }) => f.id);
-    expect(pub).not.toContain("sticky-footer");
+    expect(pub).not.toContain("newsletter");
     expect(pub).toContain("podcast");
 
     const all = (await agent.get(api("/admin/ad-formats"))).body.data.map((f: { id: string }) => f.id) as string[];
