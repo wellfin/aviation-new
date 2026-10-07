@@ -1,4 +1,4 @@
-import { Clock, Compass, Plane, Route, SearchX } from "lucide-react";
+import { Clock, Compass, Milestone, Plane, Route, SearchX } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -147,9 +147,10 @@ async function DistanceResult({ from: fromAirport, to: toAirport, speed }: { fro
         </div>
       </div>
 
-      <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Stat icon={Route} label="Distance" value={`${formatNumber(Math.round(nm))} NM`} detail="Nautical miles, great circle" highlight />
-        <Stat icon={Route} label="Kilometres" value={`${formatNumber(Math.round(km))} km`} detail={`${formatNumber(Math.round(mi))} statute miles`} />
+        <Stat icon={Route} label="Kilometres" value={`${formatNumber(Math.round(km))} km`} detail="Kilometres, great circle" />
+        <Stat icon={Milestone} label="Miles" value={`${formatNumber(Math.round(mi))} mi`} detail="Statute miles, great circle" />
         <Stat icon={Compass} label="Initial bearing" value={bearingLabel(bearing)} detail={`${compassPoint(bearing)} · true`} />
         <Stat icon={Clock} label="Est. flight time" value={flightTime(flightTimeMinutes)} detail={`At ${speedKts} kt TAS`} />
       </dl>
@@ -183,9 +184,6 @@ async function DistanceResult({ from: fromAirport, to: toAirport, speed }: { fro
         </Link>
         <Link href={`/tools/notams?icao=${to.icao}`} className="rounded-lg bg-brand/8 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/15">
           {to.icao} NOTAMs
-        </Link>
-        <Link href={`/tools/distance?from=${to.icao}&to=${from.icao}`} className="rounded-lg bg-brand/8 px-3 py-2 text-xs font-semibold text-brand hover:bg-brand/15">
-          Reverse route
         </Link>
       </div>
     </div>
