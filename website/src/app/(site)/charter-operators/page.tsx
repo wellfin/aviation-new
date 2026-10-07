@@ -4,8 +4,6 @@ import { SidebarAd } from "@/components/ads/SidebarAd";
 import { CharterHero } from "@/components/charter/CharterHero";
 import { CharterSearchForm } from "@/components/charter/CharterSearchForm";
 import { SponsoredCard } from "@/components/charter/SponsoredCard";
-import { loadCharterOperators } from "@/components/charter/data";
-import { buildLocationOptions } from "@/components/charter/filters";
 import { getAdvertisement } from "@/lib/data/content";
 
 export const metadata: Metadata = {
@@ -14,8 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CharterSearchPage() {
-  const [operators, bannerAd, sidebarAd, stripAd] = await Promise.all([
-    loadCharterOperators(),
+  const [bannerAd, sidebarAd, stripAd] = await Promise.all([
     getAdvertisement("header-banner"),
     getAdvertisement("sidebar"),
     getAdvertisement("sponsored-strip"),
@@ -32,7 +29,7 @@ export default async function CharterSearchPage() {
       <AdBanner ad={bannerAd} className="pt-6" />
 
       <div className="container-site grid gap-8 pt-14 pb-8 lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,890px)_429px] xl:justify-between">
-        <CharterSearchForm locations={buildLocationOptions(operators)} />
+        <CharterSearchForm />
         <div className="flex flex-col gap-5 lg:sticky lg:top-24 lg:self-start">
           <SidebarAd ad={sidebarAd} className="min-h-[320px] lg:min-h-[467px]" />
           <SponsoredCard ad={stripAd} />

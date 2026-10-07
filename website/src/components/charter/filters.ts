@@ -139,23 +139,3 @@ export function matchesCharterFilters(p: Provider, f: CharterParams): boolean {
   if (f.certs.length && !f.certs.some((c) => holdsCert(p, c))) return false;
   return true;
 }
-
-export interface LocationOption {
-  code: string;
-  name: string;
-  continent?: Continent;
-  cities: string[];
-}
-
-/** Country / city options for the search form, derived from the operators we actually list. */
-export function buildLocationOptions(providers: Provider[]): LocationOption[] {
-  const byCountry = new Map<string, LocationOption>();
-  for (const p of providers) {
-    const entry = byCountry.get(p.countryCode) ?? { code: p.countryCode, name: p.country, continent: continentOf(p.countryCode), cities: [] };
-    if (!entry.cities.includes(p.city)) entry.cities.push(p.city);
-    byCountry.set(p.countryCode, entry);
-  }
-  return [...byCountry.values()]
-    .map((c) => ({ ...c, cities: [...c.cities].sort() }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-}
