@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { CategoryIcon } from "@/components/categories/category-icon";
+import { designMenuCategories } from "@/components/categories/design-categories";
 import type { ServiceCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -12,32 +13,6 @@ function compact(n: number): string {
 }
 
 const providers = (n: number) => `${compact(n)} provider${n === 1 ? "" : "s"}`;
-
-/**
- * The categories the Services menu shows, in the design's order (Figma 46:3402). Categories added
- * later in the admin panel are left out here and reached through "Browse All Providers".
- */
-const MENU_ORDER = [
-  "fbo",
-  "ground-handler",
-  "trip-support",
-  "permit",
-  "fuel",
-  "catering",
-  "ground-transportation",
-  "meet-and-assist",
-  "charter-operator",
-  "charter-broker",
-  "supervisory-agent",
-  "hotels",
-  "mro",
-  "other-services",
-];
-
-/** Design categories that exist (and are enabled for the menu), in design order. */
-export function designMenuCategories(categories: ServiceCategory[]): ServiceCategory[] {
-  return MENU_ORDER.flatMap((slug) => categories.find((c) => c.slug === slug) ?? []);
-}
 
 export function serviceHref(slug: string): string {
   return slug === "charter-operator" ? "/charter-operators" : `/directory?category=${encodeURIComponent(slug)}`;

@@ -1,5 +1,6 @@
 import type { ProviderSort, ProviderTier, ServiceCategory, ServiceCategorySlug } from "@/lib/types";
 import { firstParam, toInt } from "@/lib/utils";
+import { isDesignCategory } from "@/components/categories/design-categories";
 
 export type DirectoryView = "grid" | "list";
 
@@ -15,8 +16,12 @@ export interface DirectoryParams {
 /** How many categories fit in the pill bar at 1440px; the rest go under "More Services". */
 const PILL_COUNT = 9;
 
-/** Splits the admin-ordered catalogue into filter pills and the "More Services" menu. */
-export function splitCategories(categories: ServiceCategory[]): { primary: ServiceCategory[]; more: ServiceCategory[] } {
+/**
+ * Splits the admin-ordered catalogue into filter pills and the "More Services" menu. Only the
+ * design's categories appear; providers of categories added later are listed under "All Services".
+ */
+export function splitCategories(all: ServiceCategory[]): { primary: ServiceCategory[]; more: ServiceCategory[] } {
+  const categories = all.filter(isDesignCategory);
   const menu = categories.filter((c) => c.showInMenu);
   return { primary: menu.slice(0, PILL_COUNT), more: [...menu.slice(PILL_COUNT), ...categories.filter((c) => !c.showInMenu)] };
 }
