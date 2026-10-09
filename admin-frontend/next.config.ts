@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 // Uploaded images are served by the API at {NEXT_PUBLIC_API_BASE_URL}/api/v1/files/...
@@ -6,6 +7,10 @@ const apiUrl = new URL(process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost
 const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3100");
 
 const nextConfig: NextConfig = {
+  // Self-contained build (.next/standalone) so the server runs `node server.js` without
+  // npm install or a build of its own — see scripts/pack-server.mjs.
+  output: "standalone",
+  outputFileTracingRoot: path.resolve(),
   images: {
     remotePatterns: [
       {
