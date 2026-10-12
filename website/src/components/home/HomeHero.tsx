@@ -7,11 +7,11 @@ const HIGHLIGHTS = [
   { label: "24×7 Operations", dot: "bg-warning" },
 ] as const;
 
-/** Full-bleed sunset hero with the global airport / provider search. Submits GET /search?q=… */
+/** Full-bleed business-jet hero with the global airport / provider search. Submits GET /search?q=… */
 export function HomeHero() {
   return (
     <section className="relative isolate overflow-hidden bg-navy-950 pt-14 pb-20 text-white md:pt-[78px] md:pb-[70px]">
-      <Image src="/images/home/hero-bg.png" alt="" fill priority sizes="100vw" className="-z-20 object-cover object-[50%_40%]" />
+      <Image src="/images/home/hero-jet.jpg" alt="" fill priority sizes="100vw" className="-z-20 object-cover object-[50%_45%]" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-navy-950/25 via-navy-950/20 via-60% to-black/85" aria-hidden />
       <div className="container-site flex flex-col items-center text-center">
         <h1 className="max-w-[720px] text-[38px] leading-[46px] font-extrabold tracking-[-1.5px] sm:text-5xl sm:leading-[60px] md:text-[60px] md:leading-[75px]">
