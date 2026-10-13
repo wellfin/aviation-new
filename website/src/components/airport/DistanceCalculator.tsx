@@ -3,15 +3,11 @@ import type { DistanceResult } from "@/lib/data/airports";
 import { cn } from "@/lib/utils";
 import { KM_TO_MI, KM_TO_NM, formatNumber } from "@/lib/utils";
 
-/** One "From :" / "To :" code field: gradient label block, divider, input (Figma 752:7828). */
+/** One "From :" / "To :" code field: gradient label block, then the input. */
 function CodeField({ name, label, defaultValue, placeholder, ariaLabel }: { name: "from" | "to"; label: string; defaultValue: string; placeholder: string; ariaLabel: string }) {
   return (
     <label className="flex h-14 min-w-0 flex-1 basis-0 overflow-hidden rounded-lg border border-[#f8f8f8] bg-white transition focus-within:border-brand-cyan">
       <span className="flex w-[65px] shrink-0 items-center justify-center bg-[linear-gradient(140.28deg,#2f80ed_0%,#00c2ff_100%)] text-base font-semibold whitespace-nowrap text-[#ebebeb]">{label}</span>
-      {/* 16px divider between the label block and the input, as drawn in the design. */}
-      <span className="flex w-[9px] shrink-0 items-center justify-center" aria-hidden>
-        <Image src="/images/airport/calc-divider.svg" alt="" width={16} height={2} className="h-[1.5px] w-4 max-w-none rotate-90" />
-      </span>
       <input
         name={name}
         defaultValue={defaultValue}
@@ -19,7 +15,7 @@ function CodeField({ name, label, defaultValue, placeholder, ariaLabel }: { name
         pattern="[A-Za-z0-9]{3,4}"
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className="w-0 min-w-0 flex-1 bg-transparent pr-3 pl-1 text-sm text-ink uppercase outline-none placeholder:text-[#64748b] placeholder:normal-case"
+        className="w-0 min-w-0 flex-1 bg-transparent px-3 text-sm text-ink uppercase outline-none placeholder:text-[#64748b] placeholder:normal-case"
       />
     </label>
   );
