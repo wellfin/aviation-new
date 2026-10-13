@@ -2,6 +2,7 @@
 // country-state-city dataset (dev dependency, MIT). Run: npm run states:sync
 //   src/lib/geo/states.json     { "<ISO country>": ["State / province", …] }
 //   src/lib/geo/countries.json  [{ code, name, continent }]  (every country, with its continent)
+//   public/geo/states/<CC>.json ["State", …]  (fetched per country on demand)
 //   public/geo/cities/<CC>.json { "<state name>": ["City", …] }  (fetched per country on demand)
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -59,6 +60,13 @@ const geo = path.join(root, "src", "lib", "geo");
 mkdirSync(geo, { recursive: true });
 writeFileSync(path.join(geo, "states.json"), `${JSON.stringify(statesOut)}\n`, "utf8");
 writeFileSync(path.join(geo, "countries.json"), `${JSON.stringify(countries)}\n`, "utf8");
+
+// Per-country state lists, served as static files (/geo/states/<CC>.json). Not under /api:
+// on the server Nginx sends /api/* to the backend.
+const stateDir = path.join(root, "public", "geo", "states");
+rmSync(stateDir, { recursive: true, force: true });
+mkdirSync(stateDir, { recursive: true });
+for (const [cc, names] of Object.entries(statesOut)) writeFileSync(path.join(stateDir, `${cc}.json`), JSON.stringify(names), "utf8");
 
 const cityDir = path.join(root, "public", "geo", "cities");
 rmSync(cityDir, { recursive: true, force: true });

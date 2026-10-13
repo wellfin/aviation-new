@@ -69,7 +69,7 @@ export function CharterSearchForm({ initial }: { initial?: CharterParams }) {
   const [continent, setContinent] = useState<string>(initial?.continent ?? "");
   const [country, setCountry] = useState(initial?.country ?? "");
   const [stateName, setStateName] = useState(initial?.state ?? "");
-  // States/provinces of the selected country, loaded on demand from /api/states.
+  // States/provinces of the selected country, loaded on demand from /geo/states/<CC>.json.
   const [stateList, setStateList] = useState<{ country: string; names: string[] }>({ country: "", names: [] });
   const [city, setCity] = useState(initial?.city ?? "");
   const [types, setTypes] = useState<AircraftType[]>(initial?.types ?? []);
@@ -84,11 +84,12 @@ export function CharterSearchForm({ initial }: { initial?: CharterParams }) {
   useEffect(() => {
     if (!country) return;
     let cancelled = false;
-    fetch(`/api/states?country=${encodeURIComponent(country)}`)
-      .then((r) => (r.ok ? (r.json() as Promise<{ states?: string[] }>) : { states: [] }))
-      .catch(() => ({ states: [] as string[] }))
-      .then((d) => {
-        if (!cancelled) setStateList({ country, names: d.states ?? [] });
+    // A country without states has no file (404) → empty list.
+    fetch(`/geo/states/${encodeURIComponent(country)}.json`)
+      .then((r) => (r.ok ? (r.json() as Promise<string[]>) : []))
+      .catch(() => [] as string[])
+      .then((names) => {
+        if (!cancelled) setStateList({ country, names: Array.isArray(names) ? names : [] });
       });
     return () => {
       cancelled = true;
