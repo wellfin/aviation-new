@@ -14,17 +14,25 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { label: "Home", href: "/" },
-  { label: "Services", href: "/directory", dropdown: true },
+  { label: "Services", href: "/directory", dropdown: "services" },
   { label: "Airport Directory", href: "/airports" },
+  { label: "Charter", href: "/charter-operators", dropdown: "charter" },
   { label: "News", href: "/news" },
   { label: "Pricing", href: "/pricing" },
   // "Advertise" is hidden from the header; the page stays reachable from the footer (Company → Advertise).
   { label: "Contact", href: "/contact" },
 ] as const;
 
+/** Options under the "Charter" tab. */
+const CHARTER_LINKS = [
+  { label: "Charter Operator", href: "/charter-operators" },
+  { label: "Charter Broker", href: serviceHref("charter-broker") },
+] as const;
+
 function isActive(pathname: string, href: string, label: string): boolean {
   if (href === "/") return pathname === "/";
   // The providers directory has no tab of its own; it belongs to Services.
+  if (label === "Charter") return pathname.startsWith("/charter-operators");
   if (label === "Services") return pathname.startsWith("/providers") || pathname === "/directory" || pathname.startsWith("/directory/");
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -35,6 +43,8 @@ export function SiteHeader() {
   const menuCategories = useCategories().categories.filter((c) => c.showInMenu);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [charterOpen, setCharterOpen] = useState(false);
+  const charterRef = useRef<HTMLDivElement>(null);
   const [userOpen, setUserOpen] = useState(false);
   const servicesRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
@@ -45,6 +55,7 @@ export function SiteHeader() {
     setLastPath(pathname);
     setMobileOpen(false);
     setServicesOpen(false);
+    setCharterOpen(false);
     setUserOpen(false);
   }
 
@@ -52,11 +63,13 @@ export function SiteHeader() {
   useEffect(() => {
     function onDown(e: MouseEvent) {
       if (servicesRef.current && !servicesRef.current.contains(e.target as Node)) setServicesOpen(false);
+      if (charterRef.current && !charterRef.current.contains(e.target as Node)) setCharterOpen(false);
       if (userRef.current && !userRef.current.contains(e.target as Node)) setUserOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setServicesOpen(false);
+        setCharterOpen(false);
         setUserOpen(false);
         setMobileOpen(false);
       }
@@ -91,6 +104,36 @@ export function SiteHeader() {
             const underline = (
               <span className={cn("absolute top-[31px] left-0 h-0.5 bg-gradient-to-r from-brand to-brand-cyan transition-all", active ? "w-full" : "w-0")} />
             );
+            if ("dropdown" in item && item.dropdown === "charter") {
+              return (
+                <div key={item.label} ref={charterRef} className="relative">
+                  <button type="button" className={linkCls} aria-expanded={charterOpen} aria-haspopup="menu" onClick={() => setCharterOpen((v) => !v)}>
+                    {item.label}
+                    <Image src="/images/shared/chevron-down.svg" alt="" width={12} height={12} className={cn("transition", charterOpen && "rotate-180")} />
+                    {underline}
+                  </button>
+                  {charterOpen && (
+                    <div
+                      role="menu"
+                      aria-label="Charter"
+                      className="absolute top-10 left-1/2 z-50 w-52 -translate-x-1/2 rounded-2xl border-[0.57px] border-brand-cyan/15 bg-navy-950/98 p-2 shadow-[0_24px_80px_rgba(0,0,0,0.6)] backdrop-blur"
+                    >
+                      {CHARTER_LINKS.map((l) => (
+                        <Link
+                          key={l.label}
+                          role="menuitem"
+                          href={l.href}
+                          onClick={() => setCharterOpen(false)}
+                          className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-white/85 transition hover:bg-white/8 hover:text-white"
+                        >
+                          {l.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
             if ("dropdown" in item) {
               return (
                 <div key={item.label} ref={servicesRef} className="relative">
@@ -179,11 +222,22 @@ export function SiteHeader() {
       {mobileOpen && (
         <nav aria-label="Mobile" className="border-t border-white/8 bg-navy-950 lg:hidden">
           <div className="container-site flex flex-col py-3">
-            {NAV.filter((n) => n.label !== "Services").map((item) => (
-              <Link key={item.label} href={item.href} className={cn("rounded-lg px-3 py-3 text-[15px] font-medium", isActive(pathname, item.href, item.label) ? "bg-white/8 text-white" : "text-white/80")}>
-                {item.label}
-              </Link>
-            ))}
+            {NAV.filter((n) => n.label !== "Services").map((item) =>
+              item.label === "Charter" ? (
+                <div key={item.label}>
+                  <p className="px-3 pt-3 pb-1 text-[15px] font-medium text-white/80">Charter</p>
+                  {CHARTER_LINKS.map((l) => (
+                    <Link key={l.label} href={l.href} className="block rounded-lg py-2 pr-3 pl-6 text-sm text-white/70 hover:text-white">
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Link key={item.label} href={item.href} className={cn("rounded-lg px-3 py-3 text-[15px] font-medium", isActive(pathname, item.href, item.label) ? "bg-white/8 text-white" : "text-white/80")}>
+                  {item.label}
+                </Link>
+              ),
+            )}
             <p className="px-3 pt-4 pb-2 text-xs font-bold tracking-[1px] text-white/40 uppercase">Services</p>
             <div className="grid grid-cols-2 gap-1">
               {designMenuCategories(menuCategories).map((c) => (
