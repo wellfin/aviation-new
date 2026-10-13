@@ -28,6 +28,18 @@ function pairs(fields: InfoField[]): InfoField[][] {
   return out;
 }
 
+/**
+ * White outer card every airport tab sits in (Figma 696:1642: 24px left, 15px right padding),
+ * so all tabs share the Airport Information layout.
+ */
+export function InfoCard({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={cn("rounded-[20px] bg-white p-2 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] sm:p-4 lg:pt-[34px] lg:pr-[15px] lg:pb-8 lg:pl-6", className)}>
+      {children}
+    </div>
+  );
+}
+
 /** Two-column key/value row cards with an optional "More … (Click to expand)" disclosure. */
 export function InfoGrid({
   fields,

@@ -7,7 +7,7 @@ import { AdBanner } from "@/components/ads/AdBanner";
 import { AirportHero } from "@/components/airport/AirportHero";
 import { AirportTabs } from "@/components/airport/AirportTabs";
 import { DistanceCalculator } from "@/components/airport/DistanceCalculator";
-import { InfoGrid, type InfoField } from "@/components/airport/InfoGrid";
+import { InfoCard, InfoGrid, type InfoField } from "@/components/airport/InfoGrid";
 import { LocationMap } from "@/components/airport/LocationMap";
 import { NearbyList } from "@/components/airport/NearbyList";
 import { Pagination } from "@/components/ui/Pagination";
@@ -15,7 +15,6 @@ import { ProviderRow } from "@/components/airport/ProviderRow";
 import { AIRPORT_TYPE_LABEL, airportHref, parseTab, type AirportTab } from "@/components/airport/routes";
 import { RunwaysPanel } from "@/components/airport/RunwaysPanel";
 import { ServiceSidebar } from "@/components/airport/ServiceSidebar";
-import { SimpleRows } from "@/components/airport/SimpleRows";
 import { SkyscraperAd } from "@/components/airport/SkyscraperAd";
 import { ToolTiles } from "@/components/tools/ToolTiles";
 import { getAirport, getDistance, getNearbyAirports } from "@/lib/data/airports";
@@ -42,22 +41,10 @@ export async function generateMetadata({ params }: PageProps<"/airports/[code]">
   };
 }
 
-/** Providers at the airport grouped into a comma-separated list of profile links. */
+/** Providers at the airport in the given categories, as a plain comma-separated list of names. */
 function providerLinks(providers: Provider[], ...categories: ServiceCategorySlug[]) {
   const list = providers.filter((p) => categories.includes(p.category));
-  if (list.length === 0) return "No listed providers";
-  return (
-    <>
-      {list.map((p, i) => (
-        <span key={p.slug}>
-          {i > 0 && ", "}
-          <Link href={`/providers/${p.slug}`} className="text-brand hover:underline">
-            {p.name}
-          </Link>
-        </span>
-      ))}
-    </>
-  );
+  return list.length === 0 ? "No listed providers" : list.map((p) => p.name).join(", ");
 }
 
 function infoFields(a: Airport, providers: Provider[]): { fields: InfoField[]; more: InfoField[] } {
@@ -91,13 +78,7 @@ function infoFields(a: Airport, providers: Provider[]): { fields: InfoField[]; m
       { label: "Slots Required", value: a.slotsRequired || "—" },
       {
         label: "Airport Website",
-        value: a.website ? (
-          <a href={a.website} target="_blank" rel="noopener noreferrer" className="break-all text-brand hover:underline">
-            {a.website.replace(/^https?:\/\//i, "").replace(/\/$/, "")}
-          </a>
-        ) : (
-          "—"
-        ),
+        value: a.website ? a.website.replace(/^https?:\/\//i, "").replace(/\/$/, "") : "—",
       },
     ],
   };
@@ -140,9 +121,9 @@ function frequencyRows(frequencies: Airport["frequencies"]) {
   const mhz = (list: Airport["frequencies"]) => (list.length ? `${list.map((f) => f.mhz).join(", ")} MHz` : "—");
   const known = new Set(FREQUENCY_ROWS.flatMap(([, types]) => types));
   return [
-    ...FREQUENCY_ROWS.map(([label, types]) => ({ key: label, label, value: mhz(frequencies.filter((f) => types.includes(f.type.toUpperCase()))) })),
+    ...FREQUENCY_ROWS.map(([label, types]) => ({ label, value: mhz(frequencies.filter((f) => types.includes(f.type.toUpperCase()))) })),
     // Anything else staff have published (e.g. UNICOM) follows under its own name.
-    ...frequencies.filter((f) => !known.has(f.type.toUpperCase())).map((f) => ({ key: `${f.type}-${f.mhz}`, label: f.description, value: `${f.mhz} MHz` })),
+    ...frequencies.filter((f) => !known.has(f.type.toUpperCase())).map((f) => ({ label: `${f.description} (${f.type})`, value: `${f.mhz} MHz` })),
   ];
 }
 
@@ -260,51 +241,44 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
     );
   } else if (tab === "info") {
     const info = infoFields(airport, providers);
-    // Figma 696:1642: the row cards sit inside one white card (808px wide; 24px left, 15px right padding).
+    // Figma 696:1642: the row cards sit inside one white card; every other tab uses the same layout.
     content = (
-      <div className="rounded-[20px] bg-white p-2 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] sm:p-4 lg:pt-[34px] lg:pr-[15px] lg:pb-8 lg:pl-6">
+      <InfoCard>
         <InfoGrid fields={info.fields} more={info.more} moreLabel="More Airport Information" />
-      </div>
+      </InfoCard>
     );
   } else if (tab === "services") {
     const svc = serviceFields(airport, providers);
-    // Figma 752:7545: rows sit directly under the tab bar (no card), 22px below it.
     content = (
-      <div className="lg:pt-2.5">
-        <InfoGrid fields={svc.fields} more={svc.more} moreLabel="More Airport Services Information" openBar="square" />
-      </div>
+      <InfoCard>
+        <InfoGrid fields={svc.fields} more={svc.more} moreLabel="More Airport Services Information" />
+      </InfoCard>
     );
   } else if (tab === "runways") {
-    // Figma 960:966: the list starts 16px below the tab bar.
-    content = (
-      <div className="lg:pt-1">
-        <RunwaysPanel runways={airport.runways} diagram={airport.runwayDiagram} airportName={airport.name} />
-      </div>
-    );
+    content = <RunwaysPanel runways={airport.runways} diagram={airport.runwayDiagram} airportName={airport.name} />;
   } else if (tab === "communication") {
-    // Figma 949:5566: the list starts 24px below the tab bar.
     content = (
-      <div className="lg:pt-3">
-        <SimpleRows caption="Airport frequencies" rows={frequencyRows(airport.frequencies)} />
-      </div>
+      <InfoCard>
+        <InfoGrid fields={frequencyRows(airport.frequencies)} />
+      </InfoCard>
     );
   } else if (tab === "fire") {
     const rffs = rffsDetails(airport.fireCategory);
-    // Figma 949:1022 (rows, 22px below the tab bar) followed by two in-column banners.
+    // Rows in the Airport Information layout, followed by two in-column banners.
     content = (
-      <div className="lg:pt-2.5">
-        <SimpleRows
-          caption="Fire and rescue"
-          rows={[
-            { key: "cat", label: "CATEGORY FOR FIRE", value: airport.fireCategory || "—" },
-            {
-              key: "equipment",
-              label: "RESCUE EQUIPMENT’S",
-              value: airport.rescueEquipment || (rffs ? `Min. ${rffs.vehicles} RFFS vehicle${rffs.vehicles > 1 ? "s" : ""}` : "—"),
-            },
-            { key: "removal", label: "CAPABILITY FOR REMOVAL OF DISABLED AIRCRAFT", value: airport.disabledAircraftRemoval || "—" },
-          ]}
-        />
+      <div>
+        <InfoCard>
+          <InfoGrid
+            fields={[
+              { label: "Category for Fire", value: airport.fireCategory || "—" },
+              {
+                label: "Rescue Equipment",
+                value: airport.rescueEquipment || (rffs ? `Min. ${rffs.vehicles} RFFS vehicle${rffs.vehicles > 1 ? "s" : ""}` : "—"),
+              },
+              { label: "Capability for Removal of Disabled Aircraft", value: airport.disabledAircraftRemoval || "—" },
+            ]}
+          />
+        </InfoCard>
         <AdBanner bare ad={headerAd} className="mt-[23px]" height="h-[150px] sm:h-[230px]" />
         <AdBanner bare ad={headerAd} className="mt-7" height="h-[150px] sm:h-[230px]" />
       </div>

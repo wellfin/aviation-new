@@ -1,19 +1,13 @@
 import Image from "next/image";
 import { isRemoteImage } from "@/components/ads/ad-link";
 import type { Runway } from "@/lib/types";
-import { cn, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
+import { InfoCard, InfoGrid } from "./InfoGrid";
 
 const FT_TO_M = 0.3048;
 
-/** Poppins SemiBold, as drawn for this tab (Figma 960:966). */
-const TEXT = "font-poppins font-semibold tracking-[-0.4492px] text-[#343a40]";
-const CELL = "min-w-0 flex-1 xl:w-[254px] xl:flex-none";
-/** Invisible 56px lead-in the design keeps before the first column. */
-const LEAD = "hidden size-14 shrink-0 xl:block";
-const BUTTON = "flex h-9 shrink-0 items-center gap-2 rounded-xl border border-[rgba(11,31,58,0.2)] px-3.5";
-
 function dims(r: Runway) {
-  return `${formatNumber(Math.round(r.lengthFt * FT_TO_M))} x ${Math.round(r.widthFt * FT_TO_M)} m`;
+  return `${formatNumber(Math.round(r.lengthFt * FT_TO_M))} x ${Math.round(r.widthFt * FT_TO_M)} m (${formatNumber(r.lengthFt)} x ${r.widthFt} ft)`;
 }
 
 /** Schematic plan of the runways, drawn to scale from length and true heading. */
@@ -49,68 +43,48 @@ function RunwayDiagram({ runways }: { runways: Runway[] }) {
 }
 
 /**
- * Runways tab (Figma 960:469): a header row, one expandable card per runway (Figma 959:310)
- * and the runway diagram. `diagram` is the admin-uploaded chart; without one a schematic is drawn.
+ * Runways tab, in the Airport Information layout: one white card with each runway as label/value
+ * row cards (remaining details under "More … (Click to expand)"), then the runway diagram.
+ * `diagram` is the admin-uploaded chart; without one a schematic is drawn.
  */
 export function RunwaysPanel({ runways, diagram, airportName }: { runways: Runway[]; diagram?: string; airportName: string }) {
   if (runways.length === 0 && !diagram) {
-    return <p className="rounded-[20px] bg-white p-6 text-sm text-muted shadow-card">No runway data is published for this airport.</p>;
+    return (
+      <InfoCard>
+        <p className="px-5 text-[15px] font-medium text-[#757575] md:text-base">No runway data is published for this airport.</p>
+      </InfoCard>
+    );
   }
   return (
-    <div>
-      <div className="space-y-2">
-        <div className={cn("flex min-h-[88px] items-center gap-4 rounded-[20px] bg-[#eef7ff] p-4 text-[15px] leading-[25px] sm:text-base", TEXT)}>
-          <span className={LEAD} aria-hidden />
-          <span className={CELL}>Runway Number</span>
-          <span className={CELL}>Dimensions</span>
-          {/* Keeps the columns aligned with the rows' "show more" button. */}
-          <span className="w-[116px] shrink-0" aria-hidden />
-        </div>
+    <InfoCard>
+      <div className="space-y-6">
         {runways.map((r) => (
-          <details key={r.designator} className="group rounded-[20px] bg-white p-4 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)]">
-            <summary className={cn("flex min-h-14 cursor-pointer list-none items-center gap-4 text-[15px] leading-[25px] sm:text-lg [&::-webkit-details-marker]:hidden", TEXT)}>
-              <span className={LEAD} aria-hidden />
-              <span className={CELL}>
-                {r.designator} ({Math.round(r.headingDeg)}°)
-              </span>
-              <span className={CELL}>{dims(r)}</span>
-              {/* 116px slot so the columns do not shift when the label changes. */}
-              <span className="flex w-[116px] shrink-0">
-                <span className={cn(BUTTON, "font-poppins text-xs leading-[15px] font-semibold tracking-normal text-[#495057] transition group-hover:border-brand")}>
-                  <span className="group-open:hidden">show more</span>
-                  <span className="hidden group-open:inline">Show Less</span>
-                  <Image src="/images/airport/show-more-chevron.svg" alt="" width={10} height={6} className="h-1.5 w-2.5 group-open:rotate-180" />
-                </span>
-              </span>
-            </summary>
-            <dl className={cn("mt-4 space-y-4 text-[15px] leading-[25px] sm:text-lg", TEXT)}>
-              {[
-                ["Runway Number", r.designator],
-                ["Dimensions", `${dims(r)} (${formatNumber(r.lengthFt)} x ${r.widthFt} ft)`],
-                ["PCN", r.pcn || "—"],
-                ["Surface", r.surface],
-                ["Coordinates", r.coordinates || "—"],
-                ["Elevation", r.elevation || "—"],
-                ["Runway Heading", `${Math.round(r.headingDeg)}° true`],
-                ["Displaced Threshold", r.displacedThreshold || "—"],
-              ].map(([label, value]) => (
-                <div key={label} className="flex min-h-14 items-center gap-4">
-                  <span className={LEAD} aria-hidden />
-                  <dt className={CELL}>{label}</dt>
-                  <dd className="min-w-0 flex-1 break-words">{value}</dd>
-                </div>
-              ))}
-            </dl>
-          </details>
+          <InfoGrid
+            key={r.designator}
+            fields={[
+              { label: "Runway Number", value: r.designator },
+              { label: "Dimensions", value: dims(r) },
+              { label: "Surface", value: r.surface || "—" },
+              { label: "Runway Heading", value: `${Math.round(r.headingDeg)}° true` },
+            ]}
+            more={[
+              { label: "PCN", value: r.pcn || "—" },
+              { label: "Coordinates", value: r.coordinates || "—" },
+              { label: "Elevation", value: r.elevation || "—" },
+              { label: "Displaced Threshold", value: r.displacedThreshold || "—" },
+              { label: "Lighting", value: r.lighting ? "Edge & centreline lighting" : "Unlit" },
+              { label: "Instrument Landing System", value: r.ils || "No ILS" },
+            ]}
+            moreLabel={`More Runway ${r.designator} Information`}
+          />
         ))}
       </div>
 
-      <section aria-labelledby="runway-diagram" className="pt-[22px]">
-        <h3 id="runway-diagram" className={cn("text-xl leading-[25px]", TEXT)}>
+      <section aria-labelledby="runway-diagram" className="pt-6">
+        <h3 id="runway-diagram" className="px-5 pb-3 text-sm leading-5 font-semibold text-ink uppercase lg:px-[45px]">
           Runway Diagram
         </h3>
-        {/* 807×489 frame as drawn (Figma 960:778). */}
-        <div className="relative mt-[15px] aspect-[807/489] overflow-hidden rounded-xl border border-black/28 bg-white">
+        <div className="relative aspect-[807/489] overflow-hidden rounded-[20px] bg-white shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)]">
           {diagram ? (
             <Image src={diagram} alt={`${airportName} runway diagram`} fill sizes="(min-width: 1280px) 808px, 100vw" unoptimized={isRemoteImage(diagram)} className="object-contain" />
           ) : (
@@ -120,6 +94,6 @@ export function RunwaysPanel({ runways, diagram, airportName }: { runways: Runwa
           )}
         </div>
       </section>
-    </div>
+    </InfoCard>
   );
 }
