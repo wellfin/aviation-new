@@ -1,0 +1,13 @@
+<svg width="20" height="20" viewBox="0 8.5 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="IcoAviationServices">
+<!-- Support agent with headset; an aircraft on the chest -->
+<path d="M29 40A21 21 0 0 1 71 40" stroke="#2F80ED" stroke-width="6" stroke-linecap="round"/>
+<rect x="22" y="35" width="11" height="18" rx="5" fill="#2F80ED"/>
+<rect x="67" y="35" width="11" height="18" rx="5" fill="#2F80ED"/>
+<circle cx="50" cy="42" r="15" fill="#2F80ED"/>
+<path d="M72 52C72 60 66 62 57 62" stroke="#2F80ED" stroke-width="4" stroke-linecap="round"/>
+<circle cx="55" cy="62" r="3.5" fill="#2F80ED"/>
+<path d="M14 98C14 78 28 66 50 66C72 66 86 78 86 98Z" fill="#2F80ED"/>
+<path transform="translate(50 83) rotate(45) scale(1.25) translate(-11.5 -12)" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="#fff"/>
+</g>
+</svg>
