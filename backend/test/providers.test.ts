@@ -6,7 +6,7 @@ import { Enquiry } from "../src/modules/enquiries/enquiry.model.js";
 import { testOutbox } from "../src/modules/notifications/mailer.js";
 import { Provider } from "../src/modules/providers/provider.model.js";
 import { adminProvidersRouter, myListingRouter, providersRouter } from "../src/modules/providers/providers.routes.js";
-import { seedProviders } from "../src/modules/providers/providers.seed.js";
+import { DEMO_TIER_SEEDS, seedMissingProviders, seedProviders } from "../src/modules/providers/providers.seed.js";
 import { slugify } from "../src/modules/providers/providers.service.js";
 import { Review } from "../src/modules/reviews/review.model.js";
 import { User } from "../src/modules/users/user.model.js";
@@ -63,6 +63,17 @@ describe("public provider directory", () => {
     }
     expect(r.body.data.items[0]).toMatchObject({ slug: expect.any(String), airports: expect.any(Array), reviews: [] });
     expect(r.body.data.items[0].airports[0]).toEqual({ icao: expect.any(String), iata: expect.any(String), name: expect.any(String), city: expect.any(String), countryCode: expect.any(String) });
+  });
+
+  it("adds the missing demo FBOs so an airport lists all three plans, without touching existing ones", async () => {
+    await Provider.updateOne({ slug: "signature-aviation" }, { $set: { summary: "Edited by staff" } });
+    const added = await seedMissingProviders();
+    expect(added.sort()).toEqual(DEMO_TIER_SEEDS.map((s) => s.slug).sort());
+    expect(await seedMissingProviders()).toEqual([]);
+    expect((await Provider.findOne({ slug: "signature-aviation" }).lean())?.summary).toBe("Edited by staff");
+    const r = await request(app).get("/api/v1/providers?category=fbo&airport=EGLL&pageSize=50");
+    const tiers = new Set(r.body.data.items.map((p: { tier: string }) => p.tier));
+    expect([...tiers].sort()).toEqual(["basic", "pro", "ultra_pro"]);
   });
 
   it("uses a default page size of 9 and paginates", async () => {

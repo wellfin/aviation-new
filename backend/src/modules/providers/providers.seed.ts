@@ -120,6 +120,18 @@ const SEEDS: Seed[] = [
   { slug: "do-co-catering", name: "DO & CO Catering", tier: "basic", category: "catering", countryCode: "FR", city: "Paris", rating: 4.4, reviewCount: 76, summary: "Gourmet in-flight catering for private jets and premium airline cabins.", cover: IMG.cabin2, airports: ["LFPG"], domain: "doco.com", phone: "+33 1 4862 1200" },
 ];
 
+/**
+ * Extra demo FBOs so an airport's FBO list shows all three plans together (Ultra Pro, Pro, Basic),
+ * e.g. London Heathrow and Dubai. Fictional companies. Kept out of SEEDS: they are only inserted
+ * when missing (seedMissingProviders), never overwritten.
+ */
+export const DEMO_TIER_SEEDS: Seed[] = [
+  { slug: "skyport-executive-fbo", name: "Skyport Executive FBO", tier: "pro", category: "fbo", countryCode: "GB", city: "London", rating: 4.6, reviewCount: 187, summary: "Private terminal, crew lounge and ramp services for business aviation at Heathrow and Dubai.", cover: IMG.cabin3, airports: ["EGLL", "OMDB"], domain: "skyportfbo.example", phone: "+44 20 8750 2200" },
+  { slug: "westway-jet-centre", name: "Westway Jet Centre", tier: "basic", category: "fbo", countryCode: "GB", city: "London", rating: 4.2, reviewCount: 41, summary: "Independent FBO offering handling, fuel coordination and passenger lounge access.", cover: IMG.terminal, airports: ["EGLL"], domain: "westwayjet.example", phone: "+44 20 8750 3300" },
+  { slug: "crown-aviation-services", name: "Crown Aviation Services", tier: "basic", category: "fbo", countryCode: "GB", city: "London", rating: 4.0, reviewCount: 27, summary: "Compact FBO for light and midsize jets with 24-hour ramp support.", cover: IMG.cabin4, airports: ["EGLL", "EGGW"], domain: "crownaviation.example", phone: "+44 20 8750 4400" },
+  { slug: "desert-falcon-fbo", name: "Desert Falcon FBO", tier: "basic", category: "fbo", countryCode: "AE", city: "Dubai", rating: 4.1, reviewCount: 35, summary: "Business aviation handling and VIP lounge at Dubai International.", cover: IMG.terminal2, airports: ["OMDB"], domain: "desertfalcon.example", phone: "+971 4 220 5500" },
+];
+
 const airportShortName = (icao: string | undefined) => AIRPORT_SEED.find((a) => a.icao === icao)?.shortName;
 
 /** Mirrors the frontend mock's `build()` so the seeded directory looks identical. */
@@ -200,4 +212,24 @@ export async function seedProviders(): Promise<number> {
   await recountAirportServices([...touched]);
   logger.info({ count: SEEDS.length }, "Seeded providers");
   return SEEDS.length;
+}
+
+/**
+ * Inserts the DEMO_TIER_SEEDS listings that are not in the database yet and leaves every existing
+ * listing untouched, so it is safe to run against a database staff have been editing.
+ */
+export async function seedMissingProviders(): Promise<string[]> {
+  const existing = new Set((await Provider.find({ slug: { $in: DEMO_TIER_SEEDS.map((s) => s.slug) } }, { slug: 1 }).lean()).map((p) => p.slug));
+  const added: string[] = [];
+  const touched = new Set<string>();
+  for (const [index, seed] of DEMO_TIER_SEEDS.entries()) {
+    if (existing.has(seed.slug)) continue;
+    const { ids, codes } = await resolveAirports(seed.airports);
+    await new Provider({ slug: seed.slug, ...build(seed, SEEDS.length + index), airports: ids, airportCodes: codes, status: "published", publishedAt: new Date() }).save();
+    seed.airports.forEach((c) => touched.add(c));
+    added.push(seed.slug);
+  }
+  if (touched.size) await recountAirportServices([...touched]);
+  logger.info({ added: added.length }, "Seeded missing demo providers");
+  return added;
 }
