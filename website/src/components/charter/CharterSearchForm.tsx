@@ -113,10 +113,15 @@ export function CharterSearchForm({ initial }: { initial?: CharterParams }) {
   const citiesLoading = Boolean(country) && cityData.country !== country;
   const cities = useMemo(() => {
     if (!country || cityData.country !== country) return [];
-    // A chosen state narrows the list; otherwise every city in the country.
-    const lists = stateName ? [cityData.byState[stateName] ?? []] : Object.values(cityData.byState);
-    return [...new Set(lists.flat())].sort((a, b) => a.localeCompare(b, "en"));
-  }, [country, stateName, cityData]);
+    const sorted = (list: string[]) => [...new Set(list)].sort((a, b) => a.localeCompare(b, "en"));
+    // A chosen state narrows the list; a state with no listed cities offers itself (e.g. Chandigarh).
+    if (stateName) return cityData.byState[stateName]?.length ? sorted(cityData.byState[stateName]) : [stateName];
+    const all = Object.values(cityData.byState).flat();
+    if (all.length) return sorted(all);
+    // No city data for the country (e.g. Hong Kong, Monaco, Gibraltar): offer its regions, else the country itself.
+    const regions = stateList.country === country ? stateList.names : [];
+    return regions.length ? regions : [COUNTRIES.find((c) => c.code === country)?.name ?? country];
+  }, [country, stateName, cityData, stateList]);
   // Keep a city carried in the URL selectable.
   const cityOptions = city && !cities.includes(city) ? [city, ...cities] : cities;
 
@@ -235,7 +240,13 @@ export function CharterSearchForm({ initial }: { initial?: CharterParams }) {
             }}
             className={cn(selectClass, !stateName && "text-subtle")}
           >
-            <option value="">{statesLoading ? "Loading states…" : country || stateOptions.length ? "Select State" : "Select State (choose a country first)"}</option>
+            <option value="">{statesLoading
+                ? "Loading states…"
+                : !country && !stateOptions.length
+                  ? "Select State (choose a country first)"
+                  : stateOptions.length
+                    ? "Select State"
+                    : "No states for this country — pick a city"}</option>
             {stateOptions.map((s) => (
               <option key={s} value={s}>
                 {s}
