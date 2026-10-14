@@ -36,6 +36,9 @@ export async function generateMetadata({ params }: PageProps<"/providers/[slug]"
   };
 }
 
+/** Banners a Basic listing shows in place of each tab's content (Figma "Basic Details Page" frames). */
+const BASIC_BANNERS: Partial<Record<ProfileTab, number>> = { about: 2, fleet: 1, gallery: 2, brochure: 3, certification: 3, reviews: 3 };
+
 function TabPanel({ tab, provider, reviewPage }: { tab: ProfileTab; provider: Provider; reviewPage: number }) {
   switch (tab) {
     case "services":
@@ -77,6 +80,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   const tabs = profileTabs(provider);
   const active = resolveTab(provider, firstParam(sp.tab));
   const reviewPage = toInt(firstParam(sp.rpage), 1);
+  const basicBanners = basic ? (BASIC_BANNERS[active] ?? 0) : 0;
   const basePath = `/providers/${provider.slug}`;
 
   return (
@@ -93,15 +97,14 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
           <div className="flex min-w-0 flex-col gap-6">
             <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={rules.premiumTabLabel} />
             <div id="profile-panel" aria-live="polite">
-              {basic && (active === "about" || active === "gallery") ? (
-                // Basic listings, About and Gallery tabs (Figma 949:6648): two large banners in place of the content.
+              {basic && basicBanners > 0 ? (
+                // Basic listings show banners in place of the tab content (Figma "Basic Details Page"):
+                // About and Gallery two, Aircraft Fleet one tall, Brochure / Certification / Reviews three.
                 <div className="flex flex-col gap-6">
-                  <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[373px]" />
-                  <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[373px]" />
+                  {Array.from({ length: basicBanners }, (_, i) => (
+                    <AdBanner key={i} bare ad={bannerAd} height={active === "fleet" ? "h-[150px] sm:h-[653px]" : "h-[150px] sm:h-[373px]"} />
+                  ))}
                 </div>
-              ) : basic && active === "fleet" ? (
-                // Basic listings, Aircraft Fleet tab (Figma): one tall banner in place of the fleet list.
-                <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[653px]" />
               ) : (
                 <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />
               )}
@@ -111,8 +114,8 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
 
           <aside className="flex min-w-0 flex-col gap-5" aria-label={`Contact ${provider.name}`}>
             <SidebarAd ad={sidebarAd} className="min-h-[250px]" />
-            {/* Basic listings, Gallery tab (Figma 949:6928): a second, taller side ad. */}
-            {basic && active === "gallery" && <SidebarAd ad={sidebarAd} className="min-h-[526px]" />}
+            {/* Basic listings, Gallery / Brochure / Certification / Reviews tabs (Figma 949:6928): a second, taller side ad. */}
+            {basic && ["gallery", "brochure", "certification", "reviews"].includes(active) && <SidebarAd ad={sidebarAd} className="min-h-[526px]" />}
             {rules.upgradeCard && <UpgradeCard />}
             {rules.enquiryForm && (
               <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />
