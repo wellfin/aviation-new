@@ -34,9 +34,12 @@ export function ProfileHeader({ provider }: { provider: Provider }) {
             {showLogo ? (
               <Image src={provider.logo} alt={`${provider.name} logo`} width={96} height={96} className="size-full object-cover" />
             ) : (
-              <span className="text-brand-gradient text-2xl font-extrabold md:text-3xl" aria-hidden>
-                {initials(provider.name)}
-              </span>
+              // Basic listings show an empty white logo tile (Figma 949:6648); paid listings without a logo get initials.
+              provider.tier !== "basic" && (
+                <span className="text-brand-gradient text-2xl font-extrabold md:text-3xl" aria-hidden>
+                  {initials(provider.name)}
+                </span>
+              )
             )}
           </div>
           <div className="min-w-0 pb-1">

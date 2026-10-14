@@ -93,7 +93,15 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
           <div className="flex min-w-0 flex-col gap-6">
             <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={rules.premiumTabLabel} />
             <div id="profile-panel" aria-live="polite">
-              <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />
+              {basic && active === "about" ? (
+                // Basic listings (Figma 949:6648): two large banners in place of the About content.
+                <div className="flex flex-col gap-6">
+                  <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[373px]" />
+                  <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[373px]" />
+                </div>
+              ) : (
+                <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />
+              )}
             </div>
 
           </div>
