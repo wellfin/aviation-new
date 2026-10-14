@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
 import { ApiError, apiPost } from "@/lib/api/client";
 import { workEmail } from "@/lib/api/forms";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,7 @@ export function EmailOtp({
   trustedEmail,
   fieldClassName,
   placeholder = "Work Email Address",
+  layout = "inline",
 }: {
   endpoints?: OtpEndpoints;
   /** Input id (unique per form on the page). */
@@ -47,12 +48,25 @@ export function EmailOtp({
   /** Height / radius overrides so the field matches the form it sits in. */
   fieldClassName?: string;
   placeholder?: string;
+  /**
+   * "inline": Send OTP inside the field and digit boxes below (contact forms).
+   * "panel": Send OTP beside the field, then a panel with the code, Verify OTP and a resend
+   * timer (Aircraft Fleet Enquiry, Figma).
+   */
+  layout?: "inline" | "panel";
 }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<OtpState>("idle");
   const [digits, setDigits] = useState<string[]>(() => Array(OTP_LENGTH).fill(""));
   const [message, setMessage] = useState<{ tone: "error" | "info" | "success"; text: string } | null>(null);
   const refs = useRef<Array<HTMLInputElement | null>>([]);
+  // Seconds until another code may be requested (the server enforces a 30 s cooldown).
+  const [resendIn, setResendIn] = useState(0);
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const t = window.setTimeout(() => setResendIn((v) => v - 1), 1000);
+    return () => window.clearTimeout(t);
+  }, [resendIn]);
 
   const [seenResetKey, setSeenResetKey] = useState(resetKey);
   if (seenResetKey !== resetKey) {
@@ -88,7 +102,8 @@ export function EmailOtp({
     try {
       await apiPost(endpoints.send, { email: parsed.data });
       setState("sent");
-      setMessage({ tone: "info", text: `We sent a ${OTP_LENGTH}-digit code to ${parsed.data}.` });
+      setResendIn(30);
+      setMessage(layout === "panel" ? null : { tone: "info", text: `We sent a ${OTP_LENGTH}-digit code to ${parsed.data}.` });
       requestAnimationFrame(() => refs.current[0]?.focus());
     } catch (err) {
       setState("idle");
@@ -143,6 +158,101 @@ export function EmailOtp({
   const ownError = message?.tone === "error" ? message.text : undefined;
   const shownError = verified ? undefined : (ownError ?? (state === "idle" ? error : undefined));
   const statusId = `${id}-status`;
+
+  if (layout === "panel") {
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="flex gap-2">
+          <label htmlFor={id} className="sr-only">
+            Work email address
+          </label>
+          <input
+            id={id}
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder={placeholder}
+            value={email}
+            onChange={(e) => changeEmail(e.target.value)}
+            aria-invalid={shownError ? true : undefined}
+            aria-describedby={statusId}
+            className={cn(
+              "h-12 min-w-0 flex-1 rounded-xl border bg-white px-4 text-[15px] text-ink outline-none placeholder:text-subtle focus:ring-3 focus:ring-brand/15",
+              shownError ? "border-danger" : "border-brand/20 focus:border-brand",
+            )}
+          />
+          {verified ? (
+            <span className="flex h-12 shrink-0 items-center rounded-xl bg-success/12 px-4 text-sm font-semibold text-[#15803d]">✓ Verified</span>
+          ) : (
+            <button
+              type="button"
+              onClick={sendOtp}
+              disabled={state === "sending"}
+              className="h-12 shrink-0 rounded-xl bg-brand/10 px-4 text-sm font-semibold whitespace-nowrap text-brand transition hover:bg-brand/15 disabled:opacity-60"
+            >
+              {state === "sending" ? "Sending…" : "Send OTP"}
+            </button>
+          )}
+        </div>
+
+        {showCode && (
+          <fieldset className="rounded-xl bg-brand/5 p-4">
+            <legend className="sr-only">Verification code</legend>
+            <p className="text-sm text-muted">
+              Enter the {OTP_LENGTH}-digit OTP sent to <strong className="font-semibold text-ink">{email.trim()}</strong>
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <input
+                ref={(el) => {
+                  refs.current[0] = el;
+                }}
+                value={digits.join("")}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH);
+                  setDigits(Array.from({ length: OTP_LENGTH }, (_, i) => v[i] ?? ""));
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void verify();
+                  }
+                }}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={OTP_LENGTH}
+                placeholder={"0".repeat(OTP_LENGTH)}
+                aria-label="Verification code"
+                className="h-11 w-36 rounded-xl border border-brand/20 bg-white text-center font-mono text-lg tracking-[0.5em] text-ink outline-none placeholder:text-subtle focus:border-brand focus:ring-3 focus:ring-brand/15"
+              />
+              <button
+                type="button"
+                onClick={verify}
+                disabled={state === "verifying"}
+                className="bg-brand-gradient h-11 rounded-xl px-5 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
+              >
+                {state === "verifying" ? "Verifying…" : "Verify OTP"}
+              </button>
+              {resendIn > 0 ? (
+                <span className="text-xs text-subtle">Resend in {resendIn}s</span>
+              ) : (
+                <button type="button" onClick={sendOtp} className="text-xs font-semibold text-brand hover:underline">
+                  Resend code
+                </button>
+              )}
+            </div>
+          </fieldset>
+        )}
+
+        <p
+          id={statusId}
+          role={shownError ? "alert" : "status"}
+          className={cn("-mt-1 text-xs font-medium empty:hidden", shownError ? "text-danger" : message?.tone === "success" ? "text-[#15803d]" : "text-muted")}
+        >
+          {shownError ?? message?.text ?? ""}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-3">

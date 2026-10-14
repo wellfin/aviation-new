@@ -121,7 +121,7 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
         <Input label="Company Name" name="company" id="fe-company" placeholder="Optional" autoComplete="organization" error={errors.company} />
       </div>
       <div>
-        <Label htmlFor="fe-email">Work Email Address *</Label>
+        <Label htmlFor="fe-email">Email Address *</Label>
         <EmailOtp
           key={otp.mountKey}
           {...otp.fieldProps}
@@ -129,12 +129,12 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
           id="fe-email"
           error={errors.email}
           trustedEmail={user?.emailVerified ? user.email : undefined}
-          fieldClassName="h-12"
-          placeholder="you@company.com"
+          placeholder="your@company.com"
+          layout="panel"
         />
       </div>
       <div>
-        <Label htmlFor="fe-phone">Phone</Label>
+        <Label htmlFor="fe-phone">Phone Number</Label>
         <div className="flex gap-3">
           <DialCodeSelect id="fe-dial" className="h-12" />
           <Input name="phone" id="fe-phone" type="tel" placeholder="7946 0000" autoComplete="tel-national" wrapperClassName="min-w-0 flex-1" error={errors.phone} />
@@ -149,12 +149,13 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
         error={errors.message}
       />
       {result.status === "error" && <FormResultStatus result={result} />}
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button type="button" variant="ghost" onClick={onDone}>
-          Cancel
-        </Button>
-        <Button type="submit" loading={submitting}>
+      {/* Figma: a wide Submit button with Cancel beside it. */}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button type="submit" loading={submitting} className="sm:flex-1">
           Submit Enquiry →
+        </Button>
+        <Button type="button" variant="outline" onClick={onDone}>
+          Cancel
         </Button>
       </div>
     </form>
