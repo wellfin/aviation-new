@@ -26,13 +26,13 @@ const NAV = [
 /** Options under the "Charter" tab. */
 const CHARTER_LINKS = [
   { label: "Charter Operator", href: "/charter-operators" },
-  { label: "Charter Broker", href: serviceHref("charter-broker") },
+  { label: "Charter Broker", href: "/charter-brokers" },
 ] as const;
 
 function isActive(pathname: string, href: string, label: string): boolean {
   if (href === "/") return pathname === "/";
   // The providers directory has no tab of its own; it belongs to Services.
-  if (label === "Charter") return pathname.startsWith("/charter-operators");
+  if (label === "Charter") return pathname.startsWith("/charter-operators") || pathname.startsWith("/charter-brokers");
   if (label === "Services") return pathname.startsWith("/providers") || pathname === "/directory" || pathname.startsWith("/directory/");
   return pathname === href || pathname.startsWith(`${href}/`);
 }

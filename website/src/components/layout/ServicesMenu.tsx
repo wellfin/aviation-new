@@ -15,7 +15,9 @@ function compact(n: number): string {
 const providers = (n: number) => `${compact(n)} provider${n === 1 ? "" : "s"}`;
 
 export function serviceHref(slug: string): string {
-  return slug === "charter-operator" ? "/charter-operators" : `/directory?category=${encodeURIComponent(slug)}`;
+  if (slug === "charter-operator") return "/charter-operators";
+  if (slug === "charter-broker") return "/charter-brokers";
+  return `/directory?category=${encodeURIComponent(slug)}`;
 }
 
 /**
