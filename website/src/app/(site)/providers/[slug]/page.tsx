@@ -93,8 +93,8 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
           <div className="flex min-w-0 flex-col gap-6">
             <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={rules.premiumTabLabel} />
             <div id="profile-panel" aria-live="polite">
-              {basic && active === "about" ? (
-                // Basic listings (Figma 949:6648): two large banners in place of the About content.
+              {basic && (active === "about" || active === "gallery") ? (
+                // Basic listings, About and Gallery tabs (Figma 949:6648): two large banners in place of the content.
                 <div className="flex flex-col gap-6">
                   <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[373px]" />
                   <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[373px]" />
@@ -111,6 +111,8 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
 
           <aside className="flex min-w-0 flex-col gap-5" aria-label={`Contact ${provider.name}`}>
             <SidebarAd ad={sidebarAd} className="min-h-[250px]" />
+            {/* Basic listings, Gallery tab (Figma 949:6928): a second, taller side ad. */}
+            {basic && active === "gallery" && <SidebarAd ad={sidebarAd} className="min-h-[526px]" />}
             {rules.upgradeCard && <UpgradeCard />}
             {rules.enquiryForm && (
               <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />
