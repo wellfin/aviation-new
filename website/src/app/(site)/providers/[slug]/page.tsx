@@ -20,7 +20,7 @@ import { getAdvertisement } from "@/lib/data/content";
 import { getProvider, getRelatedProviders, getSameCategoryProviders } from "@/lib/data/providers";
 import { getCategoryBySlug } from "@/lib/data/categories";
 import type { Provider } from "@/lib/types";
-import { firstParam, toInt } from "@/lib/utils";
+import { cn, firstParam, toInt } from "@/lib/utils";
 
 export async function generateMetadata({ params }: PageProps<"/providers/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -37,21 +37,32 @@ export async function generateMetadata({ params }: PageProps<"/providers/[slug]"
 }
 
 /**
- * Banner heights a listing shows in place of a tab's content, per plan (Figma "Basic Details Page" and
- * "Pro Details Page" frames). Tabs not listed show their content; Ultra Pro always shows content.
+ * What a listing shows on each tab, per plan (Figma "Basic Details Page" / "Pro Details Page" frames):
+ * `banners` ad banners `h` tall (Pro: at least `h`, stretching so the column ends level with the
+ * sidebar), after the tab content when `content` is set, otherwise in its place. Tabs not listed show their
+ * content; Ultra Pro always shows content.
  */
-const TAB_BANNERS: Record<Provider["tier"], Partial<Record<ProfileTab, string[]>>> = {
+interface TabLayout {
+  banners: number;
+  /** Banner size: a fixed height (Basic) or a minimum height (Pro). Literal classes so Tailwind sees them. */
+  size: string;
+  content?: boolean;
+}
+const TAB_LAYOUT: Record<Provider["tier"], Partial<Record<ProfileTab, TabLayout>>> = {
   basic: {
-    about: ["sm:h-[373px]", "sm:h-[373px]"],
-    fleet: ["sm:h-[653px]"],
-    gallery: ["sm:h-[373px]", "sm:h-[373px]"],
-    brochure: ["sm:h-[373px]", "sm:h-[373px]", "sm:h-[373px]"],
-    certification: ["sm:h-[373px]", "sm:h-[373px]", "sm:h-[373px]"],
-    reviews: ["sm:h-[373px]", "sm:h-[373px]", "sm:h-[373px]"],
+    about: { banners: 2, size: "sm:h-[373px]" },
+    fleet: { banners: 1, size: "sm:h-[653px]" },
+    gallery: { banners: 2, size: "sm:h-[373px]" },
+    brochure: { banners: 3, size: "sm:h-[373px]" },
+    certification: { banners: 3, size: "sm:h-[373px]" },
+    reviews: { banners: 3, size: "sm:h-[373px]" },
   },
   pro: {
-    fleet: ["sm:h-[373px]", "sm:h-[373px]", "sm:h-[373px]"],
-    gallery: ["sm:h-[576px]", "sm:h-[576px]"],
+    fleet: { banners: 3, size: "sm:min-h-[373px]" },
+    gallery: { banners: 2, size: "sm:min-h-[540px]" },
+    brochure: { banners: 1, size: "sm:min-h-[540px]", content: true },
+    certification: { banners: 2, size: "sm:min-h-[540px]" },
+    reviews: { banners: 2, size: "sm:min-h-[540px]" },
   },
   ultra_pro: {},
 };
@@ -99,7 +110,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   const tabs = profileTabs(provider);
   const active = resolveTab(provider, firstParam(sp.tab));
   const reviewPage = toInt(firstParam(sp.rpage), 1);
-  const tabBanners = TAB_BANNERS[provider.tier][active] ?? [];
+  const layout = TAB_LAYOUT[provider.tier][active];
   const basePath = `/providers/${provider.slug}`;
 
   return (
@@ -115,17 +126,19 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="flex min-w-0 flex-col gap-6">
             <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={rules.premiumTabLabel} />
-            <div id="profile-panel" aria-live="polite">
-              {tabBanners.length > 0 ? (
-                // Banners in place of the tab content, as drawn for this plan (see TAB_BANNERS).
-                <div className="flex flex-col gap-6">
-                  {tabBanners.map((h, i) => (
-                    <AdBanner key={i} bare ad={bannerAd} height={`h-[150px] ${h}`} />
-                  ))}
-                </div>
-              ) : (
-                <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />
-              )}
+            <div id="profile-panel" aria-live="polite" className="flex flex-1 flex-col gap-6">
+              {(!layout || layout.content) && <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />}
+              {layout &&
+                Array.from({ length: layout.banners }, (_, i) => (
+                  <AdBanner
+                    key={i}
+                    bare
+                    ad={bannerAd}
+                    // Pro banners grow to meet the sidebar's bottom; Basic banners keep the drawn height.
+                    className={provider.tier === "pro" ? "flex flex-1 flex-col" : undefined}
+                    height={cn("h-[150px]", layout.size, provider.tier === "pro" && "sm:h-auto sm:flex-1")}
+                  />
+                ))}
             </div>
 
           </div>
