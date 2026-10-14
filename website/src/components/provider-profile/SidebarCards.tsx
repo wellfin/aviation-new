@@ -5,12 +5,18 @@ import { CategoryEmoji } from "@/components/categories/CategoriesContext";
 
 const card = "rounded-[20px] bg-white p-5 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)]";
 
-export function RelatedProviders({ heading, providers }: { heading: string; providers: Provider[] }) {
+/** A list of other listings. `sponsored` adds the AD badge (Basic profiles, Figma 949:5893). */
+export function RelatedProviders({ heading, providers, sponsored = false, id = "related-heading" }: { heading: string; providers: Provider[]; sponsored?: boolean; id?: string }) {
   return (
-    <section aria-labelledby="related-heading" className={card}>
-      <h2 id="related-heading" className="text-sm font-bold text-ink">
-        {heading}
-      </h2>
+    <section aria-labelledby={id} className={card}>
+      <div className="flex items-center justify-between gap-3">
+        <h2 id={id} className="text-sm font-bold text-ink">
+          {heading}
+        </h2>
+        {sponsored && (
+          <span className="rounded-full border border-success/25 bg-success/12 px-2 py-0.5 text-[8px] font-bold tracking-[0.55px] text-success uppercase">ad</span>
+        )}
+      </div>
       {providers.length === 0 ? (
         <p className="mt-3 text-sm text-muted">No related listings yet.</p>
       ) : (

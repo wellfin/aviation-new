@@ -17,7 +17,7 @@ import { ReviewsTab } from "@/components/provider-profile/tabs/ReviewsTab";
 import { ServicesTab } from "@/components/provider-profile/tabs/ServicesTab";
 import { TIER_RULES, profileTabs, relatedHeading, resolveTab, telHref, type ProfileTab } from "@/components/provider-profile/profile-config";
 import { getAdvertisement } from "@/lib/data/content";
-import { getProvider, getRelatedProviders } from "@/lib/data/providers";
+import { getProvider, getRelatedProviders, getSameCategoryProviders } from "@/lib/data/providers";
 import { getCategoryBySlug } from "@/lib/data/categories";
 import type { Provider } from "@/lib/types";
 import { firstParam, toInt } from "@/lib/utils";
@@ -62,9 +62,18 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   const provider = await getProvider(slug);
   if (!provider) notFound();
 
-  const [related, bannerAd, sidebarAd] = await Promise.all([getRelatedProviders(provider, 4), getAdvertisement("header-banner"), getAdvertisement("sidebar")]);
+  const basic = provider.tier === "basic";
+  const [related, sameKind, bannerAd, sidebarAd] = await Promise.all([
+    getRelatedProviders(provider, 4),
+    basic ? getSameCategoryProviders(provider, 4) : Promise.resolve([]),
+    getAdvertisement("header-banner"),
+    getAdvertisement("sidebar"),
+  ]);
 
   const rules = TIER_RULES[provider.tier];
+  // Charter listings name their own kind ("Related Charter Operators"); others use the category name.
+  const sameKindHeading =
+    relatedHeading(provider) === "Related Providers" ? `Other ${(await getCategoryBySlug(provider.category))?.name ?? "Similar"} Listings` : relatedHeading(provider);
   const tabs = profileTabs(provider);
   const active = resolveTab(provider, firstParam(sp.tab));
   const reviewPage = toInt(firstParam(sp.rpage), 1);
@@ -86,6 +95,13 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
             <div id="profile-panel" aria-live="polite">
               <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />
             </div>
+            {/* Basic listings carry two large banners under the content (Figma 949:5852 / 949:5854). */}
+            {basic && (
+              <>
+                <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[302px]" />
+                <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[302px]" />
+              </>
+            )}
           </div>
 
           <aside className="flex min-w-0 flex-col gap-5" aria-label={`Contact ${provider.name}`}>
@@ -94,7 +110,15 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
             {rules.enquiryForm && (
               <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />
             )}
-            <RelatedProviders heading={relatedHeading(provider)} providers={related} />
+            {basic ? (
+              <>
+                {/* Basic: same-kind listings (sponsored), then other related providers (Figma 949:5893 / 949:5930). */}
+                <RelatedProviders heading={sameKindHeading} providers={sameKind} sponsored id="related-same-heading" />
+                <RelatedProviders heading="Related Providers" providers={related.filter((p) => p.category !== provider.category)} />
+              </>
+            ) : (
+              <RelatedProviders heading={relatedHeading(provider)} providers={related} />
+            )}
           </aside>
         </div>
       </div>

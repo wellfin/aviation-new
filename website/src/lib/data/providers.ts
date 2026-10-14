@@ -88,6 +88,17 @@ export async function getRelatedProviders(provider: Provider, limit = 4): Promis
 }
 
 /** Approved reviews for a profile, newest first (the profile payload only embeds the latest few). */
+/** Other listings of the same kind (e.g. other charter operators), best rated first. */
+export async function getSameCategoryProviders(provider: Provider, limit = 4): Promise<Provider[]> {
+  try {
+    const page = await listProviders({ category: provider.category, sort: "rating", pageSize: limit + 1 });
+    return page.items.filter((p) => p.slug !== provider.slug).slice(0, limit);
+  } catch {
+    // A sidebar extra — the profile still renders without it.
+    return [];
+  }
+}
+
 export async function listProviderReviews(provider: Provider, page = 1, pageSize = 4): Promise<Paginated<Review>> {
   if (config.DATA_SOURCE === "mock") return paginate(provider.reviews, page, pageSize);
   const result = await apiGet<Paginated<Review>>(
