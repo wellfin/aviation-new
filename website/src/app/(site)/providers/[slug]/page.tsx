@@ -99,6 +99,9 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
                   <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[373px]" />
                   <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[373px]" />
                 </div>
+              ) : basic && active === "fleet" ? (
+                // Basic listings, Aircraft Fleet tab (Figma): one tall banner in place of the fleet list.
+                <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[653px]" />
               ) : (
                 <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />
               )}
