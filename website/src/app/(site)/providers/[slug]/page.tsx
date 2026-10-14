@@ -36,8 +36,25 @@ export async function generateMetadata({ params }: PageProps<"/providers/[slug]"
   };
 }
 
-/** Banners a Basic listing shows in place of each tab's content (Figma "Basic Details Page" frames). */
-const BASIC_BANNERS: Partial<Record<ProfileTab, number>> = { about: 2, fleet: 1, gallery: 2, brochure: 3, certification: 3, reviews: 3 };
+/**
+ * Banner heights a listing shows in place of a tab's content, per plan (Figma "Basic Details Page" and
+ * "Pro Details Page" frames). Tabs not listed show their content; Ultra Pro always shows content.
+ */
+const TAB_BANNERS: Record<Provider["tier"], Partial<Record<ProfileTab, string[]>>> = {
+  basic: {
+    about: ["sm:h-[373px]", "sm:h-[373px]"],
+    fleet: ["sm:h-[653px]"],
+    gallery: ["sm:h-[373px]", "sm:h-[373px]"],
+    brochure: ["sm:h-[373px]", "sm:h-[373px]", "sm:h-[373px]"],
+    certification: ["sm:h-[373px]", "sm:h-[373px]", "sm:h-[373px]"],
+    reviews: ["sm:h-[373px]", "sm:h-[373px]", "sm:h-[373px]"],
+  },
+  pro: {
+    fleet: ["sm:h-[373px]", "sm:h-[373px]", "sm:h-[373px]"],
+    gallery: ["sm:h-[576px]", "sm:h-[576px]"],
+  },
+  ultra_pro: {},
+};
 
 function TabPanel({ tab, provider, reviewPage }: { tab: ProfileTab; provider: Provider; reviewPage: number }) {
   switch (tab) {
@@ -66,9 +83,11 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   if (!provider) notFound();
 
   const basic = provider.tier === "basic";
+  // Basic and Pro list same-kind listings in one sponsored card (Figma); Ultra Pro keeps Related Providers.
+  const sponsoredRelated = provider.tier !== "ultra_pro";
   const [related, sameKind, bannerAd, sidebarAd] = await Promise.all([
-    basic ? Promise.resolve([]) : getRelatedProviders(provider, 4),
-    basic ? getSameCategoryProviders(provider, 4) : Promise.resolve([]),
+    sponsoredRelated ? Promise.resolve([]) : getRelatedProviders(provider, 4),
+    sponsoredRelated ? getSameCategoryProviders(provider, 4) : Promise.resolve([]),
     getAdvertisement("header-banner"),
     getAdvertisement("sidebar"),
   ]);
@@ -80,7 +99,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   const tabs = profileTabs(provider);
   const active = resolveTab(provider, firstParam(sp.tab));
   const reviewPage = toInt(firstParam(sp.rpage), 1);
-  const basicBanners = basic ? (BASIC_BANNERS[active] ?? 0) : 0;
+  const tabBanners = TAB_BANNERS[provider.tier][active] ?? [];
   const basePath = `/providers/${provider.slug}`;
 
   return (
@@ -97,12 +116,11 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
           <div className="flex min-w-0 flex-col gap-6">
             <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={rules.premiumTabLabel} />
             <div id="profile-panel" aria-live="polite">
-              {basic && basicBanners > 0 ? (
-                // Basic listings show banners in place of the tab content (Figma "Basic Details Page"):
-                // About and Gallery two, Aircraft Fleet one tall, Brochure / Certification / Reviews three.
+              {tabBanners.length > 0 ? (
+                // Banners in place of the tab content, as drawn for this plan (see TAB_BANNERS).
                 <div className="flex flex-col gap-6">
-                  {Array.from({ length: basicBanners }, (_, i) => (
-                    <AdBanner key={i} bare ad={bannerAd} height={active === "fleet" ? "h-[150px] sm:h-[653px]" : "h-[150px] sm:h-[373px]"} />
+                  {tabBanners.map((h, i) => (
+                    <AdBanner key={i} bare ad={bannerAd} height={`h-[150px] ${h}`} />
                   ))}
                 </div>
               ) : (
@@ -120,8 +138,8 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
             {rules.enquiryForm && (
               <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />
             )}
-            {basic ? (
-              // Basic (Figma 949:6153): one sponsored card of listings of the same kind, e.g. other charter operators.
+            {sponsoredRelated ? (
+              // Basic and Pro (Figma): one sponsored card of listings of the same kind, e.g. other charter operators.
               <RelatedProviders heading={sameKindHeading} providers={sameKind} sponsored />
             ) : (
               <RelatedProviders heading={relatedHeading(provider)} providers={related} />
