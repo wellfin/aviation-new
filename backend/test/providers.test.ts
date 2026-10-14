@@ -1,7 +1,7 @@
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { Airport } from "../src/modules/airports/airport.model.js";
-import { seedAirports } from "../src/modules/airports/airports.seed.js";
+import { seedAirports, seedMissingAirports } from "../src/modules/airports/airports.seed.js";
 import { Enquiry } from "../src/modules/enquiries/enquiry.model.js";
 import { testOutbox } from "../src/modules/notifications/mailer.js";
 import { Provider } from "../src/modules/providers/provider.model.js";
@@ -66,6 +66,7 @@ describe("public provider directory", () => {
   });
 
   it("adds the missing demo FBOs so an airport lists all three plans, without touching existing ones", async () => {
+    await seedMissingAirports(); // the demo listings also use the neighbouring airports
     await Provider.updateOne({ slug: "signature-aviation" }, { $set: { summary: "Edited by staff" } });
     const added = await seedMissingProviders();
     expect(added.sort()).toEqual(DEMO_TIER_SEEDS.map((s) => s.slug).sort());

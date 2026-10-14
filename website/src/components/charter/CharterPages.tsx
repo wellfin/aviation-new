@@ -9,15 +9,17 @@ import { Pagination } from "@/components/ui/Pagination";
 import { getAdvertisement } from "@/lib/data/content";
 import { paginate } from "@/lib/utils";
 import { CharterHero } from "./CharterHero";
-import { CharterResult } from "./CharterResult";
+import { ProviderRow } from "@/components/airport/ProviderRow";
 import { CharterSearchForm } from "./CharterSearchForm";
 import { SponsoredCard } from "./SponsoredCard";
 import { loadCharterProviders } from "./data";
 import { charterQuery, hasCriteria, matchesCharterFilters, parseCharterParams } from "./filters";
 import { CHARTER_KINDS, type CharterKind } from "./kinds";
 
-const PAGE_SIZE = 10;
-const AD_AFTER = 4;
+/** Seven listings a page, the sponsored strip after the fifth (as drawn in the design). */
+const PAGE_SIZE = 7;
+const AD_AFTER = 5;
+const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
 
 async function charterAds() {
   const [bannerAd, sidebarAd, stripAd] = await Promise.all([getAdvertisement("header-banner"), getAdvertisement("sidebar"), getAdvertisement("sponsored-strip")]);
@@ -57,7 +59,8 @@ export async function CharterResultsPage({ kind, searchParams }: { kind: Charter
   const filters = parseCharterParams(searchParams);
   const [providers, { bannerAd, sidebarAd, stripAd }] = await Promise.all([loadCharterProviders(kind, { q: filters.q, country: filters.country }), charterAds()]);
   const result = paginate(
-    providers.filter((p) => matchesCharterFilters(p, filters)),
+    // Ultra Pro first, then Pro, then Basic; each plan keeps the API's rating order.
+    providers.filter((p) => matchesCharterFilters(p, filters)).sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]),
     filters.page,
     PAGE_SIZE,
   );
@@ -78,8 +81,10 @@ export async function CharterResultsPage({ kind, searchParams }: { kind: Charter
       />
 
       <div className="container-site grid gap-8 pt-6 pb-8 xl:grid-cols-[314px_minmax(0,660px)_314px] xl:justify-between">
-        <div className="hidden xl:block">
-          <SidebarAd ad={sidebarAd} className="sticky top-24 min-h-[560px]" />
+        {/* Two tall ads down each side of the list (Figma). */}
+        <div className="hidden flex-col gap-5 xl:flex">
+          <SidebarAd ad={sidebarAd} className="min-h-[420px] flex-1" />
+          <SidebarAd ad={sidebarAd} className="min-h-[420px] flex-1" />
         </div>
 
         <section aria-labelledby="charter-results-heading">
@@ -102,11 +107,11 @@ export async function CharterResultsPage({ kind, searchParams }: { kind: Charter
               resetLabel="New search"
             />
           ) : (
-            <div className="overflow-hidden rounded-[16px] bg-white shadow-soft">
+            <div className="space-y-[5px]">
               {result.items.map((provider, i) => (
                 <Fragment key={provider.id}>
-                  <CharterResult provider={provider} />
-                  {i === Math.min(AD_AFTER, result.items.length) - 1 && <SponsoredStrip ad={stripAd} className="m-4" />}
+                  <ProviderRow provider={provider} />
+                  {i === Math.min(AD_AFTER, result.items.length) - 1 && <SponsoredStrip ad={stripAd} className="my-2" />}
                 </Fragment>
               ))}
             </div>
@@ -115,11 +120,9 @@ export async function CharterResultsPage({ kind, searchParams }: { kind: Charter
           <Pagination page={result.page} totalPages={result.totalPages} basePath={`${k.basePath}/results`} params={query} className="pt-9" />
         </section>
 
-        <div className="hidden xl:block">
-          <div className="sticky top-24 flex flex-col gap-5">
-            <SidebarAd ad={sidebarAd} className="min-h-[300px]" />
-            <SponsoredCard ad={stripAd} />
-          </div>
+        <div className="hidden flex-col gap-5 xl:flex">
+          <SidebarAd ad={sidebarAd} className="min-h-[420px] flex-1" />
+          <SidebarAd ad={sidebarAd} className="min-h-[420px] flex-1" />
         </div>
       </div>
 
