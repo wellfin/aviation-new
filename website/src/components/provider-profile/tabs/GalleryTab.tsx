@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Dialog } from "../Dialog";
-import { CARD, CARD_TITLE } from "../styles";
+import { CARD } from "../styles";
 
 export function GalleryTab({ images, name }: { images: string[]; name: string }) {
   const [index, setIndex] = useState(0);
@@ -15,7 +15,8 @@ export function GalleryTab({ images, name }: { images: string[]; name: string })
 
   return (
     <section className={`${CARD} p-6`} aria-labelledby="gallery-heading">
-      <h2 id="gallery-heading" className={CARD_TITLE}>
+      {/* Figma: the photos fill the card without a visible heading. */}
+      <h2 id="gallery-heading" className="sr-only">
         Photo Gallery
       </h2>
       {count === 0 ? (
@@ -25,7 +26,7 @@ export function GalleryTab({ images, name }: { images: string[]; name: string })
           <button
             type="button"
             onClick={() => setZoomed(true)}
-            className="group relative mt-6 block aspect-[845/528] w-full overflow-hidden rounded-[12px] bg-surface"
+            className="group relative block aspect-[845/528] w-full overflow-hidden rounded-[12px] bg-surface"
             aria-label={`Open photo ${index + 1} of ${count} full screen`}
           >
             <Image src={images[index] ?? images[0] ?? ""} alt={`${name} — photo ${index + 1}`} fill sizes="(max-width: 1024px) 100vw, 845px" className="object-cover" />

@@ -1,4 +1,3 @@
-import { Download } from "lucide-react";
 import type { Brochure } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CARD, TILE } from "../styles";
@@ -16,12 +15,10 @@ export function BrochureTab({ brochures }: { brochures: Brochure[] }) {
           {brochures.map((b, i) => (
             <li key={b.title}>
               <a href={b.url} download className={cn(TILE, "group", i === 0 ? "bg-brand-gradient" : "bg-navy-900")}>
-                <span className="flex items-center gap-2 text-base font-bold uppercase md:text-lg">
-                  <Download className="size-4 shrink-0 opacity-80" aria-hidden />
-                  <span className="line-clamp-1">{b.title}</span>
-                </span>
-                <span className="text-[11px] leading-4 font-semibold tracking-[0.6px] text-white/70">
-                  {b.fileType} · {b.sizeLabel}
+                {/* Figma: the brochure name only; type and size stay available to screen readers. */}
+                <span className="line-clamp-1 text-base font-bold uppercase md:text-lg">{b.title}</span>
+                <span className="sr-only">
+                  ({b.fileType}, {b.sizeLabel})
                 </span>
               </a>
             </li>

@@ -64,7 +64,10 @@ const TAB_LAYOUT: Record<Provider["tier"], Partial<Record<ProfileTab, TabLayout>
     certification: { banners: 2, size: "sm:min-h-[540px]" },
     reviews: { banners: 2, size: "sm:min-h-[540px]" },
   },
-  ultra_pro: {},
+  // Ultra Pro shows all content; Certification is followed by one banner (Figma).
+  ultra_pro: {
+    certification: { banners: 1, size: "sm:h-[235px]", content: true },
+  },
 };
 
 function TabPanel({ tab, provider, reviewPage }: { tab: ProfileTab; provider: Provider; reviewPage: number }) {

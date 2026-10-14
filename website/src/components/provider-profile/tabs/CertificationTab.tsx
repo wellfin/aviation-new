@@ -22,8 +22,8 @@ export function CertificationTab({ certifications, providerName }: { certificati
           {certifications.map((c, i) => (
             <li key={c.code}>
               <button type="button" onClick={() => setOpen(c)} className={cn(TILE, "w-full", i === 0 ? "bg-brand-gradient" : "bg-navy-900")} aria-haspopup="dialog">
+                {/* Figma: the certificate name only; issuer, number and validity open in the dialog. */}
                 <span className="text-base font-bold uppercase md:text-lg">{c.name}</span>
-                <span className="text-[11px] leading-4 font-semibold tracking-[0.6px] text-white/70">{c.issuer}</span>
               </button>
             </li>
           ))}
