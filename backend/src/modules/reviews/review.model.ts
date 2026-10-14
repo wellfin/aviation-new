@@ -2,15 +2,23 @@ import { type HydratedDocument, type InferSchemaType, Schema, model } from "mong
 
 export const REVIEW_STATUSES = ["pending", "approved", "rejected"] as const;
 
-/** One review per user per provider; only approved reviews count towards the rating. */
+/**
+ * One review per user (or per verified email for guest testimonials) per provider; only
+ * approved reviews count towards the rating.
+ */
 const reviewSchema = new Schema(
   {
     provider: { type: Schema.Types.ObjectId, ref: "Provider", required: true },
-    author: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    /* The signed-in reviewer; absent on guest testimonials. */
+    author: { type: Schema.Types.ObjectId, ref: "User" },
+    /* Guest testimonials: the verified email (never shown publicly), company and photo. */
+    authorEmail: { type: String, trim: true, lowercase: true, maxlength: 254 },
+    authorCompany: { type: String, trim: true, maxlength: 120, default: "" },
+    authorPhoto: { type: String, trim: true, maxlength: 500, default: "" },
     authorName: { type: String, required: true, trim: true, maxlength: 120 },
     authorRole: { type: String, trim: true, maxlength: 120, default: "" },
     rating: { type: Number, required: true, min: 1, max: 5 },
-    title: { type: String, required: true, trim: true, maxlength: 120 },
+    title: { type: String, trim: true, maxlength: 120, default: "" },
     body: { type: String, required: true, trim: true, maxlength: 3000 },
     status: { type: String, enum: REVIEW_STATUSES, required: true, default: "pending" },
     moderatedBy: { type: Schema.Types.ObjectId, ref: "User" },
@@ -20,7 +28,8 @@ const reviewSchema = new Schema(
   { timestamps: true },
 );
 
-reviewSchema.index({ provider: 1, author: 1 }, { unique: true });
+reviewSchema.index({ provider: 1, author: 1 }, { unique: true, partialFilterExpression: { author: { $exists: true } } });
+reviewSchema.index({ provider: 1, authorEmail: 1 }, { unique: true, partialFilterExpression: { authorEmail: { $exists: true } } });
 reviewSchema.index({ provider: 1, status: 1, createdAt: -1 });
 reviewSchema.index({ status: 1, createdAt: -1 });
 reviewSchema.index({ author: 1, createdAt: -1 });

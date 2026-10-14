@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { BadgeCheck } from "lucide-react";
 import { useState } from "react";
 import type { Certification } from "@/lib/types";
@@ -30,27 +31,36 @@ export function CertificationTab({ certifications, providerName }: { certificati
         </ul>
       )}
 
-      <Dialog open={open !== null} onClose={() => setOpen(null)} title={open?.name ?? "Certificate"} subtitle={providerName} className="max-w-[480px]">
-        {open && (
-          <div className="flex flex-col items-center text-center">
-            <span className="flex size-16 items-center justify-center rounded-full bg-success/10 text-success">
-              <BadgeCheck className="size-8" aria-hidden />
-            </span>
-            <p className="mt-4 text-xl font-extrabold text-ink">{open.name}</p>
-            <p className="text-sm text-muted">Issued by {open.issuer}</p>
-            <dl className="mt-6 grid w-full grid-cols-2 gap-3 text-left">
-              <div className="rounded-xl border border-brand/10 bg-brand/4 px-3 py-2.5">
-                <dt className="text-[11px] font-semibold tracking-[0.6px] text-subtle uppercase">Certificate No.</dt>
-                <dd className="mt-0.5 font-mono text-sm font-bold text-ink">{open.code}</dd>
-              </div>
-              <div className="rounded-xl border border-brand/10 bg-brand/4 px-3 py-2.5">
-                <dt className="text-[11px] font-semibold tracking-[0.6px] text-subtle uppercase">Valid Until</dt>
-                <dd className="mt-0.5 text-sm font-bold text-ink">{formatDate(open.validUntil)}</dd>
-              </div>
-            </dl>
+      {/* With an uploaded certificate image: the scan itself, full size (Figma). Otherwise its details. */}
+      {open?.image ? (
+        <Dialog open onClose={() => setOpen(null)} title={`${open.name} certificate`} tone="bare" className="max-w-[720px]">
+          <div className="relative aspect-[3/4] max-h-[85vh] w-full overflow-hidden rounded-[20px] bg-white">
+            <Image src={open.image} alt={`${open.name} certificate of ${providerName}`} fill sizes="720px" unoptimized={/^https?:/i.test(open.image)} className="object-contain" />
           </div>
-        )}
-      </Dialog>
+        </Dialog>
+      ) : (
+        <Dialog open={open !== null} onClose={() => setOpen(null)} title={open?.name ?? "Certificate"} subtitle={providerName} className="max-w-[480px]">
+          {open && (
+            <div className="flex flex-col items-center text-center">
+              <span className="flex size-16 items-center justify-center rounded-full bg-success/10 text-success">
+                <BadgeCheck className="size-8" aria-hidden />
+              </span>
+              <p className="mt-4 text-xl font-extrabold text-ink">{open.name}</p>
+              <p className="text-sm text-muted">Issued by {open.issuer}</p>
+              <dl className="mt-6 grid w-full grid-cols-2 gap-3 text-left">
+                <div className="rounded-xl border border-brand/10 bg-brand/4 px-3 py-2.5">
+                  <dt className="text-[11px] font-semibold tracking-[0.6px] text-subtle uppercase">Certificate No.</dt>
+                  <dd className="mt-0.5 font-mono text-sm font-bold text-ink">{open.code}</dd>
+                </div>
+                <div className="rounded-xl border border-brand/10 bg-brand/4 px-3 py-2.5">
+                  <dt className="text-[11px] font-semibold tracking-[0.6px] text-subtle uppercase">Valid Until</dt>
+                  <dd className="mt-0.5 text-sm font-bold text-ink">{formatDate(open.validUntil)}</dd>
+                </div>
+              </dl>
+            </div>
+          )}
+        </Dialog>
+      )}
     </section>
   );
 }

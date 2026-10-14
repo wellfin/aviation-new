@@ -23,6 +23,8 @@ const certificationSchema = new Schema(
     issuer: { type: String, required: true, trim: true, maxlength: 120 },
     validUntil: { type: String, trim: true, maxlength: 20, default: "" },
     code: { type: String, trim: true, maxlength: 60, default: "" },
+    /* Scan / photo of the certificate, shown when a visitor opens it. */
+    image: { type: String, trim: true, maxlength: 500, default: "" },
   },
   { _id: false },
 );
@@ -136,6 +138,8 @@ export interface ReviewDTO {
   id: string;
   author: string;
   role: string;
+  /** Reviewer photo (guest testimonials), or "". */
+  photo: string;
   rating: number;
   date: string;
   title: string;
@@ -184,7 +188,7 @@ export function toProviderDTO(p: ProviderLike, opts: { reviews?: ReviewDTO[] } =
     ...(p.locationsLabel ? { locationsLabel: p.locationsLabel } : {}),
     services: (p.services ?? []).map((s) => ({ name: s.name, description: s.description ?? "", icon: s.icon ?? "plane" })),
     airports: airports.map((a) => ({ icao: a.icao, iata: a.iata ?? "", name: a.shortName, city: a.city, countryCode: a.countryCode })),
-    certifications: (p.certifications ?? []).map((c) => ({ name: c.name, issuer: c.issuer, validUntil: c.validUntil ?? "", code: c.code ?? "" })),
+    certifications: (p.certifications ?? []).map((c) => ({ name: c.name, issuer: c.issuer, validUntil: c.validUntil ?? "", code: c.code ?? "", image: c.image ?? "" })),
     brochures: (p.brochures ?? []).map((b) => ({ title: b.title, fileType: b.fileType ?? "PDF", sizeLabel: b.sizeLabel ?? "", url: b.url })),
     reviews: opts.reviews ?? [],
     fleet: (p.fleet ?? []).map((f) => ({

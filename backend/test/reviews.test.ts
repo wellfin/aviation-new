@@ -124,7 +124,7 @@ describe("GET /providers/:slug/reviews", () => {
     expect(r.status).toBe(200);
     expect(r.body.data).toMatchObject({ total: 3, page: 1, pageSize: 2, totalPages: 2 });
     expect(r.body.data.items.map((i: { rating: number }) => i.rating)).toEqual([3, 4]);
-    expect(Object.keys(r.body.data.items[0]).sort()).toEqual(["author", "body", "date", "id", "rating", "role", "title"]);
+    expect(Object.keys(r.body.data.items[0]).sort()).toEqual(["author", "body", "date", "id", "photo", "rating", "role", "title"]);
     expect(r.body.data.items[0].date).toBe("2026-03-01T00:00:00.000Z");
     const p2 = await request(app).get(`/api/v1/providers/${provider.slug}/reviews?pageSize=2&page=2`);
     expect(p2.body.data.items.map((i: { rating: number }) => i.rating)).toEqual([5]);

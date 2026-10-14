@@ -113,6 +113,7 @@ export const providerSchema = z.object({
           .regex(/^(\d{4}-\d{2}-\d{2})?$/, "Use YYYY-MM-DD")
           .optional(),
         code: text(60).optional(),
+        image: assetUrl.optional(),
       }),
     )
     .max(20),
@@ -165,6 +166,7 @@ export interface CertRow {
   issuer: string;
   validUntil: string;
   code: string;
+  image: string;
 }
 export interface BrochureRow {
   title: string;
@@ -267,7 +269,7 @@ export function stateFromProvider(p: AdminProvider): ProviderFormState {
     locationsLabel: p.locationsLabel ?? "",
     services: p.services.map((s) => ({ name: s.name, description: s.description, icon: s.icon })),
     airports: p.airports.map((a) => ({ icao: a.icao, label: [a.iata, a.name].filter(Boolean).join(" · ") })),
-    certifications: p.certifications.map((c) => ({ ...c })),
+    certifications: p.certifications.map((c) => ({ ...c, image: c.image ?? "" })),
     brochures: p.brochures.map((b) => ({ ...b })),
     fleet: p.fleet.map((f) => ({
       id: f.id,

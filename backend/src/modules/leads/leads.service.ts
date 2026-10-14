@@ -34,6 +34,7 @@ export const LEAD_OTP = {
   advertising: { purpose: "advertising_email", length: 4 },
   dataLicence: { purpose: "data_licence_email", length: 4 },
   enquiry: { purpose: "enquiry_email", length: 4 },
+  review: { purpose: "review_email", length: 4 },
 } as const satisfies Record<string, { purpose: OtpPurpose; length: number }>;
 export type OtpForm = keyof typeof LEAD_OTP;
 

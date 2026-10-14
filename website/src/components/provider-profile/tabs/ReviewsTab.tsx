@@ -1,9 +1,10 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Quote, Star, User } from "lucide-react";
 import { listProviderReviews } from "@/lib/data/providers";
 import { orFallback } from "@/lib/data/safe";
 import type { Provider } from "@/lib/types";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ShareExperience } from "../ReviewForm";
 
 const PAGE_SIZE = 4;
@@ -46,8 +47,7 @@ export async function ReviewsTab({ provider, page }: { provider: Provider; page:
           WHAT OUR CLIENTS SAY
         </h2>
         <p className="mx-auto mt-3 max-w-[640px] text-base leading-7 text-white/95 md:text-lg">
-          Discover why operators, crews and flight departments choose {provider.name}
-          {provider.reviewCount > 0 && ` — rated ${provider.rating.toFixed(1)}/5 from ${formatNumber(provider.reviewCount)} reviews`}.
+          Discover why business executives, celebrities, and discerning travelers choose {provider.name} for their private aviation needs.
         </p>
         <ShareExperience providerSlug={provider.slug} providerName={provider.name} />
       </section>
@@ -65,11 +65,10 @@ export async function ReviewsTab({ provider, page }: { provider: Provider; page:
                   <Star key={i} className={cn("size-4", i <= r.rating ? "fill-[#facc15] text-[#facc15]" : "fill-line text-line")} aria-hidden />
                 ))}
               </p>
-              <p className="mt-4 text-base font-bold text-ink">{r.title}</p>
-              <p className="mt-1 flex-1 text-base leading-6 text-ink/90">{r.body}</p>
+              <p className="mt-4 flex-1 text-base leading-6 text-ink/90">{r.body}</p>
               <div className="mt-6 flex items-center gap-4">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#dbeafe] text-brand" aria-hidden>
-                  <User className="size-4" />
+                <span className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#dbeafe] text-brand" aria-hidden>
+                  {r.photo ? <Image src={r.photo} alt="" fill sizes="48px" unoptimized={/^https?:/i.test(r.photo)} className="object-cover" /> : <User className="size-4" />}
                 </span>
                 <div className="min-w-0">
                   <p className="text-base font-bold text-[#111827]">{r.author}</p>

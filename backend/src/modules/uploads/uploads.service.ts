@@ -97,6 +97,27 @@ export async function createUpload(ownerId: Types.ObjectId, kind: UploadKind, fi
   }
 }
 
+/**
+ * Stores a visitor-supplied image that belongs to no account (a guest testimonial photo). Same
+ * checks as createUpload — magic bytes and size — and returns its public URL.
+ */
+export async function storeGuestImage(file: IncomingFile): Promise<{ key: string; url: string }> {
+  if (file.buffer.length === 0) throw validationError({ photo: "The file is empty." });
+  const limit = maxBytesFor("image");
+  if (file.buffer.length > limit) throw validationError({ photo: `That photo is too large (max ${Math.round(limit / MB)} MB).` });
+  const detected = await fileTypeFromBuffer(file.buffer);
+  if (!detected || !ALLOWED.image[detected.ext]) throw validationError({ photo: "Use a PNG, JPG or WebP photo." });
+  const key = newKey(detected.ext);
+  await getStorage().put(key, file.buffer);
+  return { key, url: publicFileUrl(key) };
+}
+
+export async function removeStoredFile(key: string): Promise<void> {
+  await getStorage()
+    .remove(key)
+    .catch((err: unknown) => logger.warn({ err, key }, "Failed to remove stored file"));
+}
+
 export async function listUploads(
   ownerId: Types.ObjectId,
   q: { page: number; pageSize: number; kind?: UploadKind | undefined },

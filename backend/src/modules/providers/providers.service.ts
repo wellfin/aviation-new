@@ -92,6 +92,7 @@ export async function latestApprovedReviews(providerId: Types.ObjectId, limit = 
     id: String(r._id),
     author: r.authorName,
     role: r.authorRole ?? "",
+    photo: r.authorPhoto ?? "",
     rating: r.rating,
     date: r.createdAt.toISOString().slice(0, 10),
     title: r.title,

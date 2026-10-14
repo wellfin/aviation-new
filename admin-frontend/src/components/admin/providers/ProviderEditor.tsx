@@ -314,7 +314,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             <Repeater
               items={s.certifications}
               onChange={(v) => set("certifications", v)}
-              create={() => ({ name: "", issuer: "", validUntil: "", code: "" })}
+              create={() => ({ name: "", issuer: "", validUntil: "", code: "", image: "" })}
               max={20}
               addLabel="Add certification"
               itemLabel={(it, i) => it.name || `Certification ${i + 1}`}
@@ -327,6 +327,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
                   <Input label="Issuer *" name={`certifications.${i}.issuer`} value={it.issuer} maxLength={120} onChange={(ev) => update({ issuer: ev.target.value })} error={e(`certifications.${i}.issuer`)} />
                   <Input label="Valid until" name={`certifications.${i}.validUntil`} type="date" value={it.validUntil} onChange={(ev) => update({ validUntil: ev.target.value })} error={e(`certifications.${i}.validUntil`)} />
                   <Input label="Code" name={`certifications.${i}.code`} value={it.code} maxLength={60} onChange={(ev) => update({ code: ev.target.value })} error={e(`certifications.${i}.code`)} />
+                  <UploadField id={`certifications.${i}.image`} label="Certificate image" kind="image" value={it.image} onChange={(image) => update({ image })} error={e(`certifications.${i}.image`)} hint="Shown full-size when a visitor opens the certificate." />
                 </Grid>
               )}
             </Repeater>

@@ -65,6 +65,7 @@ const certification = z.object({
     .regex(/^(\d{4}-\d{2}-\d{2})?$/, "Use YYYY-MM-DD")
     .optional(),
   code: text(60).optional(),
+  image: assetUrl.optional(),
 });
 
 const brochure = z.object({

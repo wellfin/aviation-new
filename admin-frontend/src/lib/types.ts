@@ -58,6 +58,8 @@ export interface Certification {
   issuer: string;
   validUntil: string;
   code: string;
+  /** Scan / photo of the certificate, shown when a visitor opens it. */
+  image?: string;
 }
 
 export interface Brochure {

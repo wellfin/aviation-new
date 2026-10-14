@@ -5,7 +5,10 @@ import { containsRegex, type Paginated, paginated, skipFor } from "../../lib/pag
 import { Provider, type ReviewDTO } from "../providers/provider.model.js";
 import type { UserDoc } from "../users/user.model.js";
 import { Review, type ReviewAttrs } from "./review.model.js";
-import type { AdminListQuery, CreateReviewInput } from "./review.schemas.js";
+import type { AdminListQuery, CreateReviewInput, GuestReviewInput } from "./review.schemas.js";
+import { consumeVerifiedEmail } from "../otp/otp.service.js";
+import { LEAD_OTP } from "../leads/leads.service.js";
+import { removeStoredFile, storeGuestImage, type IncomingFile } from "../uploads/uploads.service.js";
 
 type ReviewLike = Omit<ReviewAttrs, "provider"> & { _id: Types.ObjectId; provider: unknown; createdAt: Date; updatedAt: Date };
 
@@ -21,9 +24,10 @@ export function toReviewDTO(r: ReviewLike): ReviewDTO {
     id: String(r._id),
     author: r.authorName,
     role: r.authorRole ?? "",
+    photo: r.authorPhoto ?? "",
     rating: r.rating,
     date: r.createdAt.toISOString(),
-    title: r.title,
+    title: r.title ?? "",
     body: r.body,
   };
 }
@@ -52,7 +56,8 @@ export function toOwnReviewDTO(r: ReviewLike) {
 export function toAdminReviewDTO(r: ReviewLike) {
   return {
     ...toOwnReviewDTO(r),
-    authorId: String(r.author),
+    authorId: r.author ? String(r.author) : null,
+    authorEmail: r.authorEmail ?? "",
     moderatedBy: r.moderatedBy ? String(r.moderatedBy) : null,
     moderatedAt: r.moderatedAt?.toISOString() ?? null,
     moderationNote: r.moderationNote ?? "",
@@ -116,6 +121,38 @@ export async function createReview(slug: string, user: UserDoc, input: CreateRev
   } catch (err) {
     // Race between the exists() check and the insert — the unique index is the source of truth.
     if (isDuplicateKeyError(err)) throw duplicateReview();
+    throw err;
+  }
+}
+
+const duplicateTestimonial = () => new AppError(409, "DUPLICATE_REVIEW", "You've already shared your experience with this provider.");
+
+/**
+ * A visitor's testimonial: the email must have been verified with a code (single use). The optional
+ * photo is validated and stored; the testimonial waits for moderation like any review.
+ */
+export async function createGuestReview(slug: string, input: GuestReviewInput, photo?: IncomingFile) {
+  const provider = await findPublishedProvider(slug);
+  if (await Review.exists({ provider: provider._id, authorEmail: input.email })) throw duplicateTestimonial();
+  await consumeVerifiedEmail(LEAD_OTP.review.purpose, input.email);
+  const stored = photo ? await storeGuestImage(photo) : null;
+  try {
+    const review = await Review.create({
+      provider: provider._id,
+      authorEmail: input.email,
+      authorName: input.name,
+      authorCompany: input.company ?? "",
+      // Shown under the name on the review card.
+      authorRole: input.company ?? "",
+      authorPhoto: stored?.url ?? "",
+      rating: input.rating,
+      body: input.body,
+      status: "pending",
+    });
+    return toOwnReviewDTO({ ...review.toObject(), provider });
+  } catch (err) {
+    if (stored) await removeStoredFile(stored.key);
+    if (isDuplicateKeyError(err)) throw duplicateTestimonial();
     throw err;
   }
 }

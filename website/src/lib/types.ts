@@ -65,6 +65,8 @@ export interface Certification {
   issuer: string;
   validUntil: string;
   code: string;
+  /** Scan / photo of the certificate, shown when a visitor opens it. */
+  image?: string;
 }
 
 export interface Brochure {
@@ -78,6 +80,8 @@ export interface Review {
   id: string;
   author: string;
   role: string;
+  /** Reviewer photo (guest testimonials), or "". */
+  photo?: string;
   rating: number;
   date: string;
   title: string;

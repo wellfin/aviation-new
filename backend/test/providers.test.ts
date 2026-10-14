@@ -134,7 +134,7 @@ describe("public provider directory", () => {
     const r = await request(app).get(pub("/execujet"));
     expect(r.status).toBe(200);
     expect(r.body.data.reviews).toEqual([
-      { id: expect.any(String), author: "Capt. A", role: "Chief Pilot", rating: 5, date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), title: "Great", body: "Great service" },
+      { id: expect.any(String), author: "Capt. A", role: "Chief Pilot", photo: "", rating: 5, date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), title: "Great", body: "Great service" },
     ]);
     expect(r.body.data.airports.map((a: { icao: string }) => a.icao)).toEqual(["OMDB", "OMDW", "WSSS", "EGGW"]);
     expect(r.body.data).not.toHaveProperty("status");

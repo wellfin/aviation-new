@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
 import type { Brochure, Certification, ProviderService } from "@/lib/types";
 import { formatBytes } from "../upload";
-import { EditorSection, move, RowControls, UploadButton, UsageMeter, useSectionSave } from "./editor-kit";
+import { EditorSection, move, RowControls, Thumb, UploadButton, UsageMeter, useSectionSave } from "./editor-kit";
 import { brochuresSchema, certificationsSchema, SERVICE_ICONS, servicesSchema } from "./schema";
 import type { SectionProps } from "./TextSections";
 
@@ -133,10 +133,21 @@ export function CertificationsSection({ listing, onSaved }: SectionProps) {
               <Input name={`cert-${i}-code`} label="Certificate number" value={r.code} onChange={(e) => update(i, { code: e.target.value })} error={errors[`certifications.${i}.code`]} maxLength={60} />
               <Input name={`cert-${i}-valid`} label="Valid until" type="date" value={r.validUntil} onChange={(e) => update(i, { validUntil: e.target.value })} error={errors[`certifications.${i}.validUntil`]} />
             </div>
+            {/* Shown full-size when a visitor opens the certificate on your profile. */}
+            <div className="mt-3 flex items-center gap-3">
+              {r.image && <Thumb src={r.image} alt={`${r.name || "Certificate"} image`} className="h-16 w-12 shrink-0 rounded-lg border border-line" />}
+              <UploadButton kind="image" label={r.image ? "Replace certificate image" : "Upload certificate image"} onUploaded={(f) => update(i, { image: f.url })} />
+              {r.image && (
+                <button type="button" onClick={() => update(i, { image: "" })} className="text-xs font-semibold text-danger hover:underline">
+                  Remove
+                </button>
+              )}
+            </div>
+            {errors[`certifications.${i}.image`] && <p className="mt-1 text-xs text-danger">{errors[`certifications.${i}.image`]}</p>}
           </RowCard>
         ))}
       </ul>
-      <Button type="button" variant="ghost" size="sm" disabled={rows.length >= 20} onClick={() => setRows((r) => [...r, { name: "", issuer: "", code: "", validUntil: "" }])}>
+      <Button type="button" variant="ghost" size="sm" disabled={rows.length >= 20} onClick={() => setRows((r) => [...r, { name: "", issuer: "", code: "", validUntil: "", image: "" }])}>
         <Plus className="size-4" aria-hidden /> Add certification
       </Button>
     </EditorSection>

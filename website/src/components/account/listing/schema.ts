@@ -108,6 +108,7 @@ export const certificationsSchema = z.object({
           .trim()
           .regex(/^(\d{4}-\d{2}-\d{2})?$/, "Use YYYY-MM-DD"),
         code: text(60),
+        image: assetUrl.optional(),
       }),
     )
     .max(20, "Use at most 20 certifications"),

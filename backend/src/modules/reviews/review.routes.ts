@@ -1,9 +1,14 @@
 import { Router } from "express";
+import multer from "multer";
+import { formRateLimit, otpRateLimit } from "../../middleware/security.js";
+import { sendLeadOtp, verifyLeadOtp } from "../leads/leads.service.js";
+import { maxBytesFor } from "../uploads/uploads.service.js";
 import { handler, created, noContent, ok } from "../../lib/http.js";
 import { currentUser, requirePermission, requireVerifiedEmail } from "../../middleware/auth.js";
-import { adminListQuery, createReviewBody, idParams, listQuery, rejectBody, slugParams } from "./review.schemas.js";
+import { adminListQuery, createReviewBody, guestReviewBody, idParams, listQuery, rejectBody, reviewOtpRequestBody, reviewOtpVerifyBody, slugParams } from "./review.schemas.js";
 import {
   adminListReviews,
+  createGuestReview,
   createReview,
   deleteAnyReview,
   deleteOwnReview,
@@ -28,6 +33,42 @@ providerReviewsRouter.post(
   requireVerifiedEmail,
   handler({ params: slugParams, body: createReviewBody }, async ({ params, body }, req, res) => {
     created(res, await createReview(params.slug, currentUser(req), body));
+  }),
+);
+
+/** Optional reviewer photo, buffered in memory (bounded) so its magic bytes are checked before storing. */
+const testimonialPhoto = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: maxBytesFor("image"), files: 1, fields: 10, fieldSize: 4000, parts: 12 },
+}).single("photo");
+
+providerReviewsRouter.post(
+  "/:slug/reviews/email-otp",
+  otpRateLimit,
+  handler({ params: slugParams, body: reviewOtpRequestBody }, async ({ body }, _req, res) => {
+    await sendLeadOtp("review", body.email);
+    ok(res, { sent: true });
+  }),
+);
+
+providerReviewsRouter.post(
+  "/:slug/reviews/email-otp/verify",
+  otpRateLimit,
+  handler({ params: slugParams, body: reviewOtpVerifyBody }, async ({ body }, _req, res) => {
+    await verifyLeadOtp("review", body.email, body.code);
+    ok(res, { verified: true });
+  }),
+);
+
+/** Guest "Share Your Experience" (multipart: fields + optional `photo`). */
+providerReviewsRouter.post(
+  "/:slug/testimonials",
+  formRateLimit,
+  testimonialPhoto,
+  handler({ params: slugParams, body: guestReviewBody }, async ({ params, body }, req, res) => {
+    // Bots fill the hidden field; answer as if accepted.
+    if (body.website?.trim()) return created(res, { status: "pending" });
+    created(res, await createGuestReview(params.slug, body, req.file));
   }),
 );
 
