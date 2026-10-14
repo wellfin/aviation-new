@@ -64,7 +64,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
 
   const basic = provider.tier === "basic";
   const [related, sameKind, bannerAd, sidebarAd] = await Promise.all([
-    getRelatedProviders(provider, 4),
+    basic ? Promise.resolve([]) : getRelatedProviders(provider, 4),
     basic ? getSameCategoryProviders(provider, 4) : Promise.resolve([]),
     getAdvertisement("header-banner"),
     getAdvertisement("sidebar"),
@@ -95,13 +95,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
             <div id="profile-panel" aria-live="polite">
               <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />
             </div>
-            {/* Basic listings carry two large banners under the content (Figma 949:5852 / 949:5854). */}
-            {basic && (
-              <>
-                <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[302px]" />
-                <AdBanner bare ad={bannerAd} height="h-[150px] sm:h-[302px]" />
-              </>
-            )}
+
           </div>
 
           <aside className="flex min-w-0 flex-col gap-5" aria-label={`Contact ${provider.name}`}>
@@ -111,11 +105,8 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
               <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />
             )}
             {basic ? (
-              <>
-                {/* Basic: same-kind listings (sponsored), then other related providers (Figma 949:5893 / 949:5930). */}
-                <RelatedProviders heading={sameKindHeading} providers={sameKind} sponsored id="related-same-heading" />
-                <RelatedProviders heading="Related Providers" providers={related.filter((p) => p.category !== provider.category)} />
-              </>
+              // Basic (Figma 949:6153): one sponsored card of listings of the same kind, e.g. other charter operators.
+              <RelatedProviders heading={sameKindHeading} providers={sameKind} sponsored />
             ) : (
               <RelatedProviders heading={relatedHeading(provider)} providers={related} />
             )}
