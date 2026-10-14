@@ -138,6 +138,7 @@ export const providerSchema = z.object({
         baseIcao: z.union([icao, z.literal("")]).optional(),
         image: assetUrl.optional(),
         yearOfManufacture: int(1950, 2100, "a year").optional(),
+        yearOfRefurbishment: int(1950, 2100, "a year").optional(),
       }),
     )
     .max(50),
@@ -181,6 +182,7 @@ export interface FleetRow {
   baseIcao: string;
   image: string;
   yearOfManufacture: string;
+  yearOfRefurbishment: string;
 }
 export interface AirportChip {
   icao: string;
@@ -277,6 +279,7 @@ export function stateFromProvider(p: AdminProvider): ProviderFormState {
       baseIcao: f.baseIcao,
       image: f.image,
       yearOfManufacture: f.yearOfManufacture ? String(f.yearOfManufacture) : "",
+      yearOfRefurbishment: f.yearOfRefurbishment ? String(f.yearOfRefurbishment) : "",
     })),
     videoUrl: p.videoUrl ?? "",
     foundedYear: p.foundedYear ? String(p.foundedYear) : "",
@@ -322,6 +325,7 @@ export function rawPayload(s: ProviderFormState, mode: "create" | "edit"): Recor
       baseIcao: f.baseIcao.toUpperCase(),
       image: f.image,
       yearOfManufacture: num(f.yearOfManufacture),
+      yearOfRefurbishment: num(f.yearOfRefurbishment),
     })),
     videoUrl: s.videoUrl,
     foundedYear: num(s.foundedYear) ?? null,

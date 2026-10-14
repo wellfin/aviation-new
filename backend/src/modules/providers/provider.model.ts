@@ -46,6 +46,8 @@ const fleetSchema = new Schema({
   baseIcao: { type: String, uppercase: true, trim: true, match: /^[A-Z0-9]{4}$/ },
   image: { ...url, default: "" },
   yearOfManufacture: { type: Number, min: 1950, max: 2100 },
+  /* Year of the last cabin refurbishment ("YOR" on the fleet card). */
+  yearOfRefurbishment: { type: Number, min: 1950, max: 2100 },
 });
 
 const providerSchema = new Schema(
@@ -195,6 +197,7 @@ export function toProviderDTO(p: ProviderLike, opts: { reviews?: ReviewDTO[] } =
       baseIcao: f.baseIcao ?? "",
       image: f.image ?? "",
       yearOfManufacture: f.yearOfManufacture ?? 0,
+      ...(f.yearOfRefurbishment ? { yearOfRefurbishment: f.yearOfRefurbishment } : {}),
     })),
     ...(p.videoUrl ? { videoUrl: p.videoUrl } : {}),
     ...(p.foundedYear ? { foundedYear: p.foundedYear } : {}),

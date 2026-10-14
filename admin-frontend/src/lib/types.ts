@@ -87,6 +87,7 @@ export interface FleetAircraft {
   baseIcao: string;
   image: string;
   yearOfManufacture: number;
+  yearOfRefurbishment?: number;
 }
 
 export interface Provider {

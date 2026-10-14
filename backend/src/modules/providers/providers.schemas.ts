@@ -85,6 +85,7 @@ const fleetItem = z.object({
   baseIcao: z.union([icaoCode, z.literal("")]).optional(),
   image: assetUrl.optional(),
   yearOfManufacture: z.number().int().min(1950).max(2100).optional(),
+  yearOfRefurbishment: z.number().int().min(1950).max(2100).optional(),
 });
 
 const contact = z

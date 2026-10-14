@@ -94,6 +94,8 @@ export interface FleetAircraft {
   baseIcao: string;
   image: string;
   yearOfManufacture: number;
+  /** Year of the last cabin refurbishment, if any. */
+  yearOfRefurbishment?: number;
 }
 
 export interface Provider {

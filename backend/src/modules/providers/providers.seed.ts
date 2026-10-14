@@ -47,13 +47,14 @@ interface FleetSeed {
   baseIcao: string;
   image: string;
   yearOfManufacture: number;
+  yearOfRefurbishment?: number;
 }
 
 const FLEET: FleetSeed[] = [
-  { model: "Gulfstream G650ER", category: "Ultra Long Range", seats: 14, rangeNm: 7500, speedKts: 516, baseIcao: "EGLF", image: IMG.cabin1, yearOfManufacture: 2021 },
-  { model: "Bombardier Global 6000", category: "Heavy Jet", seats: 13, rangeNm: 6000, speedKts: 499, baseIcao: "EGLF", image: IMG.cabin2, yearOfManufacture: 2019 },
-  { model: "Dassault Falcon 2000LXS", category: "Super Midsize Jet", seats: 10, rangeNm: 4000, speedKts: 482, baseIcao: "EGGW", image: IMG.cabin3, yearOfManufacture: 2020 },
-  { model: "Embraer Phenom 300E", category: "Light Jet", seats: 7, rangeNm: 2010, speedKts: 453, baseIcao: "EGKK", image: IMG.cabin4, yearOfManufacture: 2022 },
+  { model: "Gulfstream G650ER", category: "Ultra Long Range", seats: 14, rangeNm: 7500, speedKts: 516, baseIcao: "EGLF", image: IMG.cabin1, yearOfManufacture: 2021, yearOfRefurbishment: 2024 },
+  { model: "Bombardier Global 6000", category: "Heavy Jet", seats: 13, rangeNm: 6000, speedKts: 499, baseIcao: "EGLF", image: IMG.cabin2, yearOfManufacture: 2019, yearOfRefurbishment: 2022 },
+  { model: "Dassault Falcon 2000LXS", category: "Super Midsize Jet", seats: 10, rangeNm: 4000, speedKts: 482, baseIcao: "EGGW", image: IMG.cabin3, yearOfManufacture: 2020, yearOfRefurbishment: 2023 },
+  { model: "Embraer Phenom 300E", category: "Light Jet", seats: 7, rangeNm: 2010, speedKts: 453, baseIcao: "EGKK", image: IMG.cabin4, yearOfManufacture: 2022, yearOfRefurbishment: 2025 },
 ];
 
 interface Seed {

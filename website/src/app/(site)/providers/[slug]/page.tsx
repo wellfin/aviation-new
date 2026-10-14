@@ -94,8 +94,8 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   if (!provider) notFound();
 
   const basic = provider.tier === "basic";
-  // Basic and Pro list same-kind listings in one sponsored card (Figma); Ultra Pro keeps Related Providers.
-  const sponsoredRelated = provider.tier !== "ultra_pro";
+  // Every plan lists same-kind listings in one sponsored card (Figma Basic / Pro / Ultra Pro frames).
+  const sponsoredRelated = true;
   const [related, sameKind, bannerAd, sidebarAd] = await Promise.all([
     sponsoredRelated ? Promise.resolve([]) : getRelatedProviders(provider, 4),
     sponsoredRelated ? getSameCategoryProviders(provider, 4) : Promise.resolve([]),

@@ -371,7 +371,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             <Repeater
               items={s.fleet}
               onChange={(v) => set("fleet", v)}
-              create={() => ({ id: "", model: "", category: "Light Jet" as const, seats: "", rangeNm: "", speedKts: "", baseIcao: "", image: "", yearOfManufacture: "" })}
+              create={() => ({ id: "", model: "", category: "Light Jet" as const, seats: "", rangeNm: "", speedKts: "", baseIcao: "", image: "", yearOfManufacture: "", yearOfRefurbishment: "" })}
               max={50}
               addLabel="Add aircraft"
               itemLabel={(it, i) => it.model || `Aircraft ${i + 1}`}
@@ -396,6 +396,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
                       <Input label="Range (nm) *" name={`${p}.rangeNm`} type="number" inputMode="numeric" min={0} max={20000} value={it.rangeNm} onChange={(ev) => update({ rangeNm: ev.target.value })} error={e(`${p}.rangeNm`)} />
                       <Input label="Speed (kts) *" name={`${p}.speedKts`} type="number" inputMode="numeric" min={0} max={800} value={it.speedKts} onChange={(ev) => update({ speedKts: ev.target.value })} error={e(`${p}.speedKts`)} />
                       <Input label="Year built" name={`${p}.yearOfManufacture`} type="number" inputMode="numeric" min={1950} max={2100} value={it.yearOfManufacture} onChange={(ev) => update({ yearOfManufacture: ev.target.value })} error={e(`${p}.yearOfManufacture`)} />
+                      <Input label="Year refurbished" name={`${p}.yearOfRefurbishment`} type="number" inputMode="numeric" min={1950} max={2100} value={it.yearOfRefurbishment} onChange={(ev) => update({ yearOfRefurbishment: ev.target.value })} error={e(`${p}.yearOfRefurbishment`)} />
                     </Grid>
                     <UploadField id={`${p}.image`} label="Photo" kind="image" value={it.image} onChange={(image) => update({ image })} error={e(`${p}.image`)} />
                   </div>

@@ -20,6 +20,7 @@ interface Row {
   baseIcao: string;
   image: string;
   yearOfManufacture: string;
+  yearOfRefurbishment: string;
 }
 
 const toRow = (f: FleetAircraft): Row => ({
@@ -32,6 +33,7 @@ const toRow = (f: FleetAircraft): Row => ({
   baseIcao: f.baseIcao,
   image: f.image,
   yearOfManufacture: f.yearOfManufacture ? String(f.yearOfManufacture) : "",
+  yearOfRefurbishment: f.yearOfRefurbishment ? String(f.yearOfRefurbishment) : "",
 });
 
 const num = (v: string) => (v.trim() === "" ? Number.NaN : Number(v));
@@ -58,6 +60,7 @@ export function FleetSection({ listing, onSaved }: SectionProps) {
         baseIcao: r.baseIcao.trim(),
         image: r.image,
         ...(r.yearOfManufacture.trim() ? { yearOfManufacture: num(r.yearOfManufacture) } : {}),
+        ...(r.yearOfRefurbishment.trim() ? { yearOfRefurbishment: num(r.yearOfRefurbishment) } : {}),
       })),
     });
   }
@@ -104,6 +107,7 @@ export function FleetSection({ listing, onSaved }: SectionProps) {
                 <Input name={`fleet-${i}-speed`} label="Speed (KTAS)" type="number" inputMode="numeric" min={0} max={800} value={r.speedKts} onChange={(e) => update(i, { speedKts: e.target.value })} error={err(i, "speedKts")} />
                 <Input name={`fleet-${i}-base`} label="Base (ICAO)" placeholder="e.g. KTEB" value={r.baseIcao} onChange={(e) => update(i, { baseIcao: e.target.value.toUpperCase() })} error={err(i, "baseIcao")} maxLength={4} className="font-mono uppercase" />
                 <Input name={`fleet-${i}-year`} label="Year built" type="number" inputMode="numeric" min={1950} max={2100} placeholder="Optional" value={r.yearOfManufacture} onChange={(e) => update(i, { yearOfManufacture: e.target.value })} error={err(i, "yearOfManufacture")} />
+                <Input name={`fleet-${i}-refurb`} label="Year refurbished" type="number" inputMode="numeric" min={1950} max={2100} placeholder="Optional" value={r.yearOfRefurbishment} onChange={(e) => update(i, { yearOfRefurbishment: e.target.value })} error={err(i, "yearOfRefurbishment")} />
               </div>
             </div>
             {err(i, "image") && <p className="mt-1 text-xs text-danger">{err(i, "image")}</p>}
@@ -115,7 +119,7 @@ export function FleetSection({ listing, onSaved }: SectionProps) {
         variant="ghost"
         size="sm"
         disabled={rows.length >= 50}
-        onClick={() => setRows((r) => [...r, { id: "", model: "", category: "Light Jet", seats: "", rangeNm: "", speedKts: "", baseIcao: "", image: "", yearOfManufacture: "" }])}
+        onClick={() => setRows((r) => [...r, { id: "", model: "", category: "Light Jet", seats: "", rangeNm: "", speedKts: "", baseIcao: "", image: "", yearOfManufacture: "", yearOfRefurbishment: "" }])}
       >
         <Plus className="size-4" aria-hidden /> Add aircraft
       </Button>

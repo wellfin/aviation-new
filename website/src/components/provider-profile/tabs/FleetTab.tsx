@@ -9,7 +9,7 @@ import { FieldError, FormStatus, Input, Label, Textarea } from "@/components/ui/
 import { apiPost } from "@/lib/api/client";
 import { useZodForm } from "@/lib/hooks/useZodForm";
 import type { FleetAircraft } from "@/lib/types";
-import { cn, formatNumber } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Dialog } from "../Dialog";
 import { DialCodeSelect } from "@/components/contact/DialCodeSelect";
 import { EmailOtp, ENQUIRY_OTP } from "@/components/contact/EmailOtp";
@@ -35,7 +35,7 @@ function Step({ n, children }: { n: number; children: string }) {
 }
 
 function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: string; aircraft: FleetAircraft; onDone: () => void }) {
-  const [trip, setTrip] = useState<(typeof TRIP_TYPES)[number]["value"]>("round-trip");
+  const [trip, setTrip] = useState<(typeof TRIP_TYPES)[number]["value"]>("one-way");
   const [pax, setPax] = useState(2);
   const otp = useEmailVerification();
   const { user } = useAuth();
@@ -64,6 +64,13 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
       <input type="hidden" name="providerSlug" value={providerSlug} />
       <input type="hidden" name="aircraftId" value={aircraft.id} />
       <input type="hidden" name="tripType" value={trip} />
+      {/* The aircraft being enquired about (Figma: photo + model chip at the top). */}
+      <div className="flex items-center gap-3 rounded-xl bg-brand/5 p-3">
+        <span className="relative h-9 w-14 shrink-0 overflow-hidden rounded-lg bg-navy-900">
+          <Image src={aircraft.image} alt="" fill sizes="56px" className="object-cover" />
+        </span>
+        <span className="text-sm font-bold text-ink">{aircraft.model}</span>
+      </div>
       <Step n={1}>Trip Details</Step>
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Trip type">
         {TRIP_TYPES.map((t) => (
@@ -189,7 +196,7 @@ export function FleetTab({
               { label: "Category", value: a.category },
               { label: "Seats", value: String(a.seats) },
               { label: "YOM", value: String(a.yearOfManufacture) },
-              { label: "Range", value: `${formatNumber(a.rangeNm)} NM` },
+              { label: "YOR", value: a.yearOfRefurbishment ? String(a.yearOfRefurbishment) : "—" },
             ];
             return (
               <li key={a.id} className="overflow-hidden rounded-[20px] bg-white shadow-[0_4px_24px_rgba(11,31,58,0.08),0_1px_4px_rgba(11,31,58,0.04)]">

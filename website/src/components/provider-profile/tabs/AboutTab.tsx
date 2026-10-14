@@ -23,7 +23,8 @@ export function AboutTab({ provider }: { provider: Provider }) {
             <p key={p.slice(0, 40)}>{p}</p>
           ))}
         </div>
-        {facts.length > 0 && (
+        {/* Figma: the About card shows the description only on Ultra Pro; facts stay for Pro. */}
+        {facts.length > 0 && provider.tier !== "ultra_pro" && (
           <dl className="mt-6 grid grid-cols-2 gap-3 border-t border-line pt-5 sm:grid-cols-3">
             {facts.map((f) => (
               <div key={f.label} className="rounded-xl border border-brand/10 bg-brand/4 px-3 py-2.5">

@@ -149,6 +149,12 @@ export const fleetSchema = z.object({
           .min(1950, "1950 or later")
           .max(2100, "Enter a valid year")
           .optional(),
+        yearOfRefurbishment: z
+          .number()
+          .int("Whole number")
+          .min(1950, "1950 or later")
+          .max(2100, "Enter a valid year")
+          .optional(),
       }),
     )
     .max(50, "Use at most 50 aircraft"),
