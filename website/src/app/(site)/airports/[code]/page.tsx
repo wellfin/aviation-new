@@ -251,7 +251,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
     const svc = serviceFields(airport, providers);
     content = (
       <InfoCard>
-        <InfoGrid fields={svc.fields} more={svc.more} moreLabel="More Airport Services Information" />
+        <InfoGrid fields={svc.fields} more={svc.more} moreLabel="More Airport Services Information" openBar="square" />
       </InfoCard>
     );
   } else if (tab === "runways") {

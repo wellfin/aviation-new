@@ -2,7 +2,7 @@ import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { Airport } from "../src/modules/airports/airport.model.js";
 import { adminAirportsRouter, airportsRouter } from "../src/modules/airports/airports.routes.js";
-import { NEIGHBOUR_AIRPORT_SEED, seedAirports, seedMissingAirports } from "../src/modules/airports/airports.seed.js";
+import { NEIGHBOUR_AIRPORT_SEED, fillAirportServiceDetails, seedAirports, seedMissingAirports } from "../src/modules/airports/airports.seed.js";
 import { haversineKm, initialBearingDeg, recountAirportServices } from "../src/modules/airports/airports.service.js";
 import { Provider } from "../src/modules/providers/provider.model.js";
 import { appWith, signedInAgent } from "./helpers.js";
@@ -65,6 +65,14 @@ describe("public airports", () => {
       expect(r.status, code).toBe(200);
       expect(r.body.data.length, code).toBeGreaterThan(0);
     }
+  });
+
+  it("fills blank service facility fields without overwriting staff values", async () => {
+    await Airport.updateOne({ icao: "EGLL" }, { $set: { restaurants: "Staff text" } });
+    expect(await fillAirportServiceDetails()).toBeGreaterThan(0);
+    const lhr = await Airport.findOne({ icao: "EGLL" }).lean();
+    expect(lhr).toMatchObject({ restaurants: "Staff text", cargoHandling: "Dedicated cargo terminal with customs clearance", medicalFacilities: "24/7 on-site medical centre" });
+    expect(await fillAirportServiceDetails()).toBe(0);
   });
 
   it("lists with pagination and filters, matching the frontend Airport shape", async () => {

@@ -1,5 +1,6 @@
 import { logger } from "../../lib/logger.js";
 import { AIRPORT_SEED } from "../airports/airports.seed.js";
+import { Airport } from "../airports/airport.model.js";
 import { recountAirportServices } from "../airports/airports.service.js";
 import type { CategorySlug, ProviderTier } from "../catalog/categories.js";
 import { Provider, type FLEET_CATEGORIES } from "./provider.model.js";
@@ -59,7 +60,8 @@ interface Seed {
   slug: string;
   name: string;
   tier: ProviderTier;
-  category: CategorySlug;
+  /** Built-in slug, or an admin-created category such as "hotels". */
+  category: CategorySlug | "hotels";
   countryCode: string;
   city: string;
   rating: number;
@@ -125,10 +127,21 @@ const SEEDS: Seed[] = [
  * e.g. London Heathrow and Dubai. Fictional companies. Kept out of SEEDS: they are only inserted
  * when missing (seedMissingProviders), never overwritten.
  */
+/** Every demo airport (main and neighbouring). */
+const NETWORK = ["EGLL", "OMDB", "LFPG", "KJFK", "WSSS", "FCOA", "RJTT", "EDDF", "EGGW", "EGKK", "EGLF", "VIDP", "KLAX", "OMDW", "KTEB", "VABB", "EDDK", "EDDS", "EDFH", "KBUR", "KLGB", "KVNY", "LFPB", "LFPO", "LIRA", "RJAA", "VAOZ", "VAPO", "VIAG", "VICG", "VIDX", "VIJP", "WMKJ", "WSSL"];
+
 export const DEMO_TIER_SEEDS: Seed[] = [
   { slug: "skyport-executive-fbo", name: "Skyport Executive FBO", tier: "pro", category: "fbo", countryCode: "GB", city: "London", rating: 4.6, reviewCount: 187, summary: "Private terminal, crew lounge and ramp services for business aviation at Heathrow and Dubai.", cover: IMG.cabin3, airports: ["EGLL", "OMDB"], domain: "skyportfbo.example", phone: "+44 20 8750 2200" },
   { slug: "westway-jet-centre", name: "Westway Jet Centre", tier: "basic", category: "fbo", countryCode: "GB", city: "London", rating: 4.2, reviewCount: 41, summary: "Independent FBO offering handling, fuel coordination and passenger lounge access.", cover: IMG.terminal, airports: ["EGLL"], domain: "westwayjet.example", phone: "+44 20 8750 3300" },
   { slug: "crown-aviation-services", name: "Crown Aviation Services", tier: "basic", category: "fbo", countryCode: "GB", city: "London", rating: 4.0, reviewCount: 27, summary: "Compact FBO for light and midsize jets with 24-hour ramp support.", cover: IMG.cabin4, airports: ["EGLL", "EGGW"], domain: "crownaviation.example", phone: "+44 20 8750 4400" },
+  // Network listings (fictional) covering every demo airport, so each "Airport Services" row has a provider.
+  { slug: "aerohub-fbo-network", name: "AeroHub FBO Network", tier: "pro", category: "fbo", countryCode: "AE", city: "Dubai", rating: 4.5, reviewCount: 214, summary: "Network of executive terminals and general aviation lounges at major airports worldwide.", cover: IMG.cabin2, airports: NETWORK, domain: "aerohubfbo.example", phone: "+971 4 220 6600", locationsLabel: "34 locations worldwide" },
+  { slug: "skyserve-ground-handling", name: "SkyServe Ground Handling", tier: "basic", category: "ground-handler", countryCode: "GB", city: "London", rating: 4.2, reviewCount: 88, summary: "Ramp, baggage and passenger handling for business and commercial flights.", cover: IMG.terminal, airports: NETWORK, domain: "skyservehandling.example", phone: "+44 20 8750 5500" },
+  { slug: "jetfuel-direct", name: "JetFuel Direct", tier: "basic", category: "fuel", countryCode: "GB", city: "London", rating: 4.1, reviewCount: 63, summary: "Jet A-1 into-plane fuelling with contract pricing for business aviation.", cover: IMG.fuel, airports: NETWORK, domain: "jetfueldirect.example", phone: "+44 20 8750 6600" },
+  { slug: "cloud-kitchen-catering", name: "Cloud Kitchen Aviation Catering", tier: "basic", category: "catering", countryCode: "FR", city: "Paris", rating: 4.3, reviewCount: 52, summary: "Made-to-order in-flight catering delivered to the aircraft.", cover: IMG.cabin1, airports: NETWORK, domain: "cloudkitchenair.example", phone: "+33 1 4862 3300" },
+  { slug: "aerofix-mro", name: "AeroFix MRO", tier: "pro", category: "mro", countryCode: "DE", city: "Frankfurt", rating: 4.6, reviewCount: 131, summary: "Line and AOG maintenance for visiting business jets and turboprops.", cover: IMG.nose, airports: NETWORK, domain: "aerofixmro.example", phone: "+49 69 6900 4400" },
+  { slug: "crew-rest-hotels", name: "Crew Rest Hotels", tier: "basic", category: "hotels", countryCode: "SG", city: "Singapore", rating: 4.2, reviewCount: 74, summary: "Transit and crew hotels at or next to the airport, bookable 24/7.", cover: IMG.terminal2, airports: NETWORK, domain: "crewresthotels.example", phone: "+65 6542 3300" },
+  { slug: "airlink-executive-transfers", name: "AirLink Executive Transfers", tier: "basic", category: "ground-transportation", countryCode: "US", city: "New York", rating: 4.3, reviewCount: 96, summary: "Chauffeured cars and crew transfers from the aircraft steps.", cover: IMG.cabin4, airports: NETWORK, domain: "airlinktransfers.example", phone: "+1 212 555 0140" },
   { slug: "desert-falcon-fbo", name: "Desert Falcon FBO", tier: "basic", category: "fbo", countryCode: "AE", city: "Dubai", rating: 4.1, reviewCount: 35, summary: "Business aviation handling and VIP lounge at Dubai International.", cover: IMG.terminal2, airports: ["OMDB"], domain: "desertfalcon.example", phone: "+971 4 220 5500" },
 ];
 
@@ -224,9 +237,13 @@ export async function seedMissingProviders(): Promise<string[]> {
   const touched = new Set<string>();
   for (const [index, seed] of DEMO_TIER_SEEDS.entries()) {
     if (existing.has(seed.slug)) continue;
-    const { ids, codes } = await resolveAirports(seed.airports);
+    // Network listings name every demo airport; attach only the ones this database has.
+    const present = new Set((await Airport.find({ icao: { $in: seed.airports } }, { icao: 1 }).lean()).map((x) => x.icao));
+    const airports = seed.airports.filter((c) => present.has(c));
+    if (airports.length === 0) continue;
+    const { ids, codes } = await resolveAirports(airports);
     await new Provider({ slug: seed.slug, ...build(seed, SEEDS.length + index), airports: ids, airportCodes: codes, status: "published", publishedAt: new Date() }).save();
-    seed.airports.forEach((c) => touched.add(c));
+    airports.forEach((c) => touched.add(c));
     added.push(seed.slug);
   }
   if (touched.size) await recountAirportServices([...touched]);

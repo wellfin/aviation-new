@@ -555,6 +555,48 @@ export async function seedMissingAirports(): Promise<string[]> {
   return added;
 }
 
+/** Typical facility text for the "Airport Services" tab, by airport size (demo values). */
+const SERVICE_DETAILS: Record<"large_airport" | "medium_airport" | "small_airport", Record<string, string>> = {
+  large_airport: {
+    cargoHandling: "Dedicated cargo terminal with customs clearance",
+    deicing: "Available (Type I and Type IV fluids)",
+    hangarSpace: "Available on request (prior permission required)",
+    restaurants: "Landside and airside restaurants and cafés",
+    medicalFacilities: "24/7 on-site medical centre",
+  },
+  medium_airport: {
+    cargoHandling: "General cargo handled on request",
+    deicing: "Available on request",
+    hangarSpace: "Limited, on request",
+    restaurants: "Café and restaurant in the terminal",
+    medicalFacilities: "First aid in the terminal; hospital nearby",
+  },
+  small_airport: {
+    cargoHandling: "Not available",
+    deicing: "Not available",
+    hangarSpace: "On request",
+    restaurants: "Vending and café",
+    medicalFacilities: "First aid on site",
+  },
+};
+
+/**
+ * Fills the "Airport Services" facility fields that are still blank on every airport, using typical
+ * values for its size. Fields staff have already filled in are never changed.
+ */
+export async function fillAirportServiceDetails(): Promise<number> {
+  let updated = 0;
+  for (const a of await Airport.find({}, { icao: 1, type: 1, cargoHandling: 1, deicing: 1, hangarSpace: 1, restaurants: 1, medicalFacilities: 1 }).lean()) {
+    const defaults = SERVICE_DETAILS[a.type as keyof typeof SERVICE_DETAILS] ?? SERVICE_DETAILS.medium_airport;
+    const set = Object.fromEntries(Object.entries(defaults).filter(([k]) => !String((a as Record<string, unknown>)[k] ?? "").trim()));
+    if (Object.keys(set).length === 0) continue;
+    await Airport.updateOne({ _id: a._id }, { $set: set });
+    updated++;
+  }
+  logger.info({ updated }, "Filled blank airport service details");
+  return updated;
+}
+
 /** Upserts the demo airports by ICAO (idempotent; keeps each airport's derived servicesCount). */
 export async function seedAirports(): Promise<number> {
   for (const { lat, lon, servicesCount: _derived, ...fields } of AIRPORT_SEED) {
