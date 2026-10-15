@@ -5,7 +5,7 @@ import type { ProfileTab, TabDef } from "./profile-config";
 /** Navy pill tab bar; each tab is a shareable `?tab=` link. */
 export function ProfileTabs({ tabs, active, basePath, premiumLabel }: { tabs: TabDef[]; active: ProfileTab; basePath: string; premiumLabel: boolean }) {
   return (
-    <nav aria-label="Profile sections" className="scrollbar-none overflow-x-auto rounded-[24px] border border-line bg-navy-900 p-1">
+    <nav aria-label="Profile sections" className="scrollbar-none overflow-x-auto rounded-[24px] border-2 border-navy-950 bg-navy-900 p-1">
       <ul className="flex min-w-max gap-1">
         {tabs.map((t) => {
           const current = t.id === active;
