@@ -10,3 +10,6 @@ coverage
 *.log
 .test-uploads
 .dev-admin.txt
+UPDATE.md
+README.md
+DEPLOY.md
