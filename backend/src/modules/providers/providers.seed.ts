@@ -50,7 +50,7 @@ interface FleetSeed {
   yearOfRefurbishment?: number;
 }
 
-const FLEET: FleetSeed[] = [
+export const FLEET: FleetSeed[] = [
   { model: "Gulfstream G650ER", category: "Ultra Long Range", seats: 14, rangeNm: 7500, speedKts: 516, baseIcao: "EGLF", image: IMG.cabin1, yearOfManufacture: 2021, yearOfRefurbishment: 2024 },
   { model: "Bombardier Global 6000", category: "Heavy Jet", seats: 13, rangeNm: 6000, speedKts: 499, baseIcao: "EGLF", image: IMG.cabin2, yearOfManufacture: 2019, yearOfRefurbishment: 2022 },
   { model: "Dassault Falcon 2000LXS", category: "Super Midsize Jet", seats: 10, rangeNm: 4000, speedKts: 482, baseIcao: "EGGW", image: IMG.cabin3, yearOfManufacture: 2020, yearOfRefurbishment: 2023 },

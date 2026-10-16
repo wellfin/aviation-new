@@ -1,11 +1,8 @@
 import type { Provider } from "@/lib/types";
 import { CARD, CARD_TITLE } from "../styles";
-import { TIER_RULES } from "../profile-config";
 
-/** About card: the description only, as drawn on every plan; Ultra Pro adds the company video. */
+/** About card: the description only, as drawn on every plan (no video block in the design). */
 export function AboutTab({ provider }: { provider: Provider }) {
-  const showVideo = TIER_RULES[provider.tier].video && provider.videoUrl;
-
   return (
     <div className="flex flex-col gap-6">
       {/* Figma: a tall card (about 600 px) even when the description is short. */}
@@ -20,18 +17,6 @@ export function AboutTab({ provider }: { provider: Provider }) {
         </div>
       </section>
 
-      {showVideo && (
-        <section aria-label={`${provider.name} video`} className="overflow-hidden rounded-[30px] bg-[#0d284e]">
-          <iframe
-            src={provider.videoUrl}
-            title={`${provider.name} company video`}
-            className="aspect-video w-full"
-            loading="lazy"
-            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </section>
-      )}
     </div>
   );
 }
