@@ -52,7 +52,7 @@ try {
   let certs = 0;
   let reviewed = 0;
   for (const p of listings) {
-    await Provider.updateOne({ _id: p._id }, { $set: { certifications: CERTIFICATIONS, "fleet.$[].image": "/images/home/ad-signature-jet.jpg" } });
+    await Provider.updateOne({ _id: p._id }, { $set: { certifications: CERTIFICATIONS, "fleet.$[].image": "/images/providers/fleet-jet.jpg" } });
     certs++;
     if (await Review.exists({ provider: p._id })) continue;
     const base = Date.now();
