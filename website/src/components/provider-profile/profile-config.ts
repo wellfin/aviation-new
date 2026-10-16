@@ -43,17 +43,15 @@ export function isCharter(provider: Provider): boolean {
   return CHARTER_CATEGORIES.includes(provider.category);
 }
 
-/** Charter operators and brokers swap Services/Airports for their Aircraft Fleet. */
-export function profileTabs(provider: Provider): TabDef[] {
-  const middle: TabDef[] = isCharter(provider)
-    ? [{ id: "fleet", label: "Aircraft Fleet" }]
-    : [
-        { id: "services", label: "Services" },
-        { id: "airports", label: "Airports" },
-      ];
+/**
+ * The profile tab bar, as drawn in the Figma detail pages: the same six tabs for every company.
+ * (Services / Airports panels still exist for old links, which now fall back to About.)
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept so callers need not change if tabs vary by company again
+export function profileTabs(_provider: Provider): TabDef[] {
   return [
     { id: "about", label: "About" },
-    ...middle,
+    { id: "fleet", label: "Aircraft Fleet" },
     { id: "gallery", label: "Gallery" },
     { id: "brochure", label: "Brochure", premium: true },
     { id: "certification", label: "Certification", premium: true },
