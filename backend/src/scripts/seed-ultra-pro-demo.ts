@@ -2,6 +2,7 @@
  * Demo content for the Ultra Pro profile tabs (Figma "Ultra Pro Details Page"):
  *   npm run seed:ultra
  * - Certification: WYVERN, ARGUS, IS-BAO and Other Certificate, each with a sample certificate image.
+ * - Aircraft Fleet: an exterior jet photo on every fleet card.
  * - Reviews: four approved sample testimonials, only where the listing has no reviews yet.
  * Only demo listings (no owning provider account) are touched. Sample reviews use
  * `@demo.example` emails, so they can be removed with: Review.deleteMany({ authorEmail: /@demo\.example$/ }).
@@ -51,7 +52,7 @@ try {
   let certs = 0;
   let reviewed = 0;
   for (const p of listings) {
-    await Provider.updateOne({ _id: p._id }, { $set: { certifications: CERTIFICATIONS } });
+    await Provider.updateOne({ _id: p._id }, { $set: { certifications: CERTIFICATIONS, "fleet.$[].image": "/images/home/ad-signature-jet.jpg" } });
     certs++;
     if (await Review.exists({ provider: p._id })) continue;
     const base = Date.now();
