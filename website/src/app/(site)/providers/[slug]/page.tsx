@@ -50,6 +50,11 @@ interface TabLayout {
   /** Grow the banners so the column ends level with the sidebar (as drawn), instead of a fixed height. */
   stretch?: boolean;
 }
+/** Basic FBOs and other non-charter services (Figma Basic detail page, services flow): two banners on every tab. */
+const SERVICE_BASIC_LAYOUT: TabLayout = { banners: 2, size: "sm:min-h-[340px]", stretch: true };
+/** Tabs where a Basic non-charter listing also shows the second, tall side ad. */
+const SERVICE_TALL_AD_TABS: ProfileTab[] = ["airports", "gallery", "brochure", "certification", "reviews"];
+
 const TAB_LAYOUT: Record<Provider["tier"], Partial<Record<ProfileTab, TabLayout>>> = {
   basic: {
     about: { banners: 2, size: "sm:min-h-[373px]", stretch: true },
@@ -120,7 +125,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   const tabs = profileTabs(provider);
   const active = resolveTab(provider, firstParam(sp.tab));
   const reviewPage = toInt(firstParam(sp.rpage), 1);
-  const layout = charter ? TAB_LAYOUT[provider.tier][active] : undefined;
+  const layout = charter ? TAB_LAYOUT[provider.tier][active] : basic ? SERVICE_BASIC_LAYOUT : undefined;
   const basePath = `/providers/${provider.slug}`;
 
   return (
@@ -135,7 +140,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="flex min-w-0 flex-col gap-6">
-            <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={!charter && rules.premiumTabLabel} />
+            <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={!charter && !basic && rules.premiumTabLabel} />
             <div id="profile-panel" aria-live="polite" className="flex flex-1 flex-col gap-6">
               {(!layout || layout.content) && <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />}
               {layout &&
@@ -155,7 +160,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
           <aside className="flex min-w-0 flex-col gap-5" aria-label={`Contact ${provider.name}`}>
             <SidebarAd ad={sidebarAd} className="min-h-[250px]" />
             {/* Basic listings, Gallery / Brochure / Certification / Reviews tabs (Figma 949:6928): a second, taller side ad. */}
-            {charter && basic && ["gallery", "brochure", "certification", "reviews"].includes(active) && <SidebarAd ad={sidebarAd} className="min-h-[526px]" />}
+            {basic && (charter ? ["gallery", "brochure", "certification", "reviews"] : SERVICE_TALL_AD_TABS).includes(active) && <SidebarAd ad={sidebarAd} className="min-h-[526px]" />}
             {rules.upgradeCard && <UpgradeCard />}
             {rules.enquiryForm && (
               <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />
