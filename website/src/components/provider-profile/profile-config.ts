@@ -19,13 +19,13 @@ export interface TierRules {
   upgradeCard: boolean;
   /** Company video block under the About card. */
   video: boolean;
-  /** Brochure / Certification tabs carry an "ULTRA PRO" feature label (off: the design draws plain tab names on every plan). */
+  /** Brochure / Certification tabs carry an "ULTRA PRO" feature label (charter pages hide it: their Figma tab bar has plain names). */
   premiumTabLabel: boolean;
 }
 
 export const TIER_RULES: Record<ProviderTier, TierRules> = {
-  basic: { logo: false, headerRating: false, tierBadge: false, socials: false, enquiryForm: false, upgradeCard: true, video: false, premiumTabLabel: false },
-  pro: { logo: true, headerRating: false, tierBadge: true, socials: true, enquiryForm: true, upgradeCard: true, video: false, premiumTabLabel: false },
+  basic: { logo: false, headerRating: false, tierBadge: false, socials: false, enquiryForm: false, upgradeCard: true, video: false, premiumTabLabel: true },
+  pro: { logo: true, headerRating: false, tierBadge: true, socials: true, enquiryForm: true, upgradeCard: true, video: false, premiumTabLabel: true },
   ultra_pro: { logo: true, headerRating: true, tierBadge: true, socials: true, enquiryForm: true, upgradeCard: false, video: true, premiumTabLabel: false },
 };
 
@@ -44,14 +44,19 @@ export function isCharter(provider: Provider): boolean {
 }
 
 /**
- * The profile tab bar, as drawn in the Figma detail pages: the same six tabs for every company.
- * (Services / Airports panels still exist for old links, which now fall back to About.)
+ * Charter operators and brokers use the Figma detail-page tab bar (Aircraft Fleet); every other
+ * company keeps Services and Airports.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept so callers need not change if tabs vary by company again
-export function profileTabs(_provider: Provider): TabDef[] {
+export function profileTabs(provider: Provider): TabDef[] {
+  const middle: TabDef[] = isCharter(provider)
+    ? [{ id: "fleet", label: "Aircraft Fleet" }]
+    : [
+        { id: "services", label: "Services" },
+        { id: "airports", label: "Airports" },
+      ];
   return [
     { id: "about", label: "About" },
-    { id: "fleet", label: "Aircraft Fleet" },
+    ...middle,
     { id: "gallery", label: "Gallery" },
     { id: "brochure", label: "Brochure", premium: true },
     { id: "certification", label: "Certification", premium: true },

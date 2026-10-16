@@ -1,12 +1,24 @@
 import type { Provider } from "@/lib/types";
 import { CARD, CARD_TITLE } from "../styles";
+import { TIER_RULES, isCharter } from "../profile-config";
 
-/** About card: the description only, as drawn on every plan (no video block in the design). */
+/**
+ * About card. Charter operators / brokers follow the Figma detail pages: a tall card with the
+ * description only. Other companies also show their key facts and (Ultra Pro) the company video.
+ */
 export function AboutTab({ provider }: { provider: Provider }) {
+  const charter = isCharter(provider);
+  const facts = [
+    { label: "Headquarters", value: `${provider.city}, ${provider.country}` },
+    provider.foundedYear ? { label: "Founded", value: String(provider.foundedYear) } : null,
+    provider.employees ? { label: "Employees", value: provider.employees } : null,
+    provider.locationsLabel ? { label: "Coverage", value: provider.locationsLabel } : null,
+  ].filter((f): f is { label: string; value: string } => f !== null);
+  const showVideo = !charter && TIER_RULES[provider.tier].video && provider.videoUrl;
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Figma: a tall card (about 600 px) even when the description is short. */}
-      <section className={`${CARD} p-6 sm:min-h-[600px]`} aria-labelledby="about-heading">
+      <section className={`${CARD} p-6 ${charter ? "sm:min-h-[600px]" : ""}`} aria-labelledby="about-heading">
         <h2 id="about-heading" className={CARD_TITLE}>
           About {provider.name}
         </h2>
@@ -15,8 +27,30 @@ export function AboutTab({ provider }: { provider: Provider }) {
             <p key={p.slice(0, 40)}>{p}</p>
           ))}
         </div>
+        {!charter && facts.length > 0 && (
+          <dl className="mt-6 grid grid-cols-2 gap-3 border-t border-line pt-5 sm:grid-cols-3">
+            {facts.map((f) => (
+              <div key={f.label} className="rounded-xl border border-brand/10 bg-brand/4 px-3 py-2.5">
+                <dt className="text-[11px] font-semibold tracking-[0.6px] text-subtle uppercase">{f.label}</dt>
+                <dd className="mt-0.5 text-sm font-bold text-ink">{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </section>
 
+      {showVideo && (
+        <section aria-label={`${provider.name} video`} className="overflow-hidden rounded-[30px] bg-[#0d284e]">
+          <iframe
+            src={provider.videoUrl}
+            title={`${provider.name} company video`}
+            className="aspect-video w-full"
+            loading="lazy"
+            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </section>
+      )}
     </div>
   );
 }

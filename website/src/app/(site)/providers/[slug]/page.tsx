@@ -15,7 +15,7 @@ import { FleetTab } from "@/components/provider-profile/tabs/FleetTab";
 import { GalleryTab } from "@/components/provider-profile/tabs/GalleryTab";
 import { ReviewsTab } from "@/components/provider-profile/tabs/ReviewsTab";
 import { ServicesTab } from "@/components/provider-profile/tabs/ServicesTab";
-import { TIER_RULES, profileTabs, relatedHeading, resolveTab, telHref, type ProfileTab } from "@/components/provider-profile/profile-config";
+import { TIER_RULES, isCharter, profileTabs, relatedHeading, resolveTab, telHref, type ProfileTab } from "@/components/provider-profile/profile-config";
 import { getAdvertisement } from "@/lib/data/content";
 import { getProvider, getRelatedProviders, getSameCategoryProviders } from "@/lib/data/providers";
 import { getCategoryBySlug } from "@/lib/data/categories";
@@ -102,8 +102,10 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   if (!provider) notFound();
 
   const basic = provider.tier === "basic";
-  // Every plan lists same-kind listings in one sponsored card (Figma Basic / Pro / Ultra Pro frames).
-  const sponsoredRelated = true;
+  // The Figma Basic / Pro / Ultra Pro detail pages are for charter operators and brokers only;
+  // FBOs and other services keep the standard profile (content on every tab, Related Providers).
+  const charter = isCharter(provider);
+  const sponsoredRelated = charter;
   const [related, sameKind, bannerAd, sidebarAd] = await Promise.all([
     sponsoredRelated ? Promise.resolve([]) : getRelatedProviders(provider, 4),
     sponsoredRelated ? getSameCategoryProviders(provider, 4) : Promise.resolve([]),
@@ -118,7 +120,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   const tabs = profileTabs(provider);
   const active = resolveTab(provider, firstParam(sp.tab));
   const reviewPage = toInt(firstParam(sp.rpage), 1);
-  const layout = TAB_LAYOUT[provider.tier][active];
+  const layout = charter ? TAB_LAYOUT[provider.tier][active] : undefined;
   const basePath = `/providers/${provider.slug}`;
 
   return (
@@ -133,7 +135,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="flex min-w-0 flex-col gap-6">
-            <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={rules.premiumTabLabel} />
+            <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={!charter && rules.premiumTabLabel} />
             <div id="profile-panel" aria-live="polite" className="flex flex-1 flex-col gap-6">
               {(!layout || layout.content) && <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />}
               {layout &&
@@ -153,7 +155,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
           <aside className="flex min-w-0 flex-col gap-5" aria-label={`Contact ${provider.name}`}>
             <SidebarAd ad={sidebarAd} className="min-h-[250px]" />
             {/* Basic listings, Gallery / Brochure / Certification / Reviews tabs (Figma 949:6928): a second, taller side ad. */}
-            {basic && ["gallery", "brochure", "certification", "reviews"].includes(active) && <SidebarAd ad={sidebarAd} className="min-h-[526px]" />}
+            {charter && basic && ["gallery", "brochure", "certification", "reviews"].includes(active) && <SidebarAd ad={sidebarAd} className="min-h-[526px]" />}
             {rules.upgradeCard && <UpgradeCard />}
             {rules.enquiryForm && (
               <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />

@@ -6,7 +6,7 @@ import { TierBadge, VerifiedBadge } from "@/components/ui/Badge";
 import { CategoryName } from "@/components/categories/CategoriesContext";
 import type { Provider } from "@/lib/types";
 import { cn, formatNumber } from "@/lib/utils";
-import { TIER_RULES, initials, websiteHref } from "./profile-config";
+import { TIER_RULES, initials, isCharter, websiteHref } from "./profile-config";
 
 export function Stars({ rating, className }: { rating: number; className?: string }) {
   return (
@@ -34,8 +34,8 @@ export function ProfileHeader({ provider }: { provider: Provider }) {
             {showLogo ? (
               <Image src={provider.logo} alt={`${provider.name} logo`} width={96} height={96} className="size-full object-cover" />
             ) : (
-              // Basic listings show an empty white logo tile (Figma 949:6648); paid listings without a logo get initials.
-              provider.tier !== "basic" && (
+              // Basic charter listings show an empty white logo tile (Figma 949:6648); others get initials.
+              !(provider.tier === "basic" && isCharter(provider)) && (
                 <span className="text-brand-gradient text-2xl font-extrabold md:text-3xl" aria-hidden>
                   {initials(provider.name)}
                 </span>
