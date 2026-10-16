@@ -52,6 +52,9 @@ const TAB_LAYOUT: Record<Provider["tier"], Partial<Record<ProfileTab, TabLayout>
   basic: {
     about: { banners: 2, size: "sm:h-[373px]" },
     fleet: { banners: 1, size: "sm:h-[653px]" },
+    // Non-charter listings have Services / Airports instead of Aircraft Fleet: same banner as Fleet.
+    services: { banners: 1, size: "sm:h-[653px]" },
+    airports: { banners: 1, size: "sm:h-[653px]" },
     gallery: { banners: 2, size: "sm:h-[373px]" },
     brochure: { banners: 3, size: "sm:h-[373px]" },
     certification: { banners: 3, size: "sm:h-[373px]" },

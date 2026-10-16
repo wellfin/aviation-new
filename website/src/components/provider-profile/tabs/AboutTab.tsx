@@ -1,15 +1,9 @@
 import type { Provider } from "@/lib/types";
 import { CARD, CARD_TITLE } from "../styles";
-import { TIER_RULES, isCharter } from "../profile-config";
+import { TIER_RULES } from "../profile-config";
 
+/** About card: the description only, as drawn on every plan; Ultra Pro adds the company video. */
 export function AboutTab({ provider }: { provider: Provider }) {
-  const facts = [
-    { label: "Headquarters", value: `${provider.city}, ${provider.country}` },
-    provider.foundedYear ? { label: "Founded", value: String(provider.foundedYear) } : null,
-    provider.employees ? { label: "Employees", value: provider.employees } : null,
-    isCharter(provider) && provider.fleet.length > 0 ? { label: "Fleet Size", value: `${provider.fleet.length} aircraft` } : null,
-    provider.locationsLabel ? { label: "Coverage", value: provider.locationsLabel } : null,
-  ].filter((f): f is { label: string; value: string } => f !== null);
   const showVideo = TIER_RULES[provider.tier].video && provider.videoUrl;
 
   return (
@@ -23,17 +17,6 @@ export function AboutTab({ provider }: { provider: Provider }) {
             <p key={p.slice(0, 40)}>{p}</p>
           ))}
         </div>
-        {/* Figma: the About card shows the description only on Ultra Pro; facts stay for Pro. */}
-        {facts.length > 0 && provider.tier !== "ultra_pro" && (
-          <dl className="mt-6 grid grid-cols-2 gap-3 border-t border-line pt-5 sm:grid-cols-3">
-            {facts.map((f) => (
-              <div key={f.label} className="rounded-xl border border-brand/10 bg-brand/4 px-3 py-2.5">
-                <dt className="text-[11px] font-semibold tracking-[0.6px] text-subtle uppercase">{f.label}</dt>
-                <dd className="mt-0.5 text-sm font-bold text-ink">{f.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
       </section>
 
       {showVideo && (
