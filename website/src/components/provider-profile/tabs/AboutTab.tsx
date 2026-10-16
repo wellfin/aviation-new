@@ -8,7 +8,8 @@ export function AboutTab({ provider }: { provider: Provider }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className={`${CARD} p-6`} aria-labelledby="about-heading">
+      {/* Figma: a tall card (about 600 px) even when the description is short. */}
+      <section className={`${CARD} p-6 sm:min-h-[600px]`} aria-labelledby="about-heading">
         <h2 id="about-heading" className={CARD_TITLE}>
           About {provider.name}
         </h2>

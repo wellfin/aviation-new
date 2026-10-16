@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { Provider, SocialLinks } from "@/lib/types";
-import { TIER_RULES, isCharter, telHref, websiteHref } from "./profile-config";
+import { TIER_RULES, telHref, websiteHref } from "./profile-config";
 
 const SOCIALS: Array<{ key: keyof SocialLinks; label: string; glyph: string }> = [
   { key: "linkedin", label: "LinkedIn", glyph: "in" },
@@ -46,13 +46,7 @@ export function ContactStrip({ provider }: { provider: Provider }) {
             </a>
           </li>
         )}
-        {isCharter(provider) && contact.fax && (
-          <li className={item}>
-            <span aria-hidden>📠</span>
-            <span className="sr-only">Fax: </span>
-            {contact.fax}
-          </li>
-        )}
+        {/* Figma: phone, email, website and location only (no fax). */}
         {contact.location && (
           <li className="flex items-center gap-2 text-sm font-medium text-muted">
             <span aria-hidden>📍</span>
