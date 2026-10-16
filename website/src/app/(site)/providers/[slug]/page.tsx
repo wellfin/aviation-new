@@ -47,25 +47,27 @@ interface TabLayout {
   /** Banner size: a fixed height (Basic) or a minimum height (Pro). Literal classes so Tailwind sees them. */
   size: string;
   content?: boolean;
+  /** Grow the banners so the column ends level with the sidebar (as drawn), instead of a fixed height. */
+  stretch?: boolean;
 }
 const TAB_LAYOUT: Record<Provider["tier"], Partial<Record<ProfileTab, TabLayout>>> = {
   basic: {
-    about: { banners: 2, size: "sm:h-[373px]" },
-    fleet: { banners: 1, size: "sm:h-[653px]" },
+    about: { banners: 2, size: "sm:min-h-[373px]", stretch: true },
+    fleet: { banners: 1, size: "sm:min-h-[653px]", stretch: true },
     // Non-charter listings have Services / Airports instead of Aircraft Fleet: same banner as Fleet.
-    services: { banners: 1, size: "sm:h-[653px]" },
-    airports: { banners: 1, size: "sm:h-[653px]" },
+    services: { banners: 1, size: "sm:min-h-[653px]", stretch: true },
+    airports: { banners: 1, size: "sm:min-h-[653px]", stretch: true },
     gallery: { banners: 2, size: "sm:h-[373px]" },
-    brochure: { banners: 3, size: "sm:h-[373px]" },
-    certification: { banners: 3, size: "sm:h-[373px]" },
-    reviews: { banners: 3, size: "sm:h-[373px]" },
+    brochure: { banners: 3, size: "sm:min-h-[373px]", stretch: true },
+    certification: { banners: 3, size: "sm:min-h-[373px]", stretch: true },
+    reviews: { banners: 3, size: "sm:min-h-[373px]", stretch: true },
   },
   pro: {
-    fleet: { banners: 3, size: "sm:min-h-[373px]" },
-    gallery: { banners: 2, size: "sm:min-h-[540px]" },
-    brochure: { banners: 1, size: "sm:min-h-[540px]", content: true },
-    certification: { banners: 2, size: "sm:min-h-[540px]" },
-    reviews: { banners: 2, size: "sm:min-h-[540px]" },
+    fleet: { banners: 3, size: "sm:min-h-[373px]", stretch: true },
+    gallery: { banners: 2, size: "sm:min-h-[540px]", stretch: true },
+    brochure: { banners: 1, size: "sm:min-h-[540px]", stretch: true, content: true },
+    certification: { banners: 2, size: "sm:min-h-[540px]", stretch: true },
+    reviews: { banners: 2, size: "sm:min-h-[540px]", stretch: true },
   },
   // Ultra Pro shows all content; Certification is followed by one banner (Figma).
   ultra_pro: {
@@ -140,9 +142,8 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
                     key={i}
                     bare
                     ad={bannerAd}
-                    // Pro banners grow to meet the sidebar's bottom; Basic banners keep the drawn height.
-                    className={provider.tier === "pro" ? "flex flex-1 flex-col" : undefined}
-                    height={cn("h-[150px]", layout.size, provider.tier === "pro" && "sm:h-auto sm:flex-1")}
+                    className={layout.stretch ? "flex flex-1 flex-col" : undefined}
+                    height={cn("h-[150px]", layout.size, layout.stretch && "sm:h-auto sm:flex-1")}
                   />
                 ))}
             </div>
