@@ -29,9 +29,9 @@ const ICONS: Record<string, LucideIcon> = {
   "heart-pulse": HeartPulse,
 };
 
-/** Services Offered. Pro listings use the compact name-only tiles drawn in the Figma Pro detail page. */
+/** Services Offered: compact name-only tiles (Figma Pro / Ultra Pro detail pages); the description shows on hover. */
 export function ServicesTab({ provider }: { provider: Provider }) {
-  const compact = provider.tier === "pro";
+  const compact = provider.tier !== "basic";
   return (
     <section className={`${CARD} p-6`} aria-labelledby="services-heading">
       <h2 id="services-heading" className={CARD_TITLE}>

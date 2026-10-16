@@ -55,6 +55,12 @@ const SERVICE_BASIC_LAYOUT: TabLayout = { banners: 2, size: "sm:min-h-[340px]", 
 /** Pro FBOs / services (Figma Pro detail page, services flow): About and Services show content, other tabs two banners. */
 const SERVICE_PRO_LAYOUT: TabLayout = { banners: 2, size: "sm:min-h-[340px]", stretch: true };
 const SERVICE_PRO_BANNER_TABS: ProfileTab[] = ["airports", "gallery", "brochure", "certification", "reviews"];
+/** Ultra Pro FBOs / services (Figma Ultra Pro detail page, services flow): content on every tab, one banner after some. */
+const SERVICE_ULTRA_LAYOUT: Partial<Record<ProfileTab, TabLayout>> = {
+  airports: { banners: 1, size: "sm:min-h-[300px]", stretch: true, content: true },
+  gallery: { banners: 1, size: "sm:min-h-[200px]", stretch: true, content: true },
+  certification: { banners: 1, size: "sm:h-[200px]", content: true },
+};
 /** Tabs where a Basic non-charter listing also shows the second, tall side ad. */
 const SERVICE_TALL_AD_TABS: ProfileTab[] = ["airports", "gallery", "brochure", "certification", "reviews"];
 
@@ -92,7 +98,7 @@ function TabPanel({ tab, provider, reviewPage }: { tab: ProfileTab; provider: Pr
     case "fleet":
       return <FleetTab fleet={provider.fleet} providerSlug={provider.slug} providerName={provider.name} acceptsEnquiries={TIER_RULES[provider.tier].enquiryForm} />;
     case "gallery":
-      return <GalleryTab images={provider.gallery} name={provider.name} />;
+      return <GalleryTab images={provider.gallery} name={provider.name} heading={!isCharter(provider)} />;
     case "brochure":
       return <BrochureTab brochures={provider.brochures} />;
     case "certification":
@@ -135,7 +141,9 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
       ? SERVICE_BASIC_LAYOUT
       : pro && SERVICE_PRO_BANNER_TABS.includes(active)
         ? SERVICE_PRO_LAYOUT
-        : undefined;
+        : provider.tier === "ultra_pro"
+          ? SERVICE_ULTRA_LAYOUT[active]
+          : undefined;
   // Pro services profiles put Send Enquiry above Get Ultra Pro on every tab but About (as drawn).
   const enquiryFirst = !charter && pro && active !== "about";
   const basePath = `/providers/${provider.slug}`;

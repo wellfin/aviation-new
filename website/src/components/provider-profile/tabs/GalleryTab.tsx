@@ -5,9 +5,10 @@ import { ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Dialog } from "../Dialog";
-import { CARD } from "../styles";
+import { CARD, CARD_TITLE } from "../styles";
 
-export function GalleryTab({ images, name }: { images: string[]; name: string }) {
+/** `heading`: show the "Photo Gallery" title (Figma services flow); charter profiles keep it for screen readers only. */
+export function GalleryTab({ images, name, heading = false }: { images: string[]; name: string; heading?: boolean }) {
   const [index, setIndex] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const count = images.length;
@@ -15,8 +16,7 @@ export function GalleryTab({ images, name }: { images: string[]; name: string })
 
   return (
     <section className={`${CARD} p-6`} aria-labelledby="gallery-heading">
-      {/* Figma: the photos fill the card without a visible heading. */}
-      <h2 id="gallery-heading" className="sr-only">
+      <h2 id="gallery-heading" className={heading ? `${CARD_TITLE} mb-4` : "sr-only"}>
         Photo Gallery
       </h2>
       {count === 0 ? (
