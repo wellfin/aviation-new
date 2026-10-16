@@ -1,7 +1,17 @@
 import {
   CircleEllipsis,
+  Coffee,
   ConciergeBell,
+  FileText,
   Fuel,
+  Globe,
+  House,
+  Info,
+  Store,
+  Truck,
+  UserCheck,
+  Users,
+  Wrench,
   HeartPulse,
   Plane,
   PlaneTakeoff,
@@ -27,6 +37,17 @@ const ICONS: Record<string, LucideIcon> = {
   tag: Tag,
   settings: Settings,
   "heart-pulse": HeartPulse,
+  // The 14 directory services as drawn in the Figma Services Offered card.
+  building: Store,
+  globe: Globe,
+  coffee: Coffee,
+  "user-check": UserCheck,
+  users: Users,
+  "file-text": FileText,
+  truck: Truck,
+  home: House,
+  wrench: Wrench,
+  info: Info,
 };
 
 /** Services Offered: compact name-only tiles (Figma Pro / Ultra Pro detail pages); the description shows on hover. */
