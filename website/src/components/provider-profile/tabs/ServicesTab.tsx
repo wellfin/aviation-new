@@ -29,7 +29,9 @@ const ICONS: Record<string, LucideIcon> = {
   "heart-pulse": HeartPulse,
 };
 
+/** Services Offered. Pro listings use the compact name-only tiles drawn in the Figma Pro detail page. */
 export function ServicesTab({ provider }: { provider: Provider }) {
+  const compact = provider.tier === "pro";
   return (
     <section className={`${CARD} p-6`} aria-labelledby="services-heading">
       <h2 id="services-heading" className={CARD_TITLE}>
@@ -45,12 +47,13 @@ export function ServicesTab({ provider }: { provider: Provider }) {
             return (
               <li
                 key={s.name}
-                className={cn("flex items-start gap-3 rounded-xl p-3", primary ? "bg-brand-gradient text-white" : "border border-brand/10 bg-brand/4 text-ink")}
+                title={compact ? s.description : undefined}
+                className={cn("flex gap-3 rounded-xl p-3", compact ? "items-center" : "items-start", primary ? "bg-brand-gradient text-white" : "border border-brand/10 bg-brand/4 text-ink")}
               >
-                <Icon className={cn("mt-px size-[18px] shrink-0", primary ? "text-white" : "text-muted")} aria-hidden />
+                <Icon className={cn(!compact && "mt-px", "size-[18px] shrink-0", primary ? "text-white" : "text-muted")} aria-hidden />
                 <div className="min-w-0">
                   <p className="text-sm leading-[18px] font-bold">{s.name}</p>
-                  <p className={cn("mt-0.5 text-xs leading-[18px]", primary ? "text-white/80" : "text-muted")}>{s.description}</p>
+                  {!compact && <p className={cn("mt-0.5 text-xs leading-[18px]", primary ? "text-white/80" : "text-muted")}>{s.description}</p>}
                 </div>
               </li>
             );

@@ -52,6 +52,9 @@ interface TabLayout {
 }
 /** Basic FBOs and other non-charter services (Figma Basic detail page, services flow): two banners on every tab. */
 const SERVICE_BASIC_LAYOUT: TabLayout = { banners: 2, size: "sm:min-h-[340px]", stretch: true };
+/** Pro FBOs / services (Figma Pro detail page, services flow): About and Services show content, other tabs two banners. */
+const SERVICE_PRO_LAYOUT: TabLayout = { banners: 2, size: "sm:min-h-[340px]", stretch: true };
+const SERVICE_PRO_BANNER_TABS: ProfileTab[] = ["airports", "gallery", "brochure", "certification", "reviews"];
 /** Tabs where a Basic non-charter listing also shows the second, tall side ad. */
 const SERVICE_TALL_AD_TABS: ProfileTab[] = ["airports", "gallery", "brochure", "certification", "reviews"];
 
@@ -125,7 +128,16 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   const tabs = profileTabs(provider);
   const active = resolveTab(provider, firstParam(sp.tab));
   const reviewPage = toInt(firstParam(sp.rpage), 1);
-  const layout = charter ? TAB_LAYOUT[provider.tier][active] : basic ? SERVICE_BASIC_LAYOUT : undefined;
+  const pro = provider.tier === "pro";
+  const layout = charter
+    ? TAB_LAYOUT[provider.tier][active]
+    : basic
+      ? SERVICE_BASIC_LAYOUT
+      : pro && SERVICE_PRO_BANNER_TABS.includes(active)
+        ? SERVICE_PRO_LAYOUT
+        : undefined;
+  // Pro services profiles put Send Enquiry above Get Ultra Pro on every tab but About (as drawn).
+  const enquiryFirst = !charter && pro && active !== "about";
   const basePath = `/providers/${provider.slug}`;
 
   return (
@@ -140,7 +152,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="flex min-w-0 flex-col gap-6">
-            <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={!charter && !basic && rules.premiumTabLabel} />
+            <ProfileTabs tabs={tabs} active={active} basePath={basePath} premiumLabel={false} />
             <div id="profile-panel" aria-live="polite" className="flex flex-1 flex-col gap-6">
               {(!layout || layout.content) && <TabPanel tab={active} provider={provider} reviewPage={reviewPage} />}
               {layout &&
@@ -161,10 +173,11 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
             <SidebarAd ad={sidebarAd} className="min-h-[250px]" />
             {/* Basic listings, Gallery / Brochure / Certification / Reviews tabs (Figma 949:6928): a second, taller side ad. */}
             {basic && (charter ? ["gallery", "brochure", "certification", "reviews"] : SERVICE_TALL_AD_TABS).includes(active) && <SidebarAd ad={sidebarAd} className="min-h-[526px]" />}
-            {rules.upgradeCard && <UpgradeCard />}
+            {rules.upgradeCard && !enquiryFirst && <UpgradeCard />}
             {rules.enquiryForm && (
               <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />
             )}
+            {rules.upgradeCard && enquiryFirst && <UpgradeCard />}
             {sponsoredRelated ? (
               // Basic and Pro (Figma): one sponsored card of listings of the same kind, e.g. other charter operators.
               <RelatedProviders heading={sameKindHeading} providers={sameKind} sponsored />
