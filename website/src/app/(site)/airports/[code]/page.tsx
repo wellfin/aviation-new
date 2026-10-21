@@ -192,10 +192,9 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // Provider list (?service=), Figma 752:9750: Ultra Pro and Pro listings first, then the Basic ones, paged.
   const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
   const premiumProviders = selectedProviders.filter((p) => p.tier !== "basic").sort((x, y) => TIER_ORDER[x.tier] - TIER_ORDER[y.tier]);
-  // Permit and Charter Broker use the directory's compact rows (Figma): Permit lists only the Ultra Pro
-  // and Pro companies, Charter Broker every plan (Ultra Pro, Pro, then Basic).
-  const rowList = service === "permit" || service === "charter-broker";
-  const rowProviders = service === "charter-broker" ? [...selectedProviders].sort((x, y) => TIER_ORDER[x.tier] - TIER_ORDER[y.tier]) : premiumProviders;
+  // Charter Broker uses the directory's compact rows (Figma), every plan: Ultra Pro, Pro, then Basic.
+  const rowList = service === "charter-broker";
+  const rowProviders = rowList ? [...selectedProviders].sort((x, y) => TIER_ORDER[x.tier] - TIER_ORDER[y.tier]) : [];
   const basicProviders = rowList ? [] : selectedProviders.filter((p) => p.tier === "basic");
   const basicPages = Math.max(1, Math.ceil(basicProviders.length / BASIC_PAGE_SIZE));
   const page = Math.min(basicPages, Math.max(1, Number.parseInt(firstParam(sp.page) ?? "1", 10) || 1));

@@ -2,9 +2,12 @@ import Image from "next/image";
 import { isRemoteImage } from "@/components/ads/ad-link";
 import type { Runway } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
-import { InfoCard, InfoGrid } from "./InfoGrid";
+import { ChevronDown } from "lucide-react";
+import { InfoCard } from "./InfoGrid";
 
 const FT_TO_M = 0.3048;
+
+const metres = (r: Runway) => `${formatNumber(Math.round(r.lengthFt * FT_TO_M))} x ${Math.round(r.widthFt * FT_TO_M)} m`;
 
 function dims(r: Runway) {
   return `${formatNumber(Math.round(r.lengthFt * FT_TO_M))} x ${Math.round(r.widthFt * FT_TO_M)} m (${formatNumber(r.lengthFt)} x ${r.widthFt} ft)`;
@@ -57,28 +60,51 @@ export function RunwaysPanel({ runways, diagram, airportName }: { runways: Runwa
   }
   return (
     <InfoCard>
-      <div className="space-y-6">
-        {runways.map((r) => (
-          <InfoGrid
-            key={r.designator}
-            fields={[
-              { label: "Runway Number", value: r.designator },
-              { label: "Dimensions", value: dims(r) },
-              { label: "Surface", value: r.surface || "—" },
-              { label: "Runway Heading", value: `${Math.round(r.headingDeg)}° true` },
-            ]}
-            more={[
-              { label: "PCN", value: r.pcn || "—" },
-              { label: "Coordinates", value: r.coordinates || "—" },
-              { label: "Elevation", value: r.elevation || "—" },
-              { label: "Displaced Threshold", value: r.displacedThreshold || "—" },
-              { label: "Lighting", value: r.lighting ? "Edge & centreline lighting" : "Unlit" },
-              { label: "Instrument Landing System", value: r.ils || "No ILS" },
-            ]}
-            moreLabel={`More Runway ${r.designator} Information`}
-          />
-        ))}
+      {/* Figma: a "Runway Number | Dimensions" header, then one row card per runway with a show more toggle. */}
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-center rounded-[16px] bg-brand/8 px-5 py-4 text-sm font-medium text-ink lg:px-[45px]" aria-hidden>
+        <span>Runway Number</span>
+        <span>Dimensions</span>
+        <span className="w-[100px]" />
       </div>
+      <ul className="mt-2 space-y-2" aria-label="Runways">
+        {runways.map((r) => (
+          <li key={r.designator}>
+            <details className="group rounded-[16px] bg-white shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)]">
+              <summary className="grid cursor-pointer list-none grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-center px-5 py-4 text-sm font-semibold text-ink lg:px-[45px] [&::-webkit-details-marker]:hidden">
+                <span>
+                  {r.designator} ({Math.round(r.headingDeg)}°)
+                </span>
+                <span>{metres(r)}</span>
+                <span className="flex w-[100px] items-center justify-center gap-1.5 rounded-md border border-line px-2 py-1.5 text-[11px] whitespace-nowrap font-medium text-ink transition group-hover:border-brand">
+                  <span className="group-open:hidden">show more</span>
+                  <span className="hidden group-open:inline">Show Less</span>
+                  <ChevronDown className="size-3 transition group-open:rotate-180" aria-hidden />
+                </span>
+              </summary>
+              <dl className="space-y-5 px-5 pt-2 pb-6 lg:px-[45px]">
+                {[
+                  { label: "Runway Number", value: r.designator },
+                  { label: "Dimensions", value: dims(r) },
+                  { label: "PCN", value: r.pcn },
+                  { label: "Surface", value: r.surface },
+                  { label: "Coordinates", value: r.coordinates },
+                  { label: "Elevation", value: r.elevation },
+                  { label: "Runway Heading", value: `${Math.round(r.headingDeg)}° true` },
+                  { label: "Displaced Threshold", value: r.displacedThreshold },
+                  { label: "Lighting", value: r.lighting ? "Edge & centreline lighting" : "Unlit" },
+                  { label: "Instrument Landing System", value: r.ils || "No ILS" },
+                ].map((f) => (
+                  <div key={f.label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] gap-2 text-sm">
+                    <dt className="font-medium text-ink">{f.label}</dt>
+                    <dd className="font-semibold text-ink">{f.value || "—"}</dd>
+                    <span className="w-[100px]" aria-hidden />
+                  </div>
+                ))}
+              </dl>
+            </details>
+          </li>
+        ))}
+      </ul>
 
       <section aria-labelledby="runway-diagram" className="pt-6">
         {/* Figma: a bold title over the chart in a thin grey frame. */}
