@@ -20,11 +20,12 @@ const webHref = (site: string) => (site.startsWith("http") ? site : `https://${s
 const BLUE = "text-[#113f9d]";
 
 /**
- * Provider listing on the airport page (Figma 752:9750), set in Open Sans.
+ * Provider listing on the airport page (Figma 752:9750), set in Open Sans. `rating={false}` drops the
+ * Ultra Pro star line (charter operator list, as drawn).
  * Ultra Pro: tinted block with logo, rating and a details button (752:10213); Pro: logo and
  * full contacts (752:10249); Basic: name and contacts revealed on demand (1021:4105).
  */
-export function ProviderRow({ provider: p }: { provider: Provider }) {
+export function ProviderRow({ provider: p, rating = true }: { provider: Provider; rating?: boolean }) {
   const href = `/providers/${p.slug}`;
   const ultra = p.tier === "ultra_pro";
   const premium = p.tier !== "basic";
@@ -77,7 +78,7 @@ export function ProviderRow({ provider: p }: { provider: Provider }) {
         )}
       </div>
 
-      {ultra && (
+      {ultra && rating && (
         <p className="flex h-7 items-center gap-1 pt-2 font-sans text-sm leading-5 text-black" aria-label={`Rated ${p.rating} out of 5 from ${p.reviewCount} reviews`}>
           {Array.from({ length: 5 }, (_, i) => (
             <Image key={i} src="/images/airport/rating-star.svg" alt="" width={14} height={14} className={cn("size-3.5", i >= Math.round(p.rating) && "opacity-25 grayscale")} />

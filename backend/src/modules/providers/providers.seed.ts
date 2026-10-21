@@ -75,6 +75,12 @@ interface Seed {
   locationsLabel?: string;
   verified?: boolean;
   fleet?: boolean;
+  /** Optional overrides for the airport-listing contact block (Figma charter operator list). */
+  logo?: string;
+  address?: string;
+  phone2?: string;
+  email?: string;
+  email2?: string;
 }
 
 type ServiceSeed = { name: string; description: string; icon: string };
@@ -178,6 +184,14 @@ export const DEMO_TIER_SEEDS: Seed[] = [
   { slug: "aerolink-brokerage", name: "AeroLink Brokerage", tier: "pro", category: "charter-broker", countryCode: "CH", city: "Zurich", rating: 4.5, reviewCount: 108, summary: "European charter brokerage for business, leisure and group flights.", cover: IMG.cabin3, airports: NETWORK, domain: "aerolinkbrokerage.example", phone: "+41 44 555 9100", fleet: true },
   { slug: "jetfinder-brokers", name: "JetFinder Brokers", tier: "basic", category: "charter-broker", countryCode: "IN", city: "Mumbai", rating: 4.2, reviewCount: 46, summary: "Charter brokerage for private jets and helicopters across India and the Gulf.", cover: IMG.nose, airports: NETWORK, domain: "jetfinder.example", phone: "+91 22 6685 9100", fleet: true },
   { slug: "openair-charter-brokers", name: "OpenAir Charter Brokers", tier: "basic", category: "charter-broker", countryCode: "SG", city: "Singapore", rating: 4.1, reviewCount: 29, summary: "Charter brokerage for Asia-Pacific trips, empty legs and group charters.", cover: IMG.cabin4, airports: NETWORK, domain: "openaircharter.example", phone: "+65 6542 9100", fleet: true },
+  // Charter operators (fictional) at every demo airport, drawn like the design's airport listing: wordmark logo,
+  // full address, two phones and two emails (Ultra Pro, Pro), then Basic listings with contacts on request.
+  { slug: "ajets-airport-services", name: "AJETS Airport Services Pvt Ltd", tier: "ultra_pro", category: "charter-operator", countryCode: "IN", city: "New Delhi", rating: 4.9, reviewCount: 214, summary: "Private jet charter and airport services from New Delhi: light to heavy jets for business and leisure trips.", cover: IMG.cabin1, airports: NETWORK, domain: "ajets.example", phone: "+91 11 4583 0046", phone2: "+91 96540 12545", email: "charter@ajets.example", email2: "ops@ajets.example", address: "Room 24A, Ground Floor, Terminal 1D, IGI Airport, New Delhi, 110037", logo: "/images/providers/logos/ajets.png", fleet: true },
+  { slug: "njets-aviation", name: "NJETS Aviation Pvt Ltd", tier: "ultra_pro", category: "charter-operator", countryCode: "IN", city: "Mumbai", rating: 4.8, reviewCount: 167, summary: "Private jet and helicopter charter from Mumbai with 24/7 operations.", cover: IMG.cabinWide, airports: NETWORK, domain: "njets.example", phone: "+91 22 6685 0046", phone2: "+91 98200 31245", email: "charter@njets.example", email2: "ops@njets.example", address: "Hangar 4, General Aviation Terminal, CSMI Airport, Mumbai, 400099", logo: "/images/providers/logos/njets.png", fleet: true },
+  { slug: "ojets-airport-services", name: "OJETS Airport Services Pvt Ltd", tier: "pro", category: "charter-operator", countryCode: "IN", city: "Bengaluru", rating: 4.6, reviewCount: 98, summary: "Business jet charter from Bengaluru for corporate and leisure travel.", cover: IMG.cabin2, airports: NETWORK, domain: "ojets.example", phone: "+91 80 4120 0046", phone2: "+91 99001 22545", email: "charter@ojets.example", email2: "ops@ojets.example", address: "Office 12, GA Terminal, Kempegowda International Airport, Bengaluru, 560300", logo: "/images/providers/logos/ojets.png", fleet: true },
+  { slug: "kjets-charter", name: "KJETS Charter Pvt Ltd", tier: "pro", category: "charter-operator", countryCode: "IN", city: "Hyderabad", rating: 4.5, reviewCount: 76, summary: "Light and midsize jet charter from Hyderabad across India and the Gulf.", cover: IMG.cabin3, airports: NETWORK, domain: "kjets.example", phone: "+91 40 6650 0046", phone2: "+91 90000 42545", email: "charter@kjets.example", email2: "ops@kjets.example", address: "Unit 7, Business Aviation Terminal, RGI Airport, Hyderabad, 500409", logo: "/images/providers/logos/kjets.png", fleet: true },
+  { slug: "zenith-air-charter", name: "Zenith Air Charter Pvt Ltd", tier: "basic", category: "charter-operator", countryCode: "IN", city: "New Delhi", rating: 4.2, reviewCount: 31, summary: "Turboprop and light jet charter from New Delhi.", cover: IMG.nose, airports: NETWORK, domain: "zenithaircharter.example", phone: "+91 11 4583 0146", address: "Room 18, First Floor, Terminal 1D, IGI Airport, New Delhi, 110037", fleet: true },
+  { slug: "horizon-jet-charters", name: "Horizon Jet Charters Pvt Ltd", tier: "basic", category: "charter-operator", countryCode: "IN", city: "Ahmedabad", rating: 4.1, reviewCount: 22, summary: "Regional jet charter from Ahmedabad for business trips.", cover: IMG.cabin4, airports: NETWORK, domain: "horizonjetcharters.example", phone: "+91 79 2286 0046", address: "Office 3, GA Terminal, SVPI Airport, Ahmedabad, 382475", fleet: true },
   { slug: "desert-falcon-fbo", name: "Desert Falcon FBO", tier: "basic", category: "fbo", countryCode: "AE", city: "Dubai", rating: 4.1, reviewCount: 35, summary: "Business aviation handling and VIP lounge at Dubai International.", cover: IMG.terminal2, airports: ["OMDB"], domain: "desertfalcon.example", phone: "+971 4 220 5500" },
 ];
 
@@ -204,13 +218,15 @@ function build(seed: Seed, index: number) {
       "We hold industry-leading safety accreditations and continuously invest in our facilities, equipment and people to exceed the expectations of the world's most demanding flight departments.",
     ],
     coverImage: seed.cover,
-    logo: seed.slug === "signature-aviation" ? IMG.signatureLogo : "",
+    logo: seed.logo ?? (seed.slug === "signature-aviation" ? IMG.signatureLogo : ""),
     gallery: [IMG.cabin1, IMG.cabin2, IMG.fuel, IMG.nose, IMG.cabin3, IMG.cabin4],
     contact: {
       phone: seed.phone,
-      email: `ops@${seed.domain}`,
+      phone2: seed.phone2,
+      email: seed.email ?? `ops@${seed.domain}`,
+      email2: seed.email2,
       website: seed.domain,
-      address: `${seed.city}, ${country}`,
+      address: seed.address ?? `${seed.city}, ${country}`,
       fax: seed.tier === "basic" ? undefined : seed.phone.replace(/\d$/, "1"),
       location: airportShortName(seed.airports[0]) ?? seed.city,
     },
