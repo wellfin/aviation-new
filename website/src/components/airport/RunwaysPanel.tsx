@@ -81,10 +81,11 @@ export function RunwaysPanel({ runways, diagram, airportName }: { runways: Runwa
       </div>
 
       <section aria-labelledby="runway-diagram" className="pt-6">
-        <h3 id="runway-diagram" className="px-5 pb-3 text-sm leading-5 font-semibold text-ink uppercase lg:px-[45px]">
+        {/* Figma: a bold title over the chart in a thin grey frame. */}
+        <h3 id="runway-diagram" className="pb-3 text-base leading-6 font-bold text-ink">
           Runway Diagram
         </h3>
-        <div className="relative aspect-[807/489] overflow-hidden rounded-[20px] bg-white shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)]">
+        <div className="relative aspect-[1108/662] overflow-hidden rounded-[12px] border border-[#cfd4dc] bg-white">
           {diagram ? (
             <Image src={diagram} alt={`${airportName} runway diagram`} fill sizes="(min-width: 1280px) 808px, 100vw" unoptimized={isRemoteImage(diagram)} className="object-contain" />
           ) : (
