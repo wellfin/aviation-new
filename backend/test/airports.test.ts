@@ -85,7 +85,7 @@ describe("public airports", () => {
     expect(a).not.toHaveProperty("_id");
 
     const eu = await request(app).get(pub("?continent=Europe&country=gb&pageSize=50"));
-    expect(eu.body.data.items.map((x: { icao: string }) => x.icao).sort()).toEqual(["EGGW", "EGKK", "EGLF", "EGLL"]);
+    expect(eu.body.data.items.map((x: { icao: string }) => x.icao).sort()).toEqual(["EGGW", "EGKK", "EGLC", "EGLF", "EGLL"]);
     expect((await request(app).get(pub("?continent=Atlantis"))).status).toBe(422);
     expect((await request(app).get(pub("?pageSize=500"))).body.error.fieldErrors).toHaveProperty("pageSize");
   });
