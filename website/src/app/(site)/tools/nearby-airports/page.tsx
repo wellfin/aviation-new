@@ -2,7 +2,6 @@ import { LifeBuoy, MapPinOff } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AirportHeaderCard, cardClass, IcaoTile } from "@/components/tools-pages/AirportCards";
-import { bearingLabel, compassPoint } from "@/components/tools-pages/format";
 import { IcaoSearchForm } from "@/components/tools-pages/IcaoSearchForm";
 import { attempt, lookupAirport, readCode } from "@/components/tools-pages/lookup";
 import { icaoQuickPicks, ToolLayout } from "@/components/tools-pages/ToolLayout";
@@ -86,10 +85,10 @@ async function NearbyResults({ airport, radius }: { airport: Airport; radius: nu
       <AirportHeaderCard
         airport={airport}
         aside={
-          <div className="text-right">
+          <div className="text-right" title={`Within ${radius} km`}>
             <p className="text-xs font-semibold text-subtle uppercase">Found</p>
             <p className="text-xl leading-7 font-extrabold text-brand">{results.length}</p>
-            <p className="text-xs text-subtle">within {radius} km</p>
+            <p className="text-xs text-subtle">{results.length === 1 ? "airport" : "airports"}</p>
           </div>
         }
       />
@@ -107,7 +106,7 @@ async function NearbyResults({ airport, radius }: { airport: Airport; radius: nu
         </ToolMessage>
       ) : (
         <ol className="space-y-2">
-          {results.map(({ airport: a, distanceKm, bearingDeg }) => (
+          {results.map(({ airport: a, distanceKm }) => (
             <li key={a.icao} className={cn(cardClass, "flex flex-wrap items-center gap-4 p-4 sm:flex-nowrap")}>
               <IcaoTile code={a.icao} variant="light" />
               <div className="min-w-0 flex-1 max-sm:w-[calc(100%-72px)] max-sm:flex-none">
@@ -115,22 +114,12 @@ async function NearbyResults({ airport, radius }: { airport: Airport; radius: nu
                 <p className="text-xs text-muted">
                   {a.city}, {a.country}
                   {a.iata && ` · IATA: ${a.iata}`}
+                  <span className="sr-only">
+                    {" "}
+                    · {formatNumber(Math.round(distanceKm))} km ({formatNumber(Math.round(distanceKm * KM_TO_NM))} NM) away
+                  </span>
                 </p>
               </div>
-              <dl className="flex gap-6 sm:gap-8 sm:text-right">
-                <div className="sm:w-[150px]">
-                  <dt className="text-[10px] font-semibold tracking-[0.6px] text-subtle uppercase">Distance</dt>
-                  <dd className="text-sm font-bold text-ink">
-                    {formatNumber(Math.round(distanceKm))} km <span className="font-normal text-muted">· {formatNumber(Math.round(distanceKm * KM_TO_NM))} NM</span>
-                  </dd>
-                </div>
-                <div className="sm:w-[90px]">
-                  <dt className="text-[10px] font-semibold tracking-[0.6px] text-subtle uppercase">Bearing</dt>
-                  <dd className="font-mono text-sm font-bold text-ink">
-                    {bearingLabel(bearingDeg)} <span className="font-sans font-normal text-muted">{compassPoint(bearingDeg)}</span>
-                  </dd>
-                </div>
-              </dl>
               <Link
                 href={`/airports/${a.icao}`}
                 className="ml-auto rounded-lg bg-brand-gradient px-3.5 py-2.5 text-xs font-semibold text-white transition hover:brightness-110"
