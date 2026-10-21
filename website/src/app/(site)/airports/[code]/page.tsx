@@ -192,9 +192,11 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // Provider list (?service=), Figma 752:9750: Ultra Pro and Pro listings first, then the Basic ones, paged.
   const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
   const premiumProviders = selectedProviders.filter((p) => p.tier !== "basic").sort((x, y) => TIER_ORDER[x.tier] - TIER_ORDER[y.tier]);
-  // Permit (Figma directory list rows): only the Ultra Pro and Pro companies, as compact rows.
-  const permitList = service === "permit";
-  const basicProviders = permitList ? [] : selectedProviders.filter((p) => p.tier === "basic");
+  // Permit and Charter Broker use the directory's compact rows (Figma): Permit lists only the Ultra Pro
+  // and Pro companies, Charter Broker every plan (Ultra Pro, Pro, then Basic).
+  const rowList = service === "permit" || service === "charter-broker";
+  const rowProviders = service === "charter-broker" ? [...selectedProviders].sort((x, y) => TIER_ORDER[x.tier] - TIER_ORDER[y.tier]) : premiumProviders;
+  const basicProviders = rowList ? [] : selectedProviders.filter((p) => p.tier === "basic");
   const basicPages = Math.max(1, Math.ceil(basicProviders.length / BASIC_PAGE_SIZE));
   const page = Math.min(basicPages, Math.max(1, Number.parseInt(firstParam(sp.page) ?? "1", 10) || 1));
   const basicOnPage = basicProviders.slice((page - 1) * BASIC_PAGE_SIZE, page * BASIC_PAGE_SIZE);
@@ -216,9 +218,9 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
         <h2 id="providers-heading" className="sr-only">
           {serviceName} providers at {airport.shortName} ({selectedProviders.length})
         </h2>
-        {permitList && premiumProviders.length > 0 ? (
+        {rowList && rowProviders.length > 0 ? (
           <div className="space-y-3">
-            {premiumProviders.map((p) => (
+            {rowProviders.map((p) => (
               <ProviderListRow key={p.slug} provider={p} />
             ))}
           </div>
@@ -308,8 +310,8 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // so their number follows an estimate of that height — roughly one ad per 650px, as drawn.
   const adsFor = (height: number) => Math.max(1, Math.round(height / 650));
   const extraLines = (p: Provider) => (p.contact.fax ? 27 : 0) + (p.contact.phone2 ? 29 : 0) + (p.contact.email2 ? 31 : 0) + (p.contact.sita ? 27 : 0);
-  const topListHeight = permitList
-    ? premiumProviders.length * 140
+  const topListHeight = rowList
+    ? rowProviders.length * 140
     : premiumProviders.length
       ? premiumProviders.reduce((h, p) => h + (p.tier === "ultra_pro" ? 360 : 301) + extraLines(p), 0)
       : basicOnPage.length * 235;
