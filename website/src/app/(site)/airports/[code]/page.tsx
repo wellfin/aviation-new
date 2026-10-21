@@ -12,6 +12,7 @@ import { LocationMap } from "@/components/airport/LocationMap";
 import { NearbyList } from "@/components/airport/NearbyList";
 import { Pagination } from "@/components/ui/Pagination";
 import { ProviderRow } from "@/components/airport/ProviderRow";
+import { ProviderListRow } from "@/components/providers/ProviderListRow";
 import { AIRPORT_TYPE_LABEL, airportHref, parseTab, type AirportTab } from "@/components/airport/routes";
 import { RunwaysPanel } from "@/components/airport/RunwaysPanel";
 import { isDesignCategory } from "@/components/categories/design-categories";
@@ -191,7 +192,9 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // Provider list (?service=), Figma 752:9750: Ultra Pro and Pro listings first, then the Basic ones, paged.
   const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
   const premiumProviders = selectedProviders.filter((p) => p.tier !== "basic").sort((x, y) => TIER_ORDER[x.tier] - TIER_ORDER[y.tier]);
-  const basicProviders = selectedProviders.filter((p) => p.tier === "basic");
+  // Permit (Figma directory list rows): only the Ultra Pro and Pro companies, as compact rows.
+  const permitList = service === "permit";
+  const basicProviders = permitList ? [] : selectedProviders.filter((p) => p.tier === "basic");
   const basicPages = Math.max(1, Math.ceil(basicProviders.length / BASIC_PAGE_SIZE));
   const page = Math.min(basicPages, Math.max(1, Number.parseInt(firstParam(sp.page) ?? "1", 10) || 1));
   const basicOnPage = basicProviders.slice((page - 1) * BASIC_PAGE_SIZE, page * BASIC_PAGE_SIZE);
@@ -213,7 +216,13 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
         <h2 id="providers-heading" className="sr-only">
           {serviceName} providers at {airport.shortName} ({selectedProviders.length})
         </h2>
-        {premiumProviders.length > 0 ? (
+        {permitList && premiumProviders.length > 0 ? (
+          <div className="space-y-3">
+            {premiumProviders.map((p) => (
+              <ProviderListRow key={p.slug} provider={p} />
+            ))}
+          </div>
+        ) : premiumProviders.length > 0 ? (
           <div className="space-y-[5px]">
             {premiumProviders.map((p) => (
               <ProviderRow key={p.slug} provider={p} />
@@ -226,7 +235,9 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
             <p className="text-3xl" aria-hidden>
               🛂
             </p>
-            <p className="mt-2 font-bold text-ink">No {serviceName?.toLowerCase()} providers listed at {airport.icao} yet</p>
+            <p className="mt-2 font-bold text-ink">
+              No {serviceName?.toLowerCase()} providers listed at {airport.icao} yet
+            </p>
             <p className="mt-1 text-sm text-muted">Browse the global directory or list your company to reach operators flying here.</p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <Link href={`/directory?category=${service}`} className="bg-brand-gradient rounded-full px-5 py-2.5 text-sm font-semibold text-white hover:brightness-110">
@@ -297,9 +308,11 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // so their number follows an estimate of that height — roughly one ad per 650px, as drawn.
   const adsFor = (height: number) => Math.max(1, Math.round(height / 650));
   const extraLines = (p: Provider) => (p.contact.fax ? 27 : 0) + (p.contact.phone2 ? 29 : 0) + (p.contact.email2 ? 31 : 0) + (p.contact.sita ? 27 : 0);
-  const topListHeight = premiumProviders.length
-    ? premiumProviders.reduce((h, p) => h + (p.tier === "ultra_pro" ? 360 : 301) + extraLines(p), 0)
-    : basicOnPage.length * 235;
+  const topListHeight = permitList
+    ? premiumProviders.length * 140
+    : premiumProviders.length
+      ? premiumProviders.reduce((h, p) => h + (p.tier === "ultra_pro" ? 360 : 301) + extraLines(p), 0)
+      : basicOnPage.length * 235;
   const railHeight = 40 + (categories.filter(isDesignCategory).length + 1) * 54;
   const underRail = 70 + topListHeight - railHeight - 21;
   const adsUnderRail = underRail >= 400 ? adsFor(underRail) : 0;
@@ -341,11 +354,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
           <ToolTiles icao={airport.icao} />
         </div>
         <div
-          className={cn(
-            "min-w-0 md:col-start-1 md:row-start-2",
-            nearbyLayout ? "md:row-span-3" : showCalculator && "md:row-span-2",
-            providersLayout && "flex flex-col gap-[21px]",
-          )}
+          className={cn("min-w-0 md:col-start-1 md:row-start-2", nearbyLayout ? "md:row-span-3" : showCalculator && "md:row-span-2", providersLayout && "flex flex-col gap-[21px]")}
         >
           <ServiceSidebar icao={airport.icao} active={service} categories={categories} />
           {providersLayout && Array.from({ length: adsUnderRail }, (_, i) => <SkyscraperAd key={i} className={cn(fillAd, "hidden lg:block")} />)}
