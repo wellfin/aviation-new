@@ -14,6 +14,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { ProviderRow } from "@/components/airport/ProviderRow";
 import { AIRPORT_TYPE_LABEL, airportHref, parseTab, type AirportTab } from "@/components/airport/routes";
 import { RunwaysPanel } from "@/components/airport/RunwaysPanel";
+import { isDesignCategory } from "@/components/categories/design-categories";
 import { ServiceSidebar } from "@/components/airport/ServiceSidebar";
 import { SkyscraperAd } from "@/components/airport/SkyscraperAd";
 import { ToolTiles } from "@/components/tools/ToolTiles";
@@ -299,7 +300,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   const topListHeight = premiumProviders.length
     ? premiumProviders.reduce((h, p) => h + (p.tier === "ultra_pro" ? 360 : 301) + extraLines(p), 0)
     : basicOnPage.length * 235;
-  const railHeight = 40 + (categories.length + 1) * 54;
+  const railHeight = 40 + (categories.filter(isDesignCategory).length + 1) * 54;
   const underRail = 70 + topListHeight - railHeight - 21;
   const adsUnderRail = underRail >= 400 ? adsFor(underRail) : 0;
   const topRightAds = adsFor(195 + Math.max(70 + topListHeight, railHeight));

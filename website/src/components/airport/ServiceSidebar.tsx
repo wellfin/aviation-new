@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LayoutGrid, type LucideIcon } from "lucide-react";
 import { categoryIcon } from "@/components/categories/category-icon";
+import { isDesignCategory } from "@/components/categories/design-categories";
 import type { ServiceCategory, ServiceCategorySlug } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { airportHref } from "./routes";
@@ -72,7 +73,11 @@ export function ServiceSidebar({
 }) {
   const linkFor = (slug: ServiceCategorySlug) => (hrefFor ? hrefFor(slug) : airportHref(icao ?? "", { service: slug, hash: "airport-content" }));
   // Stable sort: rail categories first in design order, the rest keep the admin order.
-  const ordered = categories.map((c, i) => ({ c, i })).sort((a, b) => railPosition(a.c.slug) - railPosition(b.c.slug) || a.i - b.i);
+  // Only the design's 14 services; categories added later in the admin panel stay off the rail.
+  const ordered = categories
+    .filter(isDesignCategory)
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => railPosition(a.c.slug) - railPosition(b.c.slug) || a.i - b.i);
   const items: Item[] = ordered.map(({ c }) => ({
     slug: c.slug,
     label: c.name,
