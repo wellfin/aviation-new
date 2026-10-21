@@ -50,7 +50,7 @@ describe("public airports", () => {
 
   it("seeds idempotently", async () => {
     await seedAirports();
-    expect(await Airport.countDocuments()).toBe(15);
+    expect(await Airport.countDocuments()).toBe(16);
   });
 
   it("adds missing neighbour airports without touching existing ones", async () => {
@@ -78,7 +78,7 @@ describe("public airports", () => {
   it("lists with pagination and filters, matching the frontend Airport shape", async () => {
     const r = await request(app).get(pub("?pageSize=5&page=2"));
     expect(r.status).toBe(200);
-    expect(r.body.data).toMatchObject({ total: 15, page: 2, pageSize: 5, totalPages: 3 });
+    expect(r.body.data).toMatchObject({ total: 16, page: 2, pageSize: 5, totalPages: 4 });
     expect(r.body.data.items).toHaveLength(5);
     const a = r.body.data.items[0];
     for (const key of ["icao", "iata", "name", "lat", "lon", "runways", "frequencies", "servicesCount", "featured"]) expect(a).toHaveProperty(key);
