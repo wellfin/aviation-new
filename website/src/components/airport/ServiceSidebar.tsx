@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
+import { LayoutGrid, type LucideIcon } from "lucide-react";
 import { categoryIcon } from "@/components/categories/category-icon";
 import type { ServiceCategory, ServiceCategorySlug } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -51,8 +51,26 @@ function railPosition(slug: string): number {
   return i === -1 ? RAIL_ORDER.length : i;
 }
 
-/** Left rail of service categories; selecting one lists the providers at this airport (?service=). */
-export function ServiceSidebar({ icao, active, categories }: { icao: string; active?: string; categories: ServiceCategory[] }) {
+/**
+ * Left rail of service categories; selecting one lists the providers at this airport (?service=).
+ * The directory's list view reuses it with its own links (`hrefFor`, plus an "All Services" item via `allHref`).
+ */
+export function ServiceSidebar({
+  icao,
+  active,
+  categories,
+  hrefFor,
+  allHref,
+  label = "Services at this airport",
+}: {
+  icao?: string;
+  active?: string;
+  categories: ServiceCategory[];
+  hrefFor?: (slug: ServiceCategorySlug) => string;
+  allHref?: string;
+  label?: string;
+}) {
+  const linkFor = (slug: ServiceCategorySlug) => (hrefFor ? hrefFor(slug) : airportHref(icao ?? "", { service: slug, hash: "airport-content" }));
   // Stable sort: rail categories first in design order, the rest keep the admin order.
   const ordered = categories.map((c, i) => ({ c, i })).sort((a, b) => railPosition(a.c.slug) - railPosition(b.c.slug) || a.i - b.i);
   const items: Item[] = ordered.map(({ c }) => ({
@@ -70,7 +88,7 @@ export function ServiceSidebar({ icao, active, categories }: { icao: string; act
     return (
       <li key={item.slug}>
         <Link
-          href={airportHref(icao, { service: item.slug, hash: "airport-content" })}
+          href={linkFor(item.slug)}
           aria-current={selected ? "page" : undefined}
           className={cn(
             // 6px right padding: the design lets the longest names ("Meet and Assist Service") run close to the edge.
@@ -87,8 +105,25 @@ export function ServiceSidebar({ icao, active, categories }: { icao: string; act
   };
 
   return (
-    <nav aria-label="Services at this airport" className="rounded-[20px] bg-white p-4 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] md:p-6">
-      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-1">{PRIMARY.map(renderItem)}</ul>
+    <nav aria-label={label} className="rounded-[20px] bg-white p-4 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] md:p-6">
+      <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-1">
+        {allHref && (
+          <li>
+            <Link
+              href={allHref}
+              aria-current={!active ? "page" : undefined}
+              className={cn(
+                "flex h-[46px] items-center gap-2.5 rounded-xl border-[0.755px] py-3 pr-1 pl-3 text-[13px] leading-[15px] font-bold text-white transition",
+                !active ? "bg-brand-gradient border-transparent shadow-soft" : "border-white/10 bg-navy-900 hover:bg-navy-800",
+              )}
+            >
+              <LayoutGrid className="size-[18px] shrink-0" aria-hidden />
+              <span className="min-w-0 flex-1 truncate">All Services</span>
+            </Link>
+          </li>
+        )}
+        {PRIMARY.map(renderItem)}
+      </ul>
       {/* Open on load, as every tab frame draws it (Figma 908:1355); "View All" folds the extra categories away. */}
       <details className="group mt-2" open>
         <summary className="flex h-[46px] cursor-pointer list-none items-center justify-center gap-3 rounded-xl border-[0.755px] border-white/10 bg-navy-900 text-[13px] leading-[15px] font-bold text-white transition hover:bg-navy-800 [&::-webkit-details-marker]:hidden">

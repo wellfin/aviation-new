@@ -8,34 +8,41 @@ import { SORT_OPTIONS, directoryHref, splitCategories, type DirectoryParams } fr
 
 const pill = "shrink-0 rounded-full px-[11px] py-1.5 text-xs leading-4 font-semibold whitespace-nowrap text-white transition";
 
-/** Category pill bar + sort select + grid/list toggle. */
+/** Category pill bar + sort select + grid/list toggle. The list view picks categories from its side rail instead of pills. */
 export function DirectoryToolbar({ params, categories }: { params: DirectoryParams; categories: ServiceCategory[] }) {
+  const pillBar = params.view !== "list";
   const { primary, more } = splitCategories(categories);
   const pills = [{ slug: "all" as const, name: "All Services" }, ...primary];
 
   return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-      <div className="flex min-w-0 items-center gap-1.5 rounded-[12px] bg-navy-900 py-[5px] pr-1.5 pl-2 xl:flex-1">
-        <nav aria-label="Service categories" className="scrollbar-none flex min-w-0 flex-1 items-center overflow-x-auto">
-          {pills.map((c) => {
-            const active = params.category === c.slug;
-            return (
-              <Link
-                key={c.slug}
-                href={directoryHref(params, { category: c.slug })}
-                aria-current={active ? "page" : undefined}
-                className={cn(pill, active ? "bg-brand-gradient" : "hover:bg-white/10")}
-              >
-                {c.name}
-              </Link>
-            );
-          })}
-        </nav>
-        <MoreServicesMenu
-          activeSlug={params.category}
-          items={more.map((c) => ({ slug: c.slug, label: c.name, href: directoryHref(params, { category: c.slug }) }))}
-        />
-      </div>
+    <div className={cn("flex flex-col gap-3 xl:flex-row xl:items-center", !pillBar && "items-end xl:justify-end")}>
+      {pillBar && (
+        <div className="flex min-w-0 items-center gap-1.5 rounded-[12px] bg-navy-900 py-[5px] pr-1.5 pl-2 xl:flex-1">
+          <nav aria-label="Service categories" className="scrollbar-none flex min-w-0 flex-1 items-center overflow-x-auto">
+            {pills.map((c) => {
+              const active = params.category === c.slug;
+              return (
+                <Link
+                  key={c.slug}
+                  href={directoryHref(params, { category: c.slug })}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(pill, active ? "bg-brand-gradient" : "hover:bg-white/10")}
+                >
+                  {c.name}
+                </Link>
+              );
+            })}
+          </nav>
+          <MoreServicesMenu
+            activeSlug={params.category}
+            items={more.map((c) => ({
+              slug: c.slug,
+              label: c.name,
+              href: directoryHref(params, { category: c.slug }),
+            }))}
+          />
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         <LinkSelect
@@ -43,7 +50,10 @@ export function DirectoryToolbar({ params, categories }: { params: DirectoryPara
           value={params.sort}
           prefix="Sort: "
           className="min-w-0 flex-1 sm:w-[150px] sm:flex-none"
-          options={SORT_OPTIONS.map((o) => ({ ...o, href: directoryHref(params, { sort: o.value }) }))}
+          options={SORT_OPTIONS.map((o) => ({
+            ...o,
+            href: directoryHref(params, { sort: o.value }),
+          }))}
         />
         <div className="flex shrink-0 overflow-hidden rounded-[12px] border border-line bg-white" role="group" aria-label="Layout">
           {(
