@@ -7,6 +7,7 @@ import { SponsoredStrip } from "@/components/ads/SponsoredStrip";
 import { EmptyResults } from "@/components/directory/EmptyResults";
 import { Pagination } from "@/components/ui/Pagination";
 import { getAdvertisement } from "@/lib/data/content";
+import type { Provider } from "@/lib/types";
 import { paginate } from "@/lib/utils";
 import { CharterHero } from "./CharterHero";
 import { ProviderRow } from "@/components/airport/ProviderRow";
@@ -20,6 +21,22 @@ import { CHARTER_KINDS, type CharterKind } from "./kinds";
 const PAGE_SIZE = 7;
 const AD_AFTER = 5;
 const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
+/** Charter operator results (Figma): three cards a page — one Ultra Pro, one Pro, one Basic. */
+const OPERATOR_PAGE_SIZE = 3;
+
+/**
+ * Charter operator order: listings taken in turns from Ultra Pro, Pro and Basic (a plan that runs out is
+ * skipped), so each page of three shows one of each while they last. Within a plan, listings with a
+ * logo come first, then the API's rating order.
+ */
+function onePerPlan(providers: Provider[]): Provider[] {
+  const byPlan = (["ultra_pro", "pro", "basic"] as const).map((tier) =>
+    providers.filter((p) => p.tier === tier).sort((a, b) => Number(Boolean(b.logo)) - Number(Boolean(a.logo))),
+  );
+  const out: Provider[] = [];
+  for (let i = 0; out.length < providers.length; i++) for (const plan of byPlan) if (plan[i]) out.push(plan[i]);
+  return out;
+}
 
 async function charterAds() {
   const [bannerAd, sidebarAd, stripAd] = await Promise.all([getAdvertisement("header-banner"), getAdvertisement("sidebar"), getAdvertisement("sponsored-strip")]);
@@ -58,11 +75,13 @@ export async function CharterResultsPage({ kind, searchParams }: { kind: Charter
   const k = CHARTER_KINDS[kind];
   const filters = parseCharterParams(searchParams);
   const [providers, { bannerAd, sidebarAd, stripAd }] = await Promise.all([loadCharterProviders(kind, { q: filters.q, country: filters.country }), charterAds()]);
+  const operators = kind === "operator";
+  const matching = providers.filter((p) => matchesCharterFilters(p, filters));
   const result = paginate(
-    // Ultra Pro first, then Pro, then Basic; each plan keeps the API's rating order.
-    providers.filter((p) => matchesCharterFilters(p, filters)).sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]),
+    // Operators: one listing of each plan per page. Brokers: Ultra Pro first, then Pro, then Basic, each plan in the API's rating order.
+    operators ? onePerPlan(matching) : matching.sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]),
     filters.page,
-    PAGE_SIZE,
+    operators ? OPERATOR_PAGE_SIZE : PAGE_SIZE,
   );
   const query = charterQuery(filters);
   const modifyHref = `${k.basePath}?${new URLSearchParams(Object.entries(query).filter((e): e is [string, string] => Boolean(e[1]))).toString()}`;
@@ -110,7 +129,8 @@ export async function CharterResultsPage({ kind, searchParams }: { kind: Charter
             <div className="space-y-[5px]">
               {result.items.map((provider, i) => (
                 <Fragment key={provider.id}>
-                  <ProviderRow provider={provider} />
+                  {/* The operator cards are drawn without the star line. */}
+                  <ProviderRow provider={provider} rating={!operators} />
                   {i === Math.min(AD_AFTER, result.items.length) - 1 && <SponsoredStrip ad={stripAd} className="my-2" />}
                 </Fragment>
               ))}
