@@ -112,6 +112,9 @@ export interface Provider {
   contact: ContactInfo;
   socials: SocialLinks;
   locationsLabel?: string;
+  ctaHidden?: boolean;
+  ctaLabel?: string;
+  ctaUrl?: string;
   services: ProviderService[];
   airports: ProviderAirport[];
   certifications: Certification[];

@@ -136,13 +136,14 @@ export function ProviderRow({ provider: p, rating = true }: { provider: Provider
         )}
       </dl>
 
-      {ultra && (
+      {ultra && !p.ctaHidden && (
         // 10px left of the text column, 3px under the last line (Figma 905:15671).
         <Link
-          href={href}
+          href={p.ctaUrl || href}
+          {...(p.ctaUrl?.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           className="mt-[3px] -ml-2.5 inline-flex h-[41px] items-center rounded-xl bg-[linear-gradient(163.34deg,#2f80ed_0%,#00c2ff_100%)] pr-5 pl-[13px] text-sm leading-[21px] font-bold text-white transition hover:brightness-110"
         >
-          See More Details
+          {p.ctaLabel || "See More Details"}
         </Link>
       )}
     </article>

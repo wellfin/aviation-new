@@ -34,6 +34,7 @@ type Feedback = { status: "success" | "error"; message: string } | null;
 const SECTIONS = [
   ["basics", "Basics"],
   ["media", "Media"],
+  ["listing-button", "Button"],
   ["contact", "Contact"],
   ["about", "About"],
   ["services", "Services"],
@@ -225,6 +226,27 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
               )}
             </div>
             <Input label="Video URL" name="videoUrl" value={s.videoUrl} maxLength={500} placeholder="https://…" onChange={(ev) => set("videoUrl", ev.target.value)} error={e("videoUrl")} hint={limits.video ? undefined : "Videos are an Ultra Pro feature."} />
+          </FormSection>
+
+          <FormSection id="listing-button" title="Listing button" description="The blue button on Ultra Pro listings (airport pages, charter results, directory list). Optional — Pro and Basic listings never show it.">
+            <label className="flex items-center gap-3 text-sm font-medium text-ink">
+              <input type="checkbox" checked={!s.ctaHidden} onChange={(ev) => set("ctaHidden", !ev.target.checked)} className="size-4 accent-brand" />
+              Show the button
+            </label>
+            <Grid>
+              <Input label="Button text" name="ctaLabel" value={s.ctaLabel} maxLength={40} placeholder="See More Details" onChange={(ev) => set("ctaLabel", ev.target.value)} error={e("ctaLabel")} />
+              <Input
+                label="Button link"
+                name="ctaUrl"
+                value={s.ctaUrl}
+                maxLength={500}
+                placeholder="Profile page"
+                onChange={(ev) => set("ctaUrl", ev.target.value)}
+                error={e("ctaUrl")}
+                hint="Blank opens the provider's profile. Use https://… or a path such as /contact."
+              />
+            </Grid>
+            {s.tier !== "ultra_pro" && <p className="text-xs text-[#a16207]">Only Ultra Pro listings show this button.</p>}
           </FormSection>
 
           <FormSection id="contact" title="Contact & socials">

@@ -41,6 +41,12 @@ const assetUrl = z
   .trim()
   .max(500)
   .refine((v) => v === "" || /^\/[^/]/.test(v) || /^https?:\/\/[^\s]+$/i.test(v), "Use a site path (/images/…) or an http(s) URL");
+/** A full https:// URL or a path on this site ("/contact"); blank for the default. */
+const linkUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((v) => v === "" || /^https:\/\/[^\s]+$/i.test(v) || /^\/[^\s]*$/.test(v), "Use a full https:// URL or a path such as /contact");
 const httpsUrl = z
   .string()
   .trim()
@@ -88,6 +94,9 @@ export const providerSchema = z.object({
   }),
   socials: z.object({ linkedin: httpsUrl, instagram: httpsUrl, facebook: httpsUrl, x: httpsUrl }),
   locationsLabel: text(60),
+  ctaHidden: z.boolean(),
+  ctaLabel: text(40),
+  ctaUrl: linkUrl,
   services: z
     .array(
       z.object({
@@ -206,6 +215,9 @@ export interface ProviderFormState {
   contact: { phone: string; email: string; website: string; address: string; fax: string; phone2: string; email2: string; sita: string; location: string };
   socials: { linkedin: string; instagram: string; facebook: string; x: string };
   locationsLabel: string;
+  ctaHidden: boolean;
+  ctaLabel: string;
+  ctaUrl: string;
   services: ServiceRow[];
   airports: AirportChip[];
   certifications: CertRow[];
@@ -236,6 +248,9 @@ export function emptyProviderState(): ProviderFormState {
     contact: { phone: "", email: "", website: "", address: "", fax: "", phone2: "", email2: "", sita: "", location: "" },
     socials: { linkedin: "", instagram: "", facebook: "", x: "" },
     locationsLabel: "",
+    ctaHidden: false,
+    ctaLabel: "",
+    ctaUrl: "",
     services: [],
     airports: [],
     certifications: [],
@@ -267,6 +282,9 @@ export function stateFromProvider(p: AdminProvider): ProviderFormState {
     contact: { phone: p.contact.phone, email: p.contact.email, website: p.contact.website, address: p.contact.address, fax: p.contact.fax ?? "", phone2: p.contact.phone2 ?? "", email2: p.contact.email2 ?? "", sita: p.contact.sita ?? "", location: p.contact.location },
     socials: { linkedin: p.socials.linkedin ?? "", instagram: p.socials.instagram ?? "", facebook: p.socials.facebook ?? "", x: p.socials.x ?? "" },
     locationsLabel: p.locationsLabel ?? "",
+    ctaHidden: p.ctaHidden ?? false,
+    ctaLabel: p.ctaLabel ?? "",
+    ctaUrl: p.ctaUrl ?? "",
     services: p.services.map((s) => ({ name: s.name, description: s.description, icon: s.icon })),
     airports: p.airports.map((a) => ({ icao: a.icao, label: [a.iata, a.name].filter(Boolean).join(" · ") })),
     certifications: p.certifications.map((c) => ({ ...c, image: c.image ?? "" })),
@@ -313,6 +331,9 @@ export function rawPayload(s: ProviderFormState, mode: "create" | "edit"): Recor
     contact: s.contact,
     socials: s.socials,
     locationsLabel: s.locationsLabel,
+    ctaHidden: s.ctaHidden,
+    ctaLabel: s.ctaLabel,
+    ctaUrl: s.ctaUrl,
     services: s.services.map((x) => ({ name: x.name, description: x.description, icon: opt(x.icon) })),
     airports: s.airports.map((a) => a.icao),
     certifications: s.certifications.map((c) => ({ ...c })),

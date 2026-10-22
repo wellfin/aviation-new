@@ -104,7 +104,7 @@ function slugTaken(err: unknown): never {
 /** Staff-curated listing; may be published immediately and assigned to a provider account. */
 export async function adminCreateProvider(input: AdminCreateInput) {
   await assertActiveCategory(input.category);
-  const { ownerEmail, tier, verified, slug, status, ...fields } = input;
+  const { ownerEmail, tier, verified, slug, status, ctaHidden, ctaLabel, ctaUrl, ...fields } = input;
   const create = () =>
     withTransaction(async (session) => {
       const doc = new Provider({
@@ -117,6 +117,9 @@ export async function adminCreateProvider(input: AdminCreateInput) {
         summary: fields.summary,
         tier: tier ?? "basic",
         verified: verified ?? false,
+        ctaHidden: ctaHidden ?? false,
+        ...(ctaLabel ? { ctaLabel } : {}),
+        ...(ctaUrl ? { ctaUrl } : {}),
         status,
         ...(status === "published" ? { publishedAt: new Date() } : {}),
         ...(ownerEmail ? { owner: await resolveOwner(ownerEmail, session) } : {}),
@@ -135,7 +138,7 @@ export async function adminCreateProvider(input: AdminCreateInput) {
 
 export async function adminUpdateProvider(id: string, input: AdminUpdateInput) {
   if (input.category !== undefined) await assertActiveCategory(input.category);
-  const { ownerEmail, tier, verified, slug, ...fields } = input;
+  const { ownerEmail, tier, verified, slug, ctaHidden, ctaLabel, ctaUrl, ...fields } = input;
   try {
     const doc = await withTransaction(async (session) => {
       const listing = await Provider.findById(id).session(session);
@@ -143,6 +146,9 @@ export async function adminUpdateProvider(id: string, input: AdminUpdateInput) {
       if (tier !== undefined) listing.tier = tier;
       if (verified !== undefined) listing.verified = verified;
       if (slug !== undefined) listing.slug = slug;
+      if (ctaHidden !== undefined) listing.ctaHidden = ctaHidden;
+      if (ctaLabel !== undefined) listing.ctaLabel = ctaLabel || undefined;
+      if (ctaUrl !== undefined) listing.ctaUrl = ctaUrl || undefined;
       if (ownerEmail !== undefined) listing.owner = ownerEmail ? await resolveOwner(ownerEmail, session, listing._id) : undefined;
       const affected = await applyEditableFields(listing, fields, session);
       await listing.save({ session });

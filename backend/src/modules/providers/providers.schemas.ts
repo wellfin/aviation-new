@@ -17,6 +17,12 @@ const assetUrl = z
   .refine((v) => v === "" || /^\/[^/]/.test(v) || /^https?:\/\/[^\s]+$/i.test(v), "Use a site path (/images/…) or an http(s) URL");
 
 /** Absolute https URL, or "" to clear. */
+/** A full https:// URL or a path on this site ("/contact"); blank for the default. */
+const linkUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .refine((v) => v === "" || /^https:\/\/[^\s]+$/i.test(v) || /^\/[^\s]*$/.test(v), "Use a full https:// URL or a path such as /contact");
 const httpsUrl = z
   .string()
   .trim()
@@ -161,6 +167,11 @@ export const updateListingBody = editableObject.partial().refine(nonEmpty, "Noth
 const staffFields = {
   tier: z.enum(PROVIDER_TIERS),
   verified: z.boolean(),
+  /** The blue Ultra Pro listing button (staff only): shown or not, its text and where it goes
+   * (blank = "See More Details" to the profile). */
+  ctaHidden: z.boolean(),
+  ctaLabel: text(40),
+  ctaUrl: linkUrl,
   slug: z
     .string()
     .trim()

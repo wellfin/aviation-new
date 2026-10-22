@@ -122,6 +122,11 @@ export interface Provider {
   contact: ContactInfo;
   socials: SocialLinks;
   locationsLabel?: string;
+  /** The blue Ultra Pro listing button (admin panel); blank = "See More Details" to the profile. */
+  /** Admin switched the button off. */
+  ctaHidden?: boolean;
+  ctaLabel?: string;
+  ctaUrl?: string;
   services: ProviderService[];
   airports: ProviderAirport[];
   certifications: Certification[];

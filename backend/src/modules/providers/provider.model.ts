@@ -91,6 +91,10 @@ const providerSchema = new Schema(
       x: url,
     },
     locationsLabel: { type: String, trim: true, maxlength: 60 },
+    /* The blue button on Ultra Pro listings; blank means "See More Details" linking to the profile. */
+    ctaHidden: { type: Boolean, default: false },
+    ctaLabel: { type: String, trim: true, maxlength: 40 },
+    ctaUrl: { type: String, trim: true, maxlength: 500 },
     services: [serviceSchema],
     airports: [{ type: Schema.Types.ObjectId, ref: "Airport" }],
     /** ICAO + IATA codes of `airports`, denormalised for fast filtering. */
@@ -186,6 +190,9 @@ export function toProviderDTO(p: ProviderLike, opts: { reviews?: ReviewDTO[] } =
     },
     socials: Object.fromEntries(Object.entries(p.socials ?? {}).filter(([, v]) => typeof v === "string" && v)),
     ...(p.locationsLabel ? { locationsLabel: p.locationsLabel } : {}),
+    ...(p.ctaHidden ? { ctaHidden: true } : {}),
+    ...(p.ctaLabel ? { ctaLabel: p.ctaLabel } : {}),
+    ...(p.ctaUrl ? { ctaUrl: p.ctaUrl } : {}),
     services: (p.services ?? []).map((s) => ({ name: s.name, description: s.description ?? "", icon: s.icon ?? "plane" })),
     airports: airports.map((a) => ({ icao: a.icao, iata: a.iata ?? "", name: a.shortName, city: a.city, countryCode: a.countryCode })),
     certifications: (p.certifications ?? []).map((c) => ({ name: c.name, issuer: c.issuer, validUntil: c.validUntil ?? "", code: c.code ?? "", image: c.image ?? "" })),

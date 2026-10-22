@@ -341,6 +341,19 @@ describe("admin providers", () => {
     expect((await agent.get(adm("?status=gone"))).status).toBe(422);
   });
 
+  it("lets staff set the Ultra Pro listing button (text, link, hidden)", async () => {
+    const { id } = await pendingListing();
+    const { agent } = await signedInAgent("MANAGER", app);
+    const r = await agent.patch(adm(`/${id}`)).send({ ctaLabel: "Request a Quote", ctaUrl: "/contact", ctaHidden: true });
+    expect(r.status).toBe(200);
+    const saved = await Provider.findById(id).lean();
+    expect(saved).toMatchObject({ ctaLabel: "Request a Quote", ctaUrl: "/contact", ctaHidden: true });
+    expect((await agent.patch(adm(`/${id}`)).send({ ctaUrl: "javascript:alert(1)" })).status).toBe(422);
+    await agent.patch(adm(`/${id}`)).send({ ctaLabel: "", ctaUrl: "", ctaHidden: false });
+    expect(await Provider.findById(id).lean()).toMatchObject({ ctaHidden: false });
+    expect((await Provider.findById(id).lean())?.ctaLabel).toBeUndefined();
+  });
+
   it("approves a pending listing, sets publishedAt, recounts airports and emails the owner", async () => {
     const { owner, id } = await pendingListing();
     const { agent } = await signedInAgent("MANAGER", app);
