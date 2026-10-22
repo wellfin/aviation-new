@@ -63,11 +63,12 @@ export function ProviderRow({ provider: p, rating = true }: { provider: Provider
 
   return (
     <article className={cn("font-open-sans border-b-[0.8px] border-[#6e788e] pt-[25px] pr-4 pl-[15px]", ultra ? "bg-[#eaf7ff]/85 pb-1" : "pb-[9px]")}>
-      <div className={cn("relative w-full max-w-[323px]", ultra ? "h-[77px]" : "h-[85px]")}>
+      {/* Logos drawn large so they read at a glance (a 380 x 110 box, left aligned). */}
+      <div className="relative h-[90px] w-full max-w-[380px] sm:h-[110px]">
         {p.logo ? (
-          <Image src={p.logo} alt={`${p.name} logo`} fill sizes="323px" className="object-contain object-left-top" />
+          <Image src={p.logo} alt={`${p.name} logo`} fill sizes="380px" className="object-contain object-left-top" />
         ) : (
-          <span className="bg-brand-gradient flex size-16 items-center justify-center rounded-xl text-xl font-extrabold text-white" aria-hidden>
+          <span className="bg-brand-gradient flex size-[90px] items-center justify-center rounded-2xl text-3xl font-extrabold text-white sm:size-[110px] sm:text-4xl" aria-hidden>
             {p.name
               .split(/\s+/)
               .slice(0, 2)

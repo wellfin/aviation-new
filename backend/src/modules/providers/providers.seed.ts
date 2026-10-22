@@ -201,8 +201,22 @@ export const DEMO_TIER_SEEDS: Seed[] = [
 
 const airportShortName = (icao: string | undefined) => AIRPORT_SEED.find((a) => a.icao === icao)?.shortName;
 
+/**
+ * Alternate phone, alternate email and SITA address for a demo Ultra Pro / Pro listing, derived from its
+ * main contact details (the airport listing shows every contact line for those plans).
+ */
+export function demoExtraContacts(name: string, phone: string, email: string, icao: string | undefined) {
+  const domain = email.split("@")[1] ?? "example.com";
+  // Vanity numbers (+1 800 SIGNAV) are spelled out on the phone keypad for the alternate line.
+  const keypad = phone.toUpperCase().replace(/[A-Z]/g, (c) => String("22233344455566677778889999"[c.charCodeAt(0) - 65]));
+  const phone2 = /\d{2}$/.test(keypad) ? keypad.replace(/\d{2}$/, (d) => String((Number(d) + 50) % 100).padStart(2, "0")) : keypad;
+  const initials = name.replace(/[^A-Za-z ]/g, "").split(/\s+/).filter(Boolean).map((w) => w[0]).join("").padEnd(2, "X").slice(0, 2);
+  return { phone2, email2: `info@${domain}`, sita: `${(icao ?? "XLON").slice(1, 4)}OP${initials}`.toUpperCase() };
+}
+
 /** Mirrors the frontend mock's `build()` so the seeded directory looks identical. */
 function build(seed: Seed, index: number) {
+  const extra = demoExtraContacts(seed.name, seed.phone, seed.email ?? `ops@${seed.domain}`, seed.airports[0]);
   const isCharter = seed.category === "charter-operator" || seed.category === "charter-broker";
   const country = COUNTRY[seed.countryCode] ?? seed.countryCode;
   return {
@@ -226,10 +240,10 @@ function build(seed: Seed, index: number) {
     gallery: [IMG.cabin1, IMG.cabin2, IMG.fuel, IMG.nose, IMG.cabin3, IMG.cabin4],
     contact: {
       phone: seed.phone,
-      phone2: seed.phone2,
+      phone2: seed.phone2 ?? (seed.tier === "basic" ? undefined : extra.phone2),
       email: seed.email ?? `ops@${seed.domain}`,
-      email2: seed.email2,
-      sita: seed.sita,
+      email2: seed.email2 ?? (seed.tier === "basic" ? undefined : extra.email2),
+      sita: seed.sita ?? (seed.tier === "basic" ? undefined : extra.sita),
       website: seed.domain,
       address: seed.address ?? `${seed.city}, ${country}`,
       fax: seed.tier === "basic" ? undefined : seed.phone.replace(/\d$/, "1"),
