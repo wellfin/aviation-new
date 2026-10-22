@@ -241,6 +241,8 @@ export interface PricingPlan {
   tagline: string;
   monthlyPrice: number | null;
   yearlyPrice: number | null;
+  /** ISO 4217 code set in the admin panel (defaults to USD). */
+  currency?: string;
   highlighted: boolean;
   features: string[];
   cta: string;

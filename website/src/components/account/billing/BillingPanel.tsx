@@ -9,7 +9,7 @@ import { ApiError, apiRequest } from "@/lib/api/client";
 import { withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import type { PricingPlan } from "@/lib/types";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, formatPlanPrice } from "@/lib/utils";
 import { useAccount } from "../AccountShell";
 import { useAccountApi } from "../hooks";
 import {
@@ -59,7 +59,8 @@ function Billing() {
   const { user, profile } = useAccount();
   const search = useSearchParams();
   const { page } = useUrlParams();
-  const [cycle, setCycle] = useState<BillingCycle>(search.get("billing") === "monthly" ? "monthly" : "yearly");
+  // Plans are sold per year only.
+  const cycle: BillingCycle = "yearly";
   const [selected, setSelected] = useState<PaidPlan | null>(parsePlan(search.get("plan")));
   const [busy, setBusy] = useState<PaidPlan | null>(null);
   const [banner, setBanner] = useState<Banner | null>(null);
@@ -205,8 +206,8 @@ function Billing() {
 
   const priceOf = (plan: PaidPlan) => {
     const p = plans.data?.find((x) => x.id === plan);
-    const value = cycle === "yearly" ? p?.yearlyPrice : p?.monthlyPrice;
-    return value === null || value === undefined ? null : `$${value}`;
+    const value = p?.yearlyPrice;
+    return value === null || value === undefined ? null : formatPlanPrice(value, p?.currency);
   };
   const nameOf = (plan: PaidPlan) => plans.data?.find((x) => x.id === plan)?.name ?? TIER_LABEL[plan];
 
@@ -337,20 +338,6 @@ function Billing() {
               {live ? "To switch plans, cancel your current subscription first; the new plan can start once it ends." : "Secure payment by Razorpay. Cancel anytime."}
             </p>
           </div>
-          <div role="radiogroup" aria-label="Billing cycle" className="inline-flex self-start rounded-full bg-surface p-1">
-            {(["monthly", "yearly"] as const).map((c) => (
-              <button
-                key={c}
-                type="button"
-                role="radio"
-                aria-checked={cycle === c}
-                onClick={() => setCycle(c)}
-                className={cn("h-9 rounded-full px-4 text-sm font-semibold capitalize transition", cycle === c ? "bg-white text-ink shadow-soft" : "text-muted hover:text-ink")}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -374,7 +361,7 @@ function Billing() {
                   {price ? (
                     <>
                       <span className="text-3xl font-extrabold text-ink">{price}</span>
-                      <span className="pb-1 text-sm text-subtle">/{cycle === "yearly" ? "year" : "month"}</span>
+                      <span className="pb-1 text-sm text-subtle">/year</span>
                     </>
                   ) : (
                     <span className="text-sm text-muted">{plans.loading ? "Loading price…" : "Price shown at checkout"}</span>
@@ -395,7 +382,7 @@ function Billing() {
                   disabled={busy !== null || live || noListing}
                   onClick={() => upgrade(plan)}
                 >
-                  {current ? "Your current plan" : `Upgrade to ${nameOf(plan)} · ${cycle}`}
+                  {current ? "Your current plan" : `Upgrade to ${nameOf(plan)} · yearly`}
                 </Button>
               </article>
             );

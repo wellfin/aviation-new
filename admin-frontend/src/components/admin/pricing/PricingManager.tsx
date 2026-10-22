@@ -89,7 +89,7 @@ export function PricingManager() {
                   )}
                 >
                   {p?.name ?? PLAN_LABEL[id]}
-                  {p && <span className={cn("text-xs font-medium", selected === id ? "text-white/80" : "text-muted")}>{formatPlanPrice(p.monthlyPrice, p.currency)}/mo</span>}
+                  {p && <span className={cn("text-xs font-medium", selected === id ? "text-white/80" : "text-muted")}>{formatPlanPrice(p.yearlyPrice, p.currency)}/yr</span>}
                   {!p && <span className={cn("text-xs font-medium", selected === id ? "text-white/75" : "text-warning")}>not set up</span>}
                   {p && !p.active && <span className={cn("text-xs font-medium", selected === id ? "text-white/75" : "text-muted")}>hidden</span>}
                 </button>
@@ -157,8 +157,8 @@ function PlanForm({ id, plan, onSaved }: { id: PlanId; plan: AdminPlan | undefin
           </div>
         </Card>
         <Card title="Price">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Input id="monthlyPrice" name="monthlyPrice" label="Monthly" inputMode="decimal" value={values.monthlyPrice} onChange={(e) => set("monthlyPrice", e.target.value)} error={errors.monthlyPrice} placeholder="—" trailing={<span className="text-xs font-semibold text-muted">{values.currency || "—"}</span>} />
+          {/* Plans are sold per year only. */}
+          <div className="grid gap-4 sm:grid-cols-2">
             <Input id="yearlyPrice" name="yearlyPrice" label="Yearly" inputMode="decimal" value={values.yearlyPrice} onChange={(e) => set("yearlyPrice", e.target.value)} error={errors.yearlyPrice} placeholder="—" trailing={<span className="text-xs font-semibold text-muted">{values.currency || "—"}</span>} />
             <Input id="currency" name="currency" label="Currency" value={values.currency} onChange={(e) => set("currency", e.target.value.toUpperCase())} error={errors.currency} maxLength={3} />
           </div>
@@ -220,16 +220,6 @@ function PlanForm({ id, plan, onSaved }: { id: PlanId; plan: AdminPlan | undefin
         <Card title="Razorpay">
           <div className="flex flex-col gap-4">
             <Input
-              id="rzp-monthly"
-              name="razorpayMonthly"
-              label="Monthly plan id"
-              value={values.razorpayPlanIds.monthly}
-              onChange={(e) => set("razorpayPlanIds", { ...values.razorpayPlanIds, monthly: e.target.value })}
-              error={errors["razorpayPlanIds.monthly"]}
-              placeholder="plan_…"
-              className="font-mono text-sm"
-            />
-            <Input
               id="rzp-yearly"
               name="razorpayYearly"
               label="Yearly plan id"
@@ -239,7 +229,7 @@ function PlanForm({ id, plan, onSaved }: { id: PlanId; plan: AdminPlan | undefin
               placeholder="plan_…"
               className="font-mono text-sm"
             />
-            <p className="text-xs text-muted">Blank removes the link — paid checkout for that cycle is unavailable until an id is set.</p>
+            <p className="text-xs text-muted">Blank removes the link — paid checkout is unavailable until an id is set.</p>
           </div>
         </Card>
         <Card>
@@ -260,14 +250,13 @@ function PlanForm({ id, plan, onSaved }: { id: PlanId; plan: AdminPlan | undefin
   );
 }
 
-/** Live "₹4,999 / month · ₹49,990 / year" line for the values being edited. */
+/** Live "₹49,990 / year" line for the values being edited. */
 function PricePreview({ values }: { values: PlanFormValues }) {
   const currency = /^[A-Za-z]{3}$/.test(values.currency.trim()) ? values.currency.trim().toUpperCase() : "";
   const amount = (v: string) => (/^\d{1,9}(\.\d{1,2})?$/.test(v.trim()) ? Number(v) : null);
   if (!currency) return null;
   return (
     <p className="mt-4 rounded-xl bg-surface px-4 py-3 text-sm text-ink" aria-live="polite">
-      <span className="font-semibold">{formatPlanPrice(amount(values.monthlyPrice), currency)}</span> / month ·{" "}
       <span className="font-semibold">{formatPlanPrice(amount(values.yearlyPrice), currency)}</span> / year
     </p>
   );

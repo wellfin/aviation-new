@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import type { PricingPlan } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, formatPlanPrice } from "@/lib/utils";
 import { PlanCta } from "./PlanCta";
 
 const THEME: Record<PricingPlan["id"], { name: string; check: string; cta: string; card: string }> = {
@@ -30,12 +30,11 @@ const THEME: Record<PricingPlan["id"], { name: string; check: string; cta: strin
   },
 };
 
-/** Plans are sold per year (the pricing page shows yearly prices only). */
+/** Plans are sold per year (the pricing page shows yearly prices only), in the currency set in the admin panel. */
 function priceFor(plan: PricingPlan): { amount: string; suffix: string } | null {
   const price = plan.yearlyPrice;
   if (price === null) return null;
-  if (price === 0) return { amount: "$0", suffix: "forever" };
-  return { amount: `$${price}`, suffix: "/Yr" };
+  return { amount: formatPlanPrice(price, plan.currency), suffix: price === 0 ? "forever" : "/Yr" };
 }
 
 export function PlanCard({ plan }: { plan: PricingPlan }) {

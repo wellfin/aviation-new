@@ -79,3 +79,18 @@ export function toInt(value: string | string[] | undefined, fallback: number): n
 export function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
+
+/** A whole-unit plan price in its currency (₹50, $99); falls back to "USD 99" for an unknown code. */
+export function formatPlanPrice(amount: number, currency = "USD"): string {
+  const code = (currency || "USD").toUpperCase();
+  try {
+    return new Intl.NumberFormat(code === "INR" ? "en-IN" : "en-US", {
+      style: "currency",
+      currency: code,
+      minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${code} ${amount}`;
+  }
+}

@@ -6,5 +6,6 @@ import { apiGet } from "./http";
 
 export async function listPricingPlans(): Promise<PricingPlan[]> {
   if (config.DATA_SOURCE === "mock") return PRICING_PLANS;
-  return (await apiGet<PricingPlan[]>("/pricing/plans", { revalidate: 300 })) ?? [];
+  // Not cached: a price saved in the admin panel shows on the next page load.
+  return (await apiGet<PricingPlan[]>("/pricing/plans", { noStore: true })) ?? [];
 }
