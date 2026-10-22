@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { FormResultStatus } from "@/components/forms/FormResultStatus";
-import { FieldError, Input, Textarea } from "@/components/ui/Field";
+import { FieldError, Input, Select, Textarea } from "@/components/ui/Field";
 import { apiPost } from "@/lib/api/client";
 import { enquirySchema } from "@/lib/api/forms";
 import { useZodForm } from "@/lib/hooks/useZodForm";
@@ -10,44 +10,8 @@ import { DialCodeSelect } from "@/components/contact/DialCodeSelect";
 import { EmailOtp, ENQUIRY_OTP } from "@/components/contact/EmailOtp";
 import { useEmailVerification } from "@/components/contact/useEmailVerification";
 import { useAuth } from "@/lib/auth/auth-context";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
 
 const control = "h-11 rounded-xl border-brand/20 text-[15px]";
-const LABEL = "mb-2 block font-mono text-[11px] font-medium tracking-[0.18em] text-subtle uppercase";
-
-/** "I need": the provider's services as pills; pick one or more. Sent as one comma-separated `service` value. */
-function ServicePills({ services, error }: { services: string[]; error?: string }) {
-  const options = services.some((s) => s.toLowerCase().startsWith("other")) ? services : [...services, "Other"];
-  const [picked, setPicked] = useState<string[]>([]);
-  const toggle = (s: string) => setPicked((p) => (p.includes(s) ? p.filter((x) => x !== s) : [...p, s]));
-  return (
-    <fieldset aria-describedby={error ? "enq-service-error" : undefined}>
-      <legend className={LABEL}>I need</legend>
-      <input type="hidden" name="service" value={picked.join(", ")} />
-      <div className="flex flex-wrap gap-2">
-        {options.map((s) => {
-          const on = picked.includes(s);
-          return (
-            <button
-              key={s}
-              type="button"
-              aria-pressed={on}
-              onClick={() => toggle(s)}
-              className={cn(
-                "rounded-full border px-3.5 py-2 text-[13px] leading-4 font-medium transition",
-                on ? "bg-brand-gradient border-transparent text-white" : "border-brand/25 text-ink hover:border-brand",
-              )}
-            >
-              {s}
-            </button>
-          );
-        })}
-      </div>
-      <FieldError id="enq-service-error" message={error} />
-    </fieldset>
-  );
-}
 
 /** Sidebar "Send Enquiry" card with the "Direct Call" link underneath. */
 export function EnquiryForm({ providerSlug, providerName, services, phoneHref }: { providerSlug: string; providerName: string; services: string[]; phoneHref: string }) {
@@ -94,20 +58,18 @@ export function EnquiryForm({ providerSlug, providerName, services, phoneHref }:
           </div>
           <FieldError id="enq-phone-error-msg" message={errors.phone} />
         </div>
-        <ServicePills services={services} error={errors.service} />
-        <div>
-          <label htmlFor="enq-message" className={LABEL}>
-            Message
-          </label>
-          <Textarea
-            name="message"
-            id="enq-message"
-            placeholder="What you need, and anything already decided"
-            rows={4}
-            error={errors.message}
-            className="min-h-[100px] rounded-xl border-brand/20 text-[15px]"
-          />
-        </div>
+        <Select name="service" id="enq-service" aria-label="Service" defaultValue="" error={errors.service} className={`${control} text-ink`}>
+          <option value="" disabled>
+            Select Service
+          </option>
+          {services.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+          {!services.some((s) => s.toLowerCase() === "other") && <option value="Other">Other</option>}
+        </Select>
+        <Textarea name="message" id="enq-message" aria-label="Message or requirements" placeholder="Message / Requirements" rows={4} error={errors.message} className="min-h-[100px] rounded-xl border-brand/20 text-[15px]" />
         <FormResultStatus result={result} />
         <Button type="submit" loading={submitting} className="mt-2 h-12 w-full rounded-full text-[15px]">
           Send Enquiry
