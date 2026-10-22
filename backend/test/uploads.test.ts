@@ -61,7 +61,7 @@ describe("uploads", () => {
     expect(Buffer.compare(file.body as Buffer, PNG)).toBe(0);
   });
 
-  it("accepts JPEG, WebP and PDF by magic bytes; PDFs download as attachments", async () => {
+  it("accepts JPEG, WebP and PDF by magic bytes; PDFs are served inline for in-page viewing", async () => {
     const { agent } = await signedInAgent("PROVIDER", app);
     expect((await upload(agent, "image", JPEG, "photo.bin")).body.data.mime).toBe("image/jpeg");
     expect((await upload(agent, "image", WEBP, "photo")).body.data.mime).toBe("image/webp");
@@ -71,7 +71,8 @@ describe("uploads", () => {
     const key = String(pdf.body.data.url).split("/files/")[1];
     const file = await request(app).get(`/api/v1/files/${key}`);
     expect(file.headers["content-type"]).toBe("application/pdf");
-    expect(file.headers["content-disposition"]).toBe('attachment; filename="brochure _2026_.pdf"');
+    expect(file.headers["content-disposition"]).toBe("inline");
+    expect(file.headers["content-security-policy"]).toBe("default-src 'none'; frame-ancestors 'self'");
   });
 
   it("rejects SVG, HTML, spoofed extensions and kind mismatches", async () => {

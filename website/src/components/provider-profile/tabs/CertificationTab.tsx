@@ -36,8 +36,17 @@ export function CertificationTab({ certifications, providerName }: { certificati
       <Dialog open={open !== null} onClose={() => setOpen(null)} title={`${open?.name ?? "Certificate"} certificate`} tone="bare" className="max-w-[720px]">
         {open &&
           (open.image ? (
-            <div className="relative aspect-[3/4] max-h-[85vh] w-full overflow-hidden rounded-[20px] bg-white">
-              <Image src={open.image} alt={`${open.name} certificate of ${providerName}`} fill sizes="720px" unoptimized={/^https?:/i.test(open.image)} className="object-contain" />
+            // View only: no save-image menu or dragging the file out.
+            <div className="relative aspect-[3/4] max-h-[85vh] w-full overflow-hidden rounded-[20px] bg-white select-none" onContextMenu={(e) => e.preventDefault()}>
+              <Image
+                src={open.image}
+                alt={`${open.name} certificate of ${providerName}`}
+                fill
+                sizes="720px"
+                draggable={false}
+                unoptimized={/^https?:/i.test(open.image)}
+                className="pointer-events-none object-contain"
+              />
             </div>
           ) : (
             <CertificateDocument cert={open} providerName={providerName} />

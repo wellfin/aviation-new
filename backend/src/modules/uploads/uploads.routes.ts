@@ -66,8 +66,9 @@ myUploadsRouter.get(
 /** Mounted at /files — public, immutable file delivery. */
 export const filesRouter = Router();
 
-function dispositionFor(kind: string, originalName: string): string {
-  if (kind === "image") return "inline";
+/** PDFs (brochures) are shown inline so the website can display them for reading only; other documents download. */
+function dispositionFor(kind: string, mime: string, originalName: string): string {
+  if (kind === "image" || mime === "application/pdf") return "inline";
   const name = (originalName || "document.pdf").replace(/["\\]/g, "");
   return `attachment; filename="${name}"`;
 }
@@ -83,10 +84,12 @@ filesRouter.get(
     res.set({
       "Content-Type": record.mime,
       "Content-Length": String(object.size),
-      "Content-Disposition": dispositionFor(record.kind, record.originalName ?? ""),
+      "Content-Disposition": dispositionFor(record.kind, record.mime, record.originalName ?? ""),
       "X-Content-Type-Options": "nosniff",
       "Cache-Control": "public, max-age=31536000, immutable",
-      "Content-Security-Policy": "default-src 'none'; sandbox",
+      // Browsers refuse to render a PDF in a sandboxed document, so PDFs drop `sandbox` but may only be
+      // framed by this site; everything else stays sandboxed.
+      "Content-Security-Policy": record.mime === "application/pdf" ? "default-src 'none'; frame-ancestors 'self'" : "default-src 'none'; sandbox",
     });
     try {
       await pipeline(object.stream, res);

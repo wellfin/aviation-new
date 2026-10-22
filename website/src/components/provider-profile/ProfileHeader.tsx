@@ -32,7 +32,7 @@ export function ProfileHeader({ provider }: { provider: Provider }) {
         <div className="flex min-w-0 items-end gap-4 md:gap-5">
           <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-[16px] border-2 border-white bg-white shadow-[0_8px_16px_rgba(11,31,58,0.2)] md:size-24">
             {showLogo ? (
-              <Image src={provider.logo} alt={`${provider.name} logo`} width={96} height={96} className="size-full object-cover" />
+              <Image src={provider.logo} alt={`${provider.name} logo`} width={96} height={96} className="size-full object-contain p-1.5" />
             ) : (
               // Basic listings show an empty white logo tile (Figma Basic detail pages); others get initials.
               provider.tier !== "basic" && (
