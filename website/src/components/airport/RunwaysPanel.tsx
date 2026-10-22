@@ -59,29 +59,29 @@ export function RunwaysPanel({ runways, diagram, airportName }: { runways: Runwa
     );
   }
   return (
-    <InfoCard>
-      {/* Figma: a "Runway Number | Dimensions" header, then one row card per runway with a show more toggle. */}
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-center rounded-[16px] bg-brand/8 px-5 py-4 text-sm font-medium text-ink lg:px-[45px]" aria-hidden>
+    <div>
+      {/* Figma: a light-blue "Runway Number | Dimensions" header, then one white row card per runway with a show more toggle. */}
+      <div className="grid grid-cols-[minmax(0,150px)_minmax(0,1fr)_auto] items-center gap-x-4 sm:grid-cols-[180px_minmax(0,1fr)_auto] min-h-[58px] rounded-[16px] bg-[#eaf3ff] px-5 text-sm font-semibold text-ink sm:px-[58px]" aria-hidden>
         <span>Runway Number</span>
         <span>Dimensions</span>
-        <span className="w-[100px]" />
+        <span className="w-[78px]" />
       </div>
-      <ul className="mt-2 space-y-2" aria-label="Runways">
+      <ul className="mt-1.5 space-y-1.5" aria-label="Runways">
         {runways.map((r) => (
           <li key={r.designator}>
             <details className="group rounded-[16px] bg-white shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)]">
-              <summary className="grid cursor-pointer list-none grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] items-center px-5 py-4 text-sm font-semibold text-ink lg:px-[45px] [&::-webkit-details-marker]:hidden">
+              <summary className="grid grid-cols-[minmax(0,150px)_minmax(0,1fr)_auto] items-center gap-x-4 sm:grid-cols-[180px_minmax(0,1fr)_auto] min-h-[60px] cursor-pointer list-none px-5 text-[15px] font-medium text-ink sm:px-[58px] [&::-webkit-details-marker]:hidden">
                 <span>
                   {r.designator} ({Math.round(r.headingDeg)}°)
                 </span>
                 <span>{metres(r)}</span>
-                <span className="flex w-[100px] items-center justify-center gap-1.5 rounded-md border border-line px-2 py-1.5 text-[11px] whitespace-nowrap font-medium text-ink transition group-hover:border-brand">
+                <span className="flex w-[78px] items-center justify-center gap-1 rounded-md border border-line py-1.5 text-[10px] font-medium whitespace-nowrap text-ink transition group-hover:border-brand">
                   <span className="group-open:hidden">show more</span>
                   <span className="hidden group-open:inline">Show Less</span>
                   <ChevronDown className="size-3 transition group-open:rotate-180" aria-hidden />
                 </span>
               </summary>
-              <dl className="space-y-5 px-5 pt-2 pb-6 lg:px-[45px]">
+              <dl className="pb-4">
                 {[
                   { label: "Runway Number", value: r.designator },
                   { label: "Dimensions", value: dims(r) },
@@ -91,13 +91,11 @@ export function RunwaysPanel({ runways, diagram, airportName }: { runways: Runwa
                   { label: "Elevation", value: r.elevation },
                   { label: "Runway Heading", value: `${Math.round(r.headingDeg)}° true` },
                   { label: "Displaced Threshold", value: r.displacedThreshold },
-                  { label: "Lighting", value: r.lighting ? "Edge & centreline lighting" : "Unlit" },
-                  { label: "Instrument Landing System", value: r.ils || "No ILS" },
                 ].map((f) => (
-                  <div key={f.label} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] gap-2 text-sm">
-                    <dt className="font-medium text-ink">{f.label}</dt>
-                    <dd className="font-semibold text-ink">{f.value || "—"}</dd>
-                    <span className="w-[100px]" aria-hidden />
+                  <div key={f.label} className="grid grid-cols-[minmax(0,150px)_minmax(0,1fr)_auto] items-center gap-x-4 sm:grid-cols-[180px_minmax(0,1fr)_auto] min-h-12 px-5 text-[15px] text-ink sm:px-[58px]">
+                    <dt className="font-medium">{f.label}</dt>
+                    <dd className="text-ink/90">{f.value || "—"}</dd>
+                    <span className="w-[78px]" aria-hidden />
                   </div>
                 ))}
               </dl>
@@ -106,7 +104,7 @@ export function RunwaysPanel({ runways, diagram, airportName }: { runways: Runwa
         ))}
       </ul>
 
-      <section aria-labelledby="runway-diagram" className="pt-6">
+      <section aria-labelledby="runway-diagram" className="mt-6 rounded-[16px] bg-white p-4 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] sm:p-6">
         {/* Figma: a bold title over the chart in a thin grey frame. */}
         <h3 id="runway-diagram" className="pb-3 text-base leading-6 font-bold text-ink">
           Runway Diagram
@@ -121,6 +119,6 @@ export function RunwaysPanel({ runways, diagram, airportName }: { runways: Runwa
           )}
         </div>
       </section>
-    </InfoCard>
+    </div>
   );
 }
