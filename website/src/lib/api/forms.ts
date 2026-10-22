@@ -28,7 +28,7 @@ export const enquirySchema = z.object({
   email: workEmail,
   dialCode: z.string().max(6).optional(),
   phone,
-  service: z.string().trim().min(1, "Please select a service"),
+  service: z.string().trim().min(1, "Please choose at least one service"),
   message,
 });
 

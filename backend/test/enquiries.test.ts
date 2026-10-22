@@ -120,6 +120,14 @@ describe("POST /providers/:slug/enquiries", () => {
     expect(services).toEqual(["Fuel", "Other"]);
   });
 
+  it("accepts several services at once (I need)", async () => {
+    const provider = await makeProvider();
+    expect((await post(`/providers/${provider.slug}/enquiries`).send({ ...general, service: "fuel, Aircraft Charter, Fuel" })).status).toBe(201);
+    expect((await post(`/providers/${provider.slug}/enquiries`).send({ ...general, service: "Fuel, Catering" })).status).toBe(422);
+    const saved = await Enquiry.findOne({ provider: provider._id }).lean();
+    expect(saved?.service).toBe("Fuel, Aircraft Charter");
+  });
+
   it("validates input with field errors matching the UI", async () => {
     const provider = await makeProvider();
     const r = await post(`/providers/${provider.slug}/enquiries`).send({ name: "A", email: "nope", phone: "abc", service: "", message: "short" });

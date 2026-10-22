@@ -60,7 +60,7 @@ const contactFields = { name, email, dialCode, phone, company, website };
 export const generalEnquiryBody = z.object({
   type: z.literal("general").optional(),
   ...contactFields,
-  service: z.string().trim().min(1, "Please select a service").max(120),
+  service: z.string().trim().min(1, "Please select a service").max(600),
   message: z.string().trim().min(10, "Please enter at least 10 characters").max(5000),
 });
 

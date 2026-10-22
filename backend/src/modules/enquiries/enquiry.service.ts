@@ -83,9 +83,17 @@ export async function submitEnquiry(slug: string, input: EnquiryInput, user: Use
   let service = input.service;
   let aircraft: string | undefined;
   if (input.type === "general") {
-    const match = (provider.services ?? []).find((s) => s.name.toLowerCase() === input.service.toLowerCase());
-    if (!match && input.service.toLowerCase() !== "other") throw validationError({ service: "Please select a service" });
-    service = match?.name ?? "Other";
+    // "I need": one or more of the provider's services, comma-separated (or "Other").
+    const wanted = input.service.split(",").map((s) => s.trim()).filter(Boolean);
+    const names: string[] = [];
+    for (const w of wanted) {
+      const match = (provider.services ?? []).find((s) => s.name.toLowerCase() === w.toLowerCase());
+      if (!match && w.toLowerCase() !== "other") throw validationError({ service: "Please select a service" });
+      const name = match?.name ?? "Other";
+      if (!names.includes(name)) names.push(name);
+    }
+    if (names.length === 0) throw validationError({ service: "Please select a service" });
+    service = names.join(", ");
   } else if (input.trip?.aircraftId) {
     const id = input.trip.aircraftId;
     const plane = (provider.fleet ?? []).find((f) => String((f as { _id?: Types.ObjectId })._id) === id);

@@ -14,7 +14,7 @@ const enquirySchema = new Schema(
     /** Dial code + number as entered, e.g. "+44 7700 900123". */
     phone: { type: String, trim: true, maxlength: 40, default: "" },
     company: { type: String, trim: true, maxlength: 120, default: "" },
-    service: { type: String, trim: true, maxlength: 120, default: "" },
+    service: { type: String, trim: true, maxlength: 600, default: "" },
     /** Optional for fleet enquiries (the trip details carry the request). */
     message: { type: String, trim: true, maxlength: 5000, default: "" },
     trip: {
