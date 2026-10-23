@@ -160,16 +160,30 @@ const LISTED = 3;
 const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
 
 /**
- * The listings an airport service list shows: those given a position (1st, 2nd, 3rd) in the admin panel,
- * in that order; with none set, one per plan (Ultra Pro, Pro, Basic), topped up from the rest by plan.
+ * The three listings an airport service list shows. A listing given a position (1st, 2nd, 3rd) in the admin
+ * panel takes that place; places still empty (no position set, or the placed listing doesn't serve this
+ * airport) are filled with one Ultra Pro, one Pro and one Basic, then the rest by plan.
  */
 function pickListed(providers: Provider[]): Provider[] {
-  const placed = providers.filter((p) => p.listingPosition).sort((a, b) => (a.listingPosition ?? 0) - (b.listingPosition ?? 0));
-  if (placed.length > 0) return placed.slice(0, LISTED);
-  const byPlan = [...providers].sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]);
+  const slots: (Provider | undefined)[] = Array.from({ length: LISTED });
+  const placed = providers.filter((p) => p.listingPosition);
+  // Each takes its own place first; two listings given the same place share it in plan order (the
+  // second takes the next free place).
+  const clashes: Provider[] = [];
+  for (const p of [...placed].sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier])) {
+    const want = (p.listingPosition ?? 1) - 1;
+    if (slots[want] === undefined) slots[want] = p;
+    else clashes.push(p);
+  }
+  for (const p of clashes) {
+    const at = slots.findIndex((x) => x === undefined);
+    if (at >= 0) slots[at] = p;
+  }
+  const byPlan = providers.filter((p) => !slots.includes(p)).sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]);
   const onePerPlan = (["ultra_pro", "pro", "basic"] as const).flatMap((t) => byPlan.find((p) => p.tier === t) ?? []);
-  const rest = byPlan.filter((p) => !onePerPlan.includes(p));
-  return [...onePerPlan, ...rest].slice(0, LISTED).sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]);
+  const fill = [...onePerPlan, ...byPlan.filter((p) => !onePerPlan.includes(p))];
+  for (let i = 0; i < LISTED; i++) if (slots[i] === undefined) slots[i] = fill.shift();
+  return slots.filter((p): p is Provider => p !== undefined);
 }
 
 export default async function AirportPage({ params, searchParams }: PageProps<"/airports/[code]">) {
