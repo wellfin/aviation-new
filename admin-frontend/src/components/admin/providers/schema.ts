@@ -95,7 +95,7 @@ export const providerSchema = z.object({
   socials: z.object({ linkedin: httpsUrl, instagram: httpsUrl, facebook: httpsUrl, x: httpsUrl }),
   locationsLabel: text(60),
   ctaHidden: z.boolean(),
-  listingPosition: z.enum(["", "1", "2", "3"]),
+  listingPosition: z.number().int().min(1).max(3).nullable(),
   ctaLabel: text(40),
   ctaUrl: linkUrl,
   services: z
