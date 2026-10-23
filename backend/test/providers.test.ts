@@ -4,6 +4,8 @@ import { Airport } from "../src/modules/airports/airport.model.js";
 import { seedAirports, seedMissingAirports } from "../src/modules/airports/airports.seed.js";
 import { Enquiry } from "../src/modules/enquiries/enquiry.model.js";
 import { testOutbox } from "../src/modules/notifications/mailer.js";
+import { ServiceCategory } from "../src/modules/categories/category.model.js";
+import { seedCategories } from "../src/modules/categories/category.seed.js";
 import { Provider } from "../src/modules/providers/provider.model.js";
 import { adminProvidersRouter, myListingRouter, providersRouter } from "../src/modules/providers/providers.routes.js";
 import { DEMO_TIER_SEEDS, seedMissingProviders, seedProviders } from "../src/modules/providers/providers.seed.js";
@@ -338,6 +340,14 @@ describe("admin providers", () => {
     expect((await agent.get(adm("?tier=ultra_pro&pageSize=50"))).body.data.total).toBe(6);
     expect((await agent.get(adm("?q=skyway"))).body.data.total).toBe(1);
     expect((await agent.get(adm("?q=egkk"))).body.data.total).toBe(5);
+    // Searching a service name finds every listing of that service, whatever its name.
+    const fbos = await Provider.countDocuments({ category: "fbo" });
+    expect(fbos).toBeGreaterThan(0);
+    await seedCategories();
+    expect(await ServiceCategory.exists({ slug: "fbo" })).toBeTruthy();
+    const found = (await agent.get(adm("?q=fbo&pageSize=100"))).body.data;
+    expect(found.total).toBeGreaterThanOrEqual(fbos);
+    expect(found.items.some((p: { name: string }) => !/fbo/i.test(p.name))).toBe(true);
     expect((await agent.get(adm("?status=gone"))).status).toBe(422);
   });
 

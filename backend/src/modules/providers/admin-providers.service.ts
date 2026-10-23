@@ -1,4 +1,5 @@
 import type { ClientSession, SortOrder, Types } from "mongoose";
+import { ServiceCategory } from "../categories/category.model.js";
 import { assertActiveCategory } from "../categories/category.service.js";
 import { isDuplicateKeyError, withTransaction } from "../../lib/db.js";
 import { conflict, notFound, validationError } from "../../lib/errors.js";
@@ -60,7 +61,17 @@ export async function adminListProviders(query: AdminListQuery) {
   if (query.tier) filter.tier = query.tier;
   if (query.q) {
     const rx = containsRegex(query.q);
-    filter.$or = [{ name: rx }, { slug: rx }, { city: rx }, { country: rx }, { "contact.email": rx }, { airportCodes: query.q.toUpperCase() }];
+    // Also matches the service: searching "fbo" finds every FBO listing, not only names containing "FBO".
+    const categories = (await ServiceCategory.find({ $or: [{ name: rx }, { longName: rx }, { slug: rx }] }, { slug: 1 }).lean()).map((c) => c.slug);
+    filter.$or = [
+      { name: rx },
+      { slug: rx },
+      { city: rx },
+      { country: rx },
+      { "contact.email": rx },
+      { airportCodes: query.q.toUpperCase() },
+      ...(categories.length ? [{ category: { $in: categories } }] : []),
+    ];
   }
   const [items, total] = await Promise.all([
     Provider.find(filter)
