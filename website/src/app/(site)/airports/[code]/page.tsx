@@ -12,7 +12,6 @@ import { LocationMap } from "@/components/airport/LocationMap";
 import { NearbyList } from "@/components/airport/NearbyList";
 import { Pagination } from "@/components/ui/Pagination";
 import { ProviderRow } from "@/components/airport/ProviderRow";
-import { ProviderListRow } from "@/components/providers/ProviderListRow";
 import { AIRPORT_TYPE_LABEL, airportHref, parseTab, type AirportTab } from "@/components/airport/routes";
 import { RunwaysPanel } from "@/components/airport/RunwaysPanel";
 import { isDesignCategory } from "@/components/categories/design-categories";
@@ -209,10 +208,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // Provider list (?service=): three listings, in the 1st / 2nd / 3rd positions set in the admin panel
   // (or one Ultra Pro, one Pro and one Basic when none is set), one under the other (Figma).
   const shown = pickListed(selectedProviders);
-  // Charter Broker uses the directory's compact rows (Figma).
-  const rowList = service === "charter-broker";
-  const rowProviders = rowList ? shown : [];
-  const premiumProviders = rowList ? [] : shown;
+  const premiumProviders = shown;
   const basicProviders: Provider[] = [];
   const basicPages = Math.max(1, Math.ceil(basicProviders.length / BASIC_PAGE_SIZE));
   const page = Math.min(basicPages, Math.max(1, Number.parseInt(firstParam(sp.page) ?? "1", 10) || 1));
@@ -235,13 +231,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
         <h2 id="providers-heading" className="sr-only">
           {serviceName} providers at {airport.shortName} ({selectedProviders.length})
         </h2>
-        {rowList && rowProviders.length > 0 ? (
-          <div className="space-y-3">
-            {rowProviders.map((p) => (
-              <ProviderListRow key={p.slug} provider={p} />
-            ))}
-          </div>
-        ) : premiumProviders.length > 0 ? (
+        {premiumProviders.length > 0 ? (
           <div className="space-y-[5px]">
             {premiumProviders.map((p) => (
               <ProviderRow key={p.slug} provider={p} rating={service !== "charter-operator"} />
@@ -327,11 +317,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // so their number follows an estimate of that height — roughly one ad per 650px, as drawn.
   const adsFor = (height: number) => Math.max(1, Math.round(height / 650));
   const extraLines = (p: Provider) => (p.contact.fax ? 27 : 0) + (p.contact.phone2 ? 29 : 0) + (p.contact.email2 ? 31 : 0) + (p.contact.sita ? 27 : 0);
-  const topListHeight = rowList
-    ? rowProviders.length * 140
-    : premiumProviders.length
-      ? premiumProviders.reduce((h, p) => h + (p.tier === "ultra_pro" ? 395 : 330) + extraLines(p), 0)
-      : basicOnPage.length * 235;
+  const topListHeight = premiumProviders.reduce((h, p) => h + (p.tier === "ultra_pro" ? 395 : p.tier === "pro" ? 330 : 235) + extraLines(p), 0);
   const railHeight = 40 + (categories.filter(isDesignCategory).length + 1) * 54;
   const underRail = 70 + topListHeight - railHeight - 21;
   const adsUnderRail = underRail >= 400 ? adsFor(underRail) : 0;
