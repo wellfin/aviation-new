@@ -104,7 +104,7 @@ function slugTaken(err: unknown): never {
 /** Staff-curated listing; may be published immediately and assigned to a provider account. */
 export async function adminCreateProvider(input: AdminCreateInput) {
   await assertActiveCategory(input.category);
-  const { ownerEmail, tier, verified, slug, status, ctaHidden, ctaLabel, ctaUrl, ...fields } = input;
+  const { ownerEmail, tier, verified, slug, status, ctaHidden, ctaLabel, ctaUrl, listingPosition, ...fields } = input;
   const create = () =>
     withTransaction(async (session) => {
       const doc = new Provider({
@@ -118,6 +118,7 @@ export async function adminCreateProvider(input: AdminCreateInput) {
         tier: tier ?? "basic",
         verified: verified ?? false,
         ctaHidden: ctaHidden ?? false,
+        ...(listingPosition ? { listingPosition } : {}),
         ...(ctaLabel ? { ctaLabel } : {}),
         ...(ctaUrl ? { ctaUrl } : {}),
         status,
@@ -138,7 +139,7 @@ export async function adminCreateProvider(input: AdminCreateInput) {
 
 export async function adminUpdateProvider(id: string, input: AdminUpdateInput) {
   if (input.category !== undefined) await assertActiveCategory(input.category);
-  const { ownerEmail, tier, verified, slug, ctaHidden, ctaLabel, ctaUrl, ...fields } = input;
+  const { ownerEmail, tier, verified, slug, ctaHidden, ctaLabel, ctaUrl, listingPosition, ...fields } = input;
   try {
     const doc = await withTransaction(async (session) => {
       const listing = await Provider.findById(id).session(session);
@@ -147,6 +148,7 @@ export async function adminUpdateProvider(id: string, input: AdminUpdateInput) {
       if (verified !== undefined) listing.verified = verified;
       if (slug !== undefined) listing.slug = slug;
       if (ctaHidden !== undefined) listing.ctaHidden = ctaHidden;
+      if (listingPosition !== undefined) listing.listingPosition = listingPosition ?? undefined;
       if (ctaLabel !== undefined) listing.ctaLabel = ctaLabel || undefined;
       if (ctaUrl !== undefined) listing.ctaUrl = ctaUrl || undefined;
       if (ownerEmail !== undefined) listing.owner = ownerEmail ? await resolveOwner(ownerEmail, session, listing._id) : undefined;

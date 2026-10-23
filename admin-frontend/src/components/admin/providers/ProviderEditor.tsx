@@ -228,7 +228,13 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             <Input label="Video URL" name="videoUrl" value={s.videoUrl} maxLength={500} placeholder="https://…" onChange={(ev) => set("videoUrl", ev.target.value)} error={e("videoUrl")} hint={limits.video ? undefined : "Videos are an Ultra Pro feature."} />
           </FormSection>
 
-          <FormSection id="listing-button" title="Listing button" description="The blue button on Ultra Pro listings (airport pages, charter results, directory list). Optional — Pro and Basic listings never show it.">
+          <FormSection id="listing-button" title="Airport listing & button" description="Where this listing appears in airport service lists, and the blue button on Ultra Pro listings. The button is optional — Pro and Basic listings never show it.">
+            <Select label="Position in airport lists" name="listingPosition" value={s.listingPosition} onChange={(ev) => set("listingPosition", ev.target.value as "" | "1" | "2" | "3")} error={e("listingPosition")} hint="Airport service lists show 3 listings. Placed listings show in this order; with none placed, one Ultra Pro, one Pro and one Basic show.">
+              <option value="">Not placed</option>
+              <option value="1">1st</option>
+              <option value="2">2nd</option>
+              <option value="3">3rd</option>
+            </Select>
             <label className="flex items-center gap-3 text-sm font-medium text-ink">
               <input type="checkbox" checked={!s.ctaHidden} onChange={(ev) => set("ctaHidden", !ev.target.checked)} className="size-4 accent-brand" />
               Show the button

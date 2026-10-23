@@ -170,6 +170,8 @@ const staffFields = {
   /** The blue Ultra Pro listing button (staff only): shown or not, its text and where it goes
    * (blank = "See More Details" to the profile). */
   ctaHidden: z.boolean(),
+  /** 1st, 2nd or 3rd place in airport service lists; null clears it. */
+  listingPosition: z.number().int().min(1).max(3).nullable(),
   ctaLabel: text(40),
   ctaUrl: linkUrl,
   slug: z

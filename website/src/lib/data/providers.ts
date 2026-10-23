@@ -63,16 +63,19 @@ function queryMock(query: ProviderQuery): Paginated<Provider> {
   return paginate(list, page, pageSize);
 }
 
+/** Not cached: edits saved in the admin panel (logo, contacts, button, position) show on the next page load. */
+const FRESH = { noStore: true } as const;
+
 export async function listProviders(query: ProviderQuery = {}): Promise<Paginated<Provider>> {
   if (config.DATA_SOURCE === "mock") return queryMock(query);
-  const result = await apiGet<Paginated<Provider>>(`/providers${buildQuery(apiProviderQuery(query))}`);
+  const result = await apiGet<Paginated<Provider>>(`/providers${buildQuery(apiProviderQuery(query))}`, FRESH);
   return result ?? { items: [], total: 0, page: 1, pageSize: query.pageSize ?? 9, totalPages: 1 };
 }
 
 export async function getProvider(slug: string): Promise<Provider | null> {
   if (config.DATA_SOURCE === "mock") return PROVIDERS.find((p) => p.slug === slug) ?? null;
   if (!SLUG_RE.test(slug)) return null;
-  return apiGet<Provider>(`/providers/${encodeURIComponent(slug)}`);
+  return apiGet<Provider>(`/providers/${encodeURIComponent(slug)}`, FRESH);
 }
 
 export async function getRelatedProviders(provider: Provider, limit = 4): Promise<Provider[]> {

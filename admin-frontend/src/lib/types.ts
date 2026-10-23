@@ -113,6 +113,7 @@ export interface Provider {
   socials: SocialLinks;
   locationsLabel?: string;
   ctaHidden?: boolean;
+  listingPosition?: number;
   ctaLabel?: string;
   ctaUrl?: string;
   services: ProviderService[];

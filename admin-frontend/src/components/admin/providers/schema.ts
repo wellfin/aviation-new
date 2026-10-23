@@ -95,6 +95,7 @@ export const providerSchema = z.object({
   socials: z.object({ linkedin: httpsUrl, instagram: httpsUrl, facebook: httpsUrl, x: httpsUrl }),
   locationsLabel: text(60),
   ctaHidden: z.boolean(),
+  listingPosition: z.enum(["", "1", "2", "3"]),
   ctaLabel: text(40),
   ctaUrl: linkUrl,
   services: z
@@ -216,6 +217,7 @@ export interface ProviderFormState {
   socials: { linkedin: string; instagram: string; facebook: string; x: string };
   locationsLabel: string;
   ctaHidden: boolean;
+  listingPosition: "" | "1" | "2" | "3";
   ctaLabel: string;
   ctaUrl: string;
   services: ServiceRow[];
@@ -249,6 +251,7 @@ export function emptyProviderState(): ProviderFormState {
     socials: { linkedin: "", instagram: "", facebook: "", x: "" },
     locationsLabel: "",
     ctaHidden: false,
+    listingPosition: "",
     ctaLabel: "",
     ctaUrl: "",
     services: [],
@@ -283,6 +286,7 @@ export function stateFromProvider(p: AdminProvider): ProviderFormState {
     socials: { linkedin: p.socials.linkedin ?? "", instagram: p.socials.instagram ?? "", facebook: p.socials.facebook ?? "", x: p.socials.x ?? "" },
     locationsLabel: p.locationsLabel ?? "",
     ctaHidden: p.ctaHidden ?? false,
+    listingPosition: p.listingPosition ? (String(p.listingPosition) as "1" | "2" | "3") : "",
     ctaLabel: p.ctaLabel ?? "",
     ctaUrl: p.ctaUrl ?? "",
     services: p.services.map((s) => ({ name: s.name, description: s.description, icon: s.icon })),
@@ -332,6 +336,7 @@ export function rawPayload(s: ProviderFormState, mode: "create" | "edit"): Recor
     socials: s.socials,
     locationsLabel: s.locationsLabel,
     ctaHidden: s.ctaHidden,
+    listingPosition: s.listingPosition ? Number(s.listingPosition) : null,
     ctaLabel: s.ctaLabel,
     ctaUrl: s.ctaUrl,
     services: s.services.map((x) => ({ name: x.name, description: x.description, icon: opt(x.icon) })),

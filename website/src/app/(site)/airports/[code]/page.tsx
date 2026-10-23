@@ -156,6 +156,23 @@ function rffsDetails(fireCategory: string) {
   return { length: lengths[cat], vehicles: cat <= 5 ? 1 : cat <= 7 ? 2 : 3 };
 }
 
+/** How many listings an airport service list shows. */
+const LISTED = 3;
+const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
+
+/**
+ * The listings an airport service list shows: those given a position (1st, 2nd, 3rd) in the admin panel,
+ * in that order; with none set, one per plan (Ultra Pro, Pro, Basic), topped up from the rest by plan.
+ */
+function pickListed(providers: Provider[]): Provider[] {
+  const placed = providers.filter((p) => p.listingPosition).sort((a, b) => (a.listingPosition ?? 0) - (b.listingPosition ?? 0));
+  if (placed.length > 0) return placed.slice(0, LISTED);
+  const byPlan = [...providers].sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]);
+  const onePerPlan = (["ultra_pro", "pro", "basic"] as const).flatMap((t) => byPlan.find((p) => p.tier === t) ?? []);
+  const rest = byPlan.filter((p) => !onePerPlan.includes(p));
+  return [...onePerPlan, ...rest].slice(0, LISTED).sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]);
+}
+
 export default async function AirportPage({ params, searchParams }: PageProps<"/airports/[code]">) {
   const [{ code }, sp] = await Promise.all([params, searchParams]);
   const airport = await getAirport(code);
@@ -189,13 +206,14 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // Services and Nearby tabs end with the distance calculator, which spans the content and ad columns (Figma 752:7836).
   const showCalculator = !service && (tab === "services" || tab === "nearby");
 
-  // Provider list (?service=), Figma 752:9750: Ultra Pro and Pro listings first, then the Basic ones, paged.
-  const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
-  const premiumProviders = selectedProviders.filter((p) => p.tier !== "basic").sort((x, y) => TIER_ORDER[x.tier] - TIER_ORDER[y.tier]);
-  // Charter Broker uses the directory's compact rows (Figma), every plan: Ultra Pro, Pro, then Basic.
+  // Provider list (?service=): three listings, in the 1st / 2nd / 3rd positions set in the admin panel
+  // (or one Ultra Pro, one Pro and one Basic when none is set), one under the other (Figma).
+  const shown = pickListed(selectedProviders);
+  // Charter Broker uses the directory's compact rows (Figma).
   const rowList = service === "charter-broker";
-  const rowProviders = rowList ? [...selectedProviders].sort((x, y) => TIER_ORDER[x.tier] - TIER_ORDER[y.tier]) : [];
-  const basicProviders = rowList ? [] : selectedProviders.filter((p) => p.tier === "basic");
+  const rowProviders = rowList ? shown : [];
+  const premiumProviders = rowList ? [] : shown;
+  const basicProviders: Provider[] = [];
   const basicPages = Math.max(1, Math.ceil(basicProviders.length / BASIC_PAGE_SIZE));
   const page = Math.min(basicPages, Math.max(1, Number.parseInt(firstParam(sp.page) ?? "1", 10) || 1));
   const basicOnPage = basicProviders.slice((page - 1) * BASIC_PAGE_SIZE, page * BASIC_PAGE_SIZE);

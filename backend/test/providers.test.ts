@@ -344,10 +344,11 @@ describe("admin providers", () => {
   it("lets staff set the Ultra Pro listing button (text, link, hidden)", async () => {
     const { id } = await pendingListing();
     const { agent } = await signedInAgent("MANAGER", app);
-    const r = await agent.patch(adm(`/${id}`)).send({ ctaLabel: "Request a Quote", ctaUrl: "/contact", ctaHidden: true });
+    const r = await agent.patch(adm(`/${id}`)).send({ ctaLabel: "Request a Quote", ctaUrl: "/contact", ctaHidden: true, listingPosition: 2 });
     expect(r.status).toBe(200);
     const saved = await Provider.findById(id).lean();
-    expect(saved).toMatchObject({ ctaLabel: "Request a Quote", ctaUrl: "/contact", ctaHidden: true });
+    expect(saved).toMatchObject({ ctaLabel: "Request a Quote", ctaUrl: "/contact", ctaHidden: true, listingPosition: 2 });
+    expect((await agent.patch(adm(`/${id}`)).send({ listingPosition: 4 })).status).toBe(422);
     expect((await agent.patch(adm(`/${id}`)).send({ ctaUrl: "javascript:alert(1)" })).status).toBe(422);
     await agent.patch(adm(`/${id}`)).send({ ctaLabel: "", ctaUrl: "", ctaHidden: false });
     expect(await Provider.findById(id).lean()).toMatchObject({ ctaHidden: false });

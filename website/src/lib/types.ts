@@ -123,6 +123,8 @@ export interface Provider {
   socials: SocialLinks;
   locationsLabel?: string;
   /** The blue Ultra Pro listing button (admin panel); blank = "See More Details" to the profile. */
+  /** 1st, 2nd or 3rd place in airport service lists (admin panel); unset = not placed. */
+  listingPosition?: number;
   /** Admin switched the button off. */
   ctaHidden?: boolean;
   ctaLabel?: string;
