@@ -11,7 +11,7 @@ export async function listCategories(): Promise<ServiceCategory[]> {
     return SERVICE_CATEGORIES.map((c) => ({ ...c, providerCount: PROVIDERS.filter((p) => p.category === c.slug).length }));
   }
   try {
-    return (await apiGet<ServiceCategory[]>("/categories", { revalidate: 60 })) ?? [];
+    return (await apiGet<ServiceCategory[]>("/categories")) ?? [];
   } catch {
     // Navigation must still render if the catalogue can't be loaded.
     return [];

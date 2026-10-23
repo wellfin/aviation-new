@@ -67,5 +67,5 @@ export async function getAdvertisement(placement: Advertisement["placement"]): P
 /** Advertising packages shown on the Advertise page (admin-managed in API mode). */
 export async function listAdFormats(): Promise<AdFormat[]> {
   if (config.DATA_SOURCE === "mock") return AD_FORMATS;
-  return (await apiGet<AdFormat[]>("/advertising/formats", { revalidate: 60 })) ?? [];
+  return (await apiGet<AdFormat[]>("/advertising/formats")) ?? [];
 }

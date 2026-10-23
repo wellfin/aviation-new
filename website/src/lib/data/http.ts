@@ -41,12 +41,13 @@ export function buildQuery(params: Record<string, QueryValue>): string {
 
 /**
  * GET a JSON resource from the platform backend (/api/v1/...). Returns null on 404.
- * `noStore` skips Next's data cache — for per-request results such as ad rotation.
+ * Not cached by default, so whatever is saved in the admin panel (airports, runways, listings, prices…)
+ * shows on the next page load; pass `revalidate` (seconds) to cache a response instead.
  */
 export async function apiGet<T>(path: string, init?: { revalidate?: number; noStore?: boolean }): Promise<T | null> {
   const res = await fetch(`${config.API_BASE_URL}/api/v1${path}`, {
     headers: { Accept: "application/json", ...(config.INTERNAL_API_KEY ? { "x-internal-api-key": config.INTERNAL_API_KEY } : {}) },
-    ...(init?.noStore ? { cache: "no-store" as const } : { next: { revalidate: init?.revalidate ?? 60 } }),
+    ...(init?.noStore || init?.revalidate === undefined ? { cache: "no-store" as const } : { next: { revalidate: init.revalidate } }),
     signal: AbortSignal.timeout(config.INTEGRATION_TIMEOUT_MS),
   });
   if (res.status === 404) return null;
