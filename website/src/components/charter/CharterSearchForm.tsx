@@ -8,6 +8,7 @@ import {
   AIRCRAFT_TYPES,
   CERTIFICATIONS,
   CONTINENTS,
+  continentLabel,
   type AircraftType,
   type CertificationFilter,
   type CharterParams,
@@ -209,7 +210,7 @@ export function CharterSearchForm({ initial, kind = "operator" }: { initial?: Ch
             <option value="">Select continent</option>
             {CONTINENTS.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {continentLabel(c)}
               </option>
             ))}
           </Select>

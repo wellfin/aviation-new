@@ -1,7 +1,11 @@
 import type { Provider } from "@/lib/types";
 import { firstParam, toInt } from "@/lib/utils";
 
-export const CONTINENTS = ["Africa", "Asia", "Europe", "North America", "Oceania", "South America"] as const;
+/** Continents in the order shown in the pickers. */
+export const CONTINENTS = ["Asia", "Africa", "Oceania", "Europe", "North America", "South America"] as const;
+
+/** Name shown for a continent: Oceania is listed as "Australia". */
+export const continentLabel = (c: string): string => (c === "Oceania" ? "Australia" : c);
 export type Continent = (typeof CONTINENTS)[number];
 
 /** ISO country → continent, for the "Location" step (Middle East is grouped under Asia, as in the airport data). */

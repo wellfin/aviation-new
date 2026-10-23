@@ -1,3 +1,4 @@
+import { CONTINENTS, continentLabel } from "@/components/charter/filters";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Search } from "lucide-react";
@@ -15,8 +16,6 @@ export const metadata: Metadata = {
   description:
     "Search airports by ICAO, IATA, name or city. Find FBOs, ground handlers, fuel and trip support providers plus runways, frequencies and live weather for every airport.",
 };
-
-const CONTINENTS = ["Africa", "Asia", "Europe", "North America", "Oceania", "South America"] as const;
 
 export default async function AirportsPage({ searchParams }: PageProps<"/airports">) {
   const sp = await searchParams;
@@ -80,7 +79,7 @@ export default async function AirportsPage({ searchParams }: PageProps<"/airport
               <option value="">All continents</option>
               {CONTINENTS.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {continentLabel(c)}
                 </option>
               ))}
             </select>
@@ -106,7 +105,7 @@ export default async function AirportsPage({ searchParams }: PageProps<"/airport
                   matching <span className="font-semibold text-ink">“{q}”</span>
                 </>
               )}
-              {continent && <> in {continent}</>}
+              {continent && <> in {continentLabel(continent)}</>}
               {country && <> · country {country.toUpperCase()}</>}
             </p>
           </div>
@@ -123,7 +122,7 @@ export default async function AirportsPage({ searchParams }: PageProps<"/airport
                     active ? "bg-brand-gradient border-transparent text-white" : "border-line bg-white text-muted hover:border-brand/40 hover:text-brand",
                   )}
                 >
-                  {c ?? "All"}
+                  {c ? continentLabel(c) : "All"}
                 </Link>
               );
             })}
