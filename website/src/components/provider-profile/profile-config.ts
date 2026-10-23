@@ -48,8 +48,11 @@ export function isCharter(provider: Provider): boolean {
  * company keeps Services and Airports.
  */
 export function profileTabs(provider: Provider): TabDef[] {
+  // Charter operators show their Aircraft Fleet; brokers don't own aircraft, so they have no middle tab.
   const middle: TabDef[] = isCharter(provider)
-    ? [{ id: "fleet", label: "Aircraft Fleet" }]
+    ? provider.category === "charter-operator"
+      ? [{ id: "fleet", label: "Aircraft Fleet" }]
+      : []
     : [
         { id: "services", label: "Services" },
         { id: "airports", label: "Airports" },

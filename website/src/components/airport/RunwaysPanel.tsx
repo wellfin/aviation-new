@@ -61,7 +61,7 @@ export function RunwaysPanel({ runways, diagram, airportName }: { runways: Runwa
   return (
     <div>
       {/* Figma: a light-blue "Runway Number | Dimensions" header, then one white row card per runway with a show more toggle. */}
-      <div className="grid grid-cols-[minmax(0,150px)_minmax(0,1fr)_auto] items-center gap-x-4 sm:grid-cols-[180px_minmax(0,1fr)_auto] min-h-[58px] rounded-[16px] bg-[#eaf3ff] px-5 text-sm font-semibold text-ink sm:px-[58px]" aria-hidden>
+      <div className="grid grid-cols-[minmax(0,150px)_minmax(0,1fr)_auto] items-center gap-x-4 sm:grid-cols-[180px_minmax(0,1fr)_auto] min-h-[58px] rounded-[16px] bg-[#eaf3ff] px-5 text-sm font-bold text-ink sm:px-[58px]" aria-hidden>
         <span>Runway Number</span>
         <span>Dimensions</span>
         <span className="w-[78px]" />
