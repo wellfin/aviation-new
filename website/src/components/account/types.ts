@@ -93,6 +93,8 @@ export interface Enquiry {
     returnFrom?: string;
     returnTo?: string;
     returnAt?: string;
+    /** Multi-leg trips: the legs after the first. */
+    legs?: { from: string; to: string; departAt: string }[];
   } | null;
   createdAt: string;
   updatedAt: string;

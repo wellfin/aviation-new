@@ -44,6 +44,28 @@ const optionalMessage = z.string().trim().max(5000).optional();
 const website = z.string().max(500).optional();
 const tripType = z.enum(["one-way", "round-trip", "multi-leg"]);
 const airportField = (msg: string) => z.string().trim().min(3, msg).max(80).regex(singleLine, msg);
+/** A further leg of a multi-leg trip, as posted by the fleet form. */
+const extraLeg = z.object({
+  from: airportField("Enter the leg's departure airport"),
+  to: airportField("Enter the leg's destination airport"),
+  date: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Choose the leg's date"),
+  time: z
+    .string()
+    .trim()
+    .regex(/^(\d{2}:\d{2})?$/, "Enter a valid time")
+    .optional(),
+});
+/** The form sends its extra legs as a JSON string (FormData has no arrays). */
+const extraLegs = z.preprocess((v) => {
+  if (typeof v !== "string") return v;
+  if (v.trim() === "") return [];
+  try {
+    return JSON.parse(v);
+  } catch {
+    return v;
+  }
+}, z.array(extraLeg).max(8, "Up to 8 more legs"));
+
 /** An airport that may be left blank. */
 const optionalAirport = z.string().trim().max(80).regex(singleLine, "Enter a valid airport").optional();
 const passengers = z.coerce.number().int("At least 1 passenger").min(1, "At least 1 passenger").max(500);
@@ -118,10 +140,25 @@ export const flatFleetEnquiryBody = z.object({
     .trim()
     .regex(/^(\d{2}:\d{2})?$/, "Enter a valid time")
     .optional(),
+  /** Multi-leg: the legs after the first. */
+  legs: extraLegs.optional(),
 }).superRefine((v, ctx) => {
-  if (v.tripType !== "round-trip") return;
-  if (!v.returnDate) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Choose a return date" });
-  else if (v.returnDate < v.date) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Return date can't be before the departure date" });
+  if (v.tripType === "round-trip") {
+    if (!v.returnDate) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Choose a return date" });
+    else if (v.returnDate < v.date) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Return date can't be before the departure date" });
+  }
+  if (v.tripType === "multi-leg") {
+    const legs = v.legs ?? [];
+    if (legs.length === 0) ctx.addIssue({ code: "custom", path: ["legs"], message: "Add at least one more leg" });
+    let prev = v.date;
+    for (const leg of legs) {
+      if (leg.date < prev) {
+        ctx.addIssue({ code: "custom", path: ["legs"], message: "Each leg's date must be on or after the previous leg's" });
+        break;
+      }
+      prev = leg.date;
+    }
+  }
 });
 
 export interface TripInput {
@@ -134,6 +171,7 @@ export interface TripInput {
   returnFrom?: string;
   returnTo?: string;
   returnAt?: string;
+  legs?: { from: string; to: string; departAt: string }[];
 }
 
 /** Normalised enquiry, independent of which request shape was used. */
@@ -205,6 +243,9 @@ export function parseEnquiryBody(raw: unknown): EnquiryInput {
               returnTo: v.returnTo || v.from,
               returnAt: v.returnTime ? `${v.returnDate}T${v.returnTime}` : v.returnDate,
             }
+          : {}),
+        ...(v.tripType === "multi-leg" && v.legs?.length
+          ? { legs: v.legs.map((l) => ({ from: l.from, to: l.to, departAt: l.time ? `${l.date}T${l.time}` : l.date })) }
           : {}),
       },
       isBot: Boolean(v.website),

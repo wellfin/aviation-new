@@ -17,6 +17,7 @@ export function providerEnquiryEmail(to: string, providerName: string, enquiry: 
     const t = enquiry.trip;
     lines.push(["Aircraft", aircraft ?? ""], ["Trip", `${t.tripType}: ${t.from} → ${t.to}`], ["Departure", t.departAt], ["Passengers", String(t.passengers)]);
     if (t.returnAt) lines.push(["Return", `${t.returnFrom ?? t.to} → ${t.returnTo ?? t.from}`], ["Return date", t.returnAt]);
+    (t.legs ?? []).forEach((l, i) => lines.push([`Leg ${i + 2}`, `${l.from} → ${l.to}, ${l.departAt}`]));
   }
   const details = lines
     .filter(([, v]) => v)

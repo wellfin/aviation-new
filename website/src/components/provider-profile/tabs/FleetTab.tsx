@@ -34,6 +34,14 @@ function Step({ n, children }: { n: number; children: string }) {
   );
 }
 
+/** A further leg of a multi-leg trip; `from` is null while it follows the previous leg's destination. */
+interface Leg {
+  from: string | null;
+  to: string;
+  date: string;
+  time: string;
+}
+
 function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: string; aircraft: FleetAircraft; onDone: () => void }) {
   const [trip, setTrip] = useState<(typeof TRIP_TYPES)[number]["value"]>("one-way");
   const [pax, setPax] = useState(2);
@@ -43,6 +51,15 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
   const [returnFrom, setReturnFrom] = useState<string | null>(null);
   const [returnTo, setReturnTo] = useState<string | null>(null);
   const roundTrip = trip === "round-trip";
+  // Multi-leg: the legs after the first. A leg's "from" follows the previous leg's destination until edited.
+  const [legs, setLegs] = useState<Leg[]>([{ from: null, to: "", date: "", time: "" }]);
+  const multiLeg = trip === "multi-leg" && from.trim() !== "" && to.trim() !== "";
+  const legFrom = (i: number): string => legs[i]?.from ?? (i === 0 ? to : legs[i - 1]?.to ?? "");
+  const setLeg = (i: number, patch: Partial<Leg>) => setLegs((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  // An added leg left completely blank is ignored rather than rejected.
+  const legsJson = JSON.stringify(
+    legs.map((l, i) => ({ from: legFrom(i), to: l.to, date: l.date, time: l.time })).filter((l, i) => i === 0 || l.to.trim() !== "" || l.date !== ""),
+  );
   const otp = useEmailVerification();
   const { user } = useAuth();
   const { errors, submitting, result, handleSubmit } = useZodForm(
@@ -125,6 +142,40 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
             <Input label="Return Time" name="returnTime" id="fe-return-time" type="time" error={errors.returnTime} />
           </div>
         </fieldset>
+      )}
+      {multiLeg && (
+        // Multi leg, once the first leg is entered: each further leg starts where the previous one ends.
+        <div className="flex flex-col gap-3">
+          <input type="hidden" name="legs" value={legsJson} />
+          {legs.map((l, i) => (
+            <fieldset key={i} className="rounded-xl border border-brand/15 bg-brand/4 p-4">
+              <legend className="flex items-center gap-2 px-1 text-xs font-bold tracking-[0.6px] text-brand uppercase">
+                Leg {i + 2}
+                {i > 0 && (
+                  <button type="button" onClick={() => setLegs((ls) => ls.filter((_, j) => j !== i))} className="text-[11px] font-semibold tracking-normal text-danger normal-case hover:underline">
+                    Remove
+                  </button>
+                )}
+              </legend>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input label="From" id={`fe-leg-${i}-from`} placeholder="e.g. VOGO / Goa" value={legFrom(i)} onChange={(e) => setLeg(i, { from: e.target.value })} />
+                <Input label="To *" id={`fe-leg-${i}-to`} placeholder="e.g. VIJP / Jaipur" value={l.to} onChange={(e) => setLeg(i, { to: e.target.value })} />
+                <Input label="Date *" id={`fe-leg-${i}-date`} type="date" ref={minToday} value={l.date} onChange={(e) => setLeg(i, { date: e.target.value })} />
+                <Input label="Time" id={`fe-leg-${i}-time`} type="time" value={l.time} onChange={(e) => setLeg(i, { time: e.target.value })} />
+              </div>
+            </fieldset>
+          ))}
+          <FieldError id="fe-legs-error" message={errors.legs} />
+          {legs.length < 8 && legs[legs.length - 1]?.to.trim() && (
+            <button
+              type="button"
+              onClick={() => setLegs((ls) => [...ls, { from: null, to: "", date: "", time: "" }])}
+              className="self-start rounded-lg bg-brand/8 px-3.5 py-2 text-[13px] font-semibold text-brand hover:bg-brand/15"
+            >
+              + Add another leg
+            </button>
+          )}
+        </div>
       )}
       <div>
         <Label htmlFor="fe-pax">Passengers</Label>

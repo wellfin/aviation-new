@@ -21,6 +21,8 @@ export interface AdminEnquiry {
     returnFrom?: string;
     returnTo?: string;
     returnAt?: string;
+    /** Multi-leg trips: the legs after the first. */
+    legs?: { from: string; to: string; departAt: string }[];
     passengers: number;
     aircraft: string;
   } | null;

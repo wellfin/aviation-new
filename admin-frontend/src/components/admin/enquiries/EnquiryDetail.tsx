@@ -103,6 +103,7 @@ export function EnquiryDetail({ id }: { id: string }) {
                             { label: "Return", value: formatDepart(trip.returnAt) },
                           ]
                         : []),
+                      ...(trip.legs ?? []).map((l, i) => ({ label: `Leg ${i + 2}`, value: `${l.from} → ${l.to} · ${formatDepart(l.departAt)}` })),
                       { label: "Aircraft", value: trip.aircraft },
                     ]
                   : []),

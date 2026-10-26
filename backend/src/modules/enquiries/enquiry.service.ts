@@ -51,6 +51,7 @@ export function toEnquiryDTO(e: EnquiryLike) {
             passengers: t.passengers ?? 0,
             aircraft: t.aircraft ?? "",
             ...(t.returnAt ? { returnFrom: t.returnFrom ?? t.to ?? "", returnTo: t.returnTo ?? t.from ?? "", returnAt: t.returnAt } : {}),
+            ...(t.legs?.length ? { legs: t.legs.map((l) => ({ from: l.from ?? "", to: l.to ?? "", departAt: l.departAt ?? "" })) } : {}),
           }
         : null,
     createdAt: e.createdAt.toISOString(),
@@ -131,6 +132,7 @@ export async function submitEnquiry(slug: string, input: EnquiryInput, user: Use
             ...(input.trip.tripType === "round-trip" && input.trip.returnAt
               ? { returnFrom: input.trip.returnFrom || input.trip.to, returnTo: input.trip.returnTo || input.trip.from, returnAt: input.trip.returnAt }
               : {}),
+            ...(input.trip.tripType === "multi-leg" && input.trip.legs?.length ? { legs: input.trip.legs } : {}),
           },
         }
       : {}),

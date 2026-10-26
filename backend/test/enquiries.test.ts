@@ -368,6 +368,22 @@ describe("round trips", () => {
   });
 });
 
+describe("multi-leg trips", () => {
+  it("needs at least one more leg, in date order, and saves every leg", async () => {
+    const provider = await makeProvider();
+    const aircraftId = String(provider.fleet[0]!._id);
+    const base = { ...uiFleet(provider.slug, aircraftId), tripType: "multi-leg", from: "VIDP", to: "VOGO" };
+    expect((await post("/enquiries").send(base)).body.error.fieldErrors.legs).toMatch(/at least one more leg/i);
+    const later = new Date(Date.now() + 33 * 86_400_000).toISOString().slice(0, 10);
+    const legsOk = JSON.stringify([{ from: "VOGO", to: "VIJP", date: later, time: "11:00" }]);
+    const early = JSON.stringify([{ from: "VOGO", to: "VIJP", date: PAST_DAY }]);
+    expect((await post("/enquiries").send({ ...base, legs: early })).body.error.fieldErrors.legs).toMatch(/previous leg/i);
+    expect((await post("/enquiries").send({ ...base, legs: legsOk })).status).toBe(201);
+    const saved = await Enquiry.findOne({ provider: provider._id }).lean();
+    expect(saved?.trip).toMatchObject({ tripType: "multi-leg", from: "VIDP", to: "VOGO", legs: [{ from: "VOGO", to: "VIJP", departAt: `${later}T11:00` }] });
+  });
+});
+
 describe("departure dates", () => {
   it("rejects a departure day that has already passed, on both fleet enquiry shapes", async () => {
     const provider = await makeProvider();

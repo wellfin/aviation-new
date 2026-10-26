@@ -132,6 +132,11 @@ function Detail({ id }: { id: string }) {
                     <Row label="Return">{e.trip.returnAt.replace("T", " at ")}</Row>
                   </>
                 )}
+                {e.trip.legs?.map((l, i) => (
+                  <Row key={i} label={`Leg ${i + 2}`}>
+                    {l.from} → {l.to} · {l.departAt.replace("T", " at ")}
+                  </Row>
+                ))}
                 <Row label="Passengers">{e.trip.passengers}</Row>
                 {e.trip.aircraft && (
                   <Row label="Aircraft">

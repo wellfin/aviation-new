@@ -49,8 +49,24 @@ export const fleetEnquirySchema = z.object({
   returnTo: z.string().trim().max(80).optional().or(z.literal("")),
   returnDate: z.string().trim().optional().or(z.literal("")),
   returnTime: z.string().trim().max(5).optional().or(z.literal("")),
+  /** Multi-leg: the legs after the first, as JSON ([{ from, to, date, time }]). */
+  legs: z.string().optional(),
 }).superRefine((v, ctx) => {
-  if (v.tripType !== "round-trip") return;
-  if (!v.returnDate) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Choose a return date" });
-  else if (v.returnDate < v.date) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Return date can't be before the departure date" });
+  if (v.tripType === "round-trip") {
+    if (!v.returnDate) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Choose a return date" });
+    else if (v.returnDate < v.date) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Return date can't be before the departure date" });
+  }
+  if (v.tripType === "multi-leg") {
+    let legs: { from: string; to: string; date: string }[] = [];
+    try {
+      legs = JSON.parse(v.legs || "[]");
+    } catch {
+      /* treated as no legs */
+    }
+    if (legs.length === 0) ctx.addIssue({ code: "custom", path: ["legs"], message: "Add at least one more leg" });
+    else if (legs.some((l) => l.from.trim().length < 3 || l.to.trim().length < 3)) ctx.addIssue({ code: "custom", path: ["legs"], message: "Enter both airports for every leg" });
+    else if (legs.some((l) => !/^\d{4}-\d{2}-\d{2}$/.test(l.date))) ctx.addIssue({ code: "custom", path: ["legs"], message: "Choose a date for every leg" });
+    else if (legs.some((l, i) => l.date < (i === 0 ? v.date : legs[i - 1]!.date)))
+      ctx.addIssue({ code: "custom", path: ["legs"], message: "Each leg's date must be on or after the previous leg's" });
+  }
 });
