@@ -2,6 +2,7 @@ import { isDuplicateKeyError } from "../../lib/db.js";
 import { conflict, notFound } from "../../lib/errors.js";
 import { containsRegex, escapeRegex, paginated, skipFor, type Paginated } from "../../lib/pagination.js";
 import { News, type NewsDoc, toAdminNewsDTO, toNewsDTO, type AdminNewsDTO, type NewsArticleDTO } from "./news.model.js";
+import { assertNewsCategory } from "./news-category.service.js";
 import type { AdminNewsQuery, CreateNewsInput, PublicNewsQuery, UpdateNewsInput } from "./news.schemas.js";
 
 /** URL slug from free text: ASCII-folded, lowercase, hyphen separated. */
@@ -79,12 +80,13 @@ export async function createNews(input: CreateNewsInput): Promise<AdminNewsDTO> 
   const explicitSlug = input.slug;
   const slug = explicitSlug ?? (await uniqueSlug(slugify(input.title)));
   const publishedAt = input.publishedAt ? new Date(input.publishedAt) : input.status === "published" ? new Date() : undefined;
+  const category = await assertNewsCategory(input.category);
   try {
     const doc = await News.create({
       slug,
       title: input.title,
       excerpt: input.excerpt,
-      category: input.category,
+      category,
       image: input.image,
       body: input.body,
       author: input.author,
@@ -105,7 +107,7 @@ export async function updateNews(id: string, input: UpdateNewsInput): Promise<Ad
   if (input.slug !== undefined) doc.slug = input.slug;
   if (input.title !== undefined) doc.title = input.title;
   if (input.excerpt !== undefined) doc.excerpt = input.excerpt;
-  if (input.category !== undefined) doc.category = input.category;
+  if (input.category !== undefined) doc.category = await assertNewsCategory(input.category);
   if (input.image !== undefined) doc.image = input.image;
   if (input.body !== undefined) doc.body = input.body;
   if (input.author !== undefined) doc.author = input.author;

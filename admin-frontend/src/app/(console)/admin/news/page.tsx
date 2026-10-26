@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus } from "lucide-react";
+import { Plus, Tags } from "lucide-react";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/admin/ui";
 import { NewsList } from "@/components/admin/news/NewsList";
@@ -14,9 +14,14 @@ export default function AdminNewsPage() {
         title="News"
         description="Articles for the site's news section. Only published articles are visible to visitors."
         actions={
-          <ButtonLink href="/admin/news/new" size="sm">
-            <Plus className="size-4" aria-hidden /> New article
-          </ButtonLink>
+          <>
+            <ButtonLink href="/admin/news/categories" size="sm" variant="ghost">
+              <Tags className="size-4" aria-hidden /> Categories
+            </ButtonLink>
+            <ButtonLink href="/admin/news/new" size="sm">
+              <Plus className="size-4" aria-hidden /> New article
+            </ButtonLink>
+          </>
         }
       />
       <Suspense>

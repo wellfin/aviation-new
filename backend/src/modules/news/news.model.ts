@@ -1,8 +1,7 @@
 import { type HydratedDocument, type InferSchemaType, Schema, model } from "mongoose";
 
-/** Mirrors `NewsCategory` in the frontend's types.ts. */
-export const NEWS_CATEGORIES = ["Industry News", "FBO Network", "Regulatory", "Fuel", "Technology", "Business Aviation"] as const;
-export type NewsCategory = (typeof NEWS_CATEGORIES)[number];
+/** Categories are managed in the admin panel (news-category.model.ts). */
+export type NewsCategory = string;
 
 export const NEWS_STATUSES = ["draft", "published"] as const;
 
@@ -19,7 +18,7 @@ const newsSchema = new Schema(
     slug: { type: String, required: true, trim: true, lowercase: true, maxlength: 120 },
     title: { type: String, required: true, trim: true, maxlength: 200 },
     excerpt: { type: String, required: true, trim: true, maxlength: 500 },
-    category: { type: String, enum: NEWS_CATEGORIES, required: true },
+    category: { type: String, required: true, trim: true, maxlength: 60 },
     image: { type: String, required: true, trim: true, maxlength: 500 },
     body: { type: [String], default: [] },
     author: { type: String, required: true, trim: true, maxlength: 120 },

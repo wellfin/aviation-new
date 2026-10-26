@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowDown, ArrowUp, ExternalLink, Plus, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
@@ -12,7 +13,7 @@ import { fieldErrors, type FieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { slugify } from "@/lib/utils";
 import { ImageUploadField } from "./ImageUploadField";
-import { NEWS_CATEGORIES, newsFormSchema, type AdminNews, type NewsFormValues, type NewsStatus } from "./schema";
+import { newsFormSchema, type AdminNews, type NewsFormValues, type NewsStatus } from "./schema";
 import { siteUrl } from "./site";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
@@ -92,6 +93,7 @@ function NewsForm({ article: initial }: { article?: AdminNews }) {
   const router = useRouter();
   const justCreated = useSearchParams().get("created") === "1";
   const [article, setArticle] = useState<AdminNews | undefined>(initial);
+  const { data: categories } = useApi<string[]>("/news/categories");
   const [values, setValues] = useState<NewsFormValues>(initial ? toValues(initial) : EMPTY);
   const [saved, setSaved] = useState<NewsFormValues>(values);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -233,13 +235,19 @@ function NewsForm({ article: initial }: { article?: AdminNews }) {
         <div className="flex flex-col gap-6">
           <Card title="Details">
             <div className="flex flex-col gap-4">
-              <Select id="category" name="category" label="Category" value={values.category} onChange={(e) => set("category", e.target.value as NewsFormValues["category"])} error={errors.category}>
-                {NEWS_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </Select>
+              <div>
+                <Select id="category" name="category" label="Category" value={values.category} onChange={(e) => set("category", e.target.value)} error={errors.category}>
+                  {/* Keep an article's current category listed even if it was since renamed or removed. */}
+                  {[...(categories ?? []), ...(values.category && !(categories ?? []).includes(values.category) ? [values.category] : [])].map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </Select>
+                <Link href="/admin/news/categories" className="mt-1.5 inline-block text-xs font-semibold text-brand hover:underline">
+                  Add, edit or delete categories
+                </Link>
+              </div>
               <Input id="author" name="author" label="Author" value={values.author} onChange={(e) => set("author", e.target.value)} error={errors.author} maxLength={120} />
               <Input id="authorRole" name="authorRole" label="Author role" value={values.authorRole} onChange={(e) => set("authorRole", e.target.value)} error={errors.authorRole} maxLength={120} placeholder="Senior Editor" />
               <label className="flex items-center gap-3 text-sm font-medium text-ink">

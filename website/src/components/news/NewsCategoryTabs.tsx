@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { NewsCategory } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { NEWS_CATEGORIES } from "./categories";
 
-export function NewsCategoryTabs({ active, q }: { active: NewsCategory | "all"; q?: string }) {
+/** "All News" plus the categories set in the admin panel, in their order. */
+export function NewsCategoryTabs({ active, q, categories }: { active: NewsCategory | "all"; q?: string; categories: readonly NewsCategory[] }) {
   const tabs: Array<{ value: NewsCategory | "all"; label: string }> = [
     { value: "all", label: "All News" },
-    ...NEWS_CATEGORIES.map((c) => ({ value: c, label: c })),
+    ...categories.map((c) => ({ value: c, label: c })),
   ];
   const href = (value: NewsCategory | "all") => {
     const sp = new URLSearchParams();

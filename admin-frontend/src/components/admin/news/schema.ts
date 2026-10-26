@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const NEWS_CATEGORIES = ["Industry News", "FBO Network", "Regulatory", "Fuel", "Technology", "Business Aviation"] as const;
-export type NewsCategory = (typeof NEWS_CATEGORIES)[number];
+/** Categories are managed in the admin panel (News → Categories). */
+export type NewsCategory = string;
 export type NewsStatus = "draft" | "published";
 
 export interface AdminNews {
@@ -42,7 +42,7 @@ export const newsFormSchema = z.object({
     .max(120, "Use at most 120 characters")
     .refine((v) => v === "" || SLUG_PATTERN.test(v), "Use lowercase letters, numbers and hyphens"),
   excerpt: z.string().trim().min(10, "Use at least 10 characters").max(500, "Use at most 500 characters"),
-  category: z.enum(NEWS_CATEGORIES, "Choose a category"),
+  category: z.string().trim().min(1, "Choose a category").max(60),
   image: imageRef,
   body: z
     .array(z.string().trim().min(1, "Paragraphs can't be empty").max(10_000, "Paragraphs can be at most 10,000 characters"))

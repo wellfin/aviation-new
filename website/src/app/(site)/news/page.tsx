@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { AdBanner } from "@/components/ads/AdBanner";
-import { parseNewsCategory } from "@/components/news/categories";
+import { NEWS_CATEGORIES, parseNewsCategory } from "@/components/news/categories";
 import { NewsCategoryTabs } from "@/components/news/NewsCategoryTabs";
 import { NewsListCard } from "@/components/news/NewsListCard";
 import { NewsSidebar } from "@/components/news/NewsSidebar";
 import { Pagination } from "@/components/ui/Pagination";
-import { getAdvertisement, listNews } from "@/lib/data/content";
+import { getAdvertisement, listNews, listNewsCategories } from "@/lib/data/content";
+import { orFallback } from "@/lib/data/safe";
 import { firstParam, toInt } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -20,7 +21,8 @@ const PAGE_SIZE = 5;
 export default async function NewsPage({ searchParams }: PageProps<"/news">) {
   const sp = await searchParams;
   const q = (firstParam(sp.q) ?? "").trim();
-  const category = parseNewsCategory(firstParam(sp.category));
+  const categories = await orFallback(listNewsCategories(), NEWS_CATEGORIES);
+  const category = parseNewsCategory(firstParam(sp.category), categories);
   const page = Math.max(1, toInt(sp.page, 1));
 
   const [news, banner] = await Promise.all([listNews({ q, category, page, pageSize: PAGE_SIZE }), getAdvertisement("header-banner")]);
@@ -54,7 +56,7 @@ export default async function NewsPage({ searchParams }: PageProps<"/news">) {
       </section>
 
       <div className="container-site py-8">
-        <NewsCategoryTabs active={category} q={q || undefined} />
+        <NewsCategoryTabs active={category} q={q || undefined} categories={categories} />
 
         <div className="grid gap-6 pt-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <div className="flex flex-col gap-5">

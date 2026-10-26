@@ -60,10 +60,13 @@ describe("news — public", () => {
   });
 
   it("validates query params", async () => {
-    const r = await request(app).get("/api/v1/news?category=Gossip&pageSize=1000");
+    const r = await request(app).get("/api/v1/news?pageSize=1000");
     expect(r.status).toBe(422);
-    expect(r.body.error.fieldErrors).toHaveProperty("category");
     expect(r.body.error.fieldErrors).toHaveProperty("pageSize");
+    // Categories are editable, so an unknown one simply has no articles.
+    const none = await request(app).get("/api/v1/news?category=Gossip");
+    expect(none.status).toBe(200);
+    expect(none.body.data.items).toHaveLength(0);
   });
 
   it("gets one published article by slug, 404s drafts and unknown slugs", async () => {
@@ -110,7 +113,11 @@ describe("news — admin", () => {
 
     const bad = await agent.post(admin()).send(article({ category: "Gossip", image: "javascript:alert(1)", body: [], slug: "Bad Slug" }));
     expect(bad.status).toBe(422);
-    expect(Object.keys(bad.body.error.fieldErrors)).toEqual(expect.arrayContaining(["category", "image", "body", "slug"]));
+    expect(Object.keys(bad.body.error.fieldErrors)).toEqual(expect.arrayContaining(["image", "body", "slug"]));
+    // An otherwise valid article in a category that doesn't exist.
+    const unknown = await agent.post(admin()).send(article({ category: "Gossip" }));
+    expect(unknown.status).toBe(422);
+    expect(unknown.body.error.fieldErrors).toHaveProperty("category");
   });
 
   it("publishes, unpublishes, updates and deletes", async () => {
@@ -166,5 +173,33 @@ describe("seedContent", () => {
     const second = await seedContent();
     expect(second).toEqual({ news: 0, faqs: 0, ads: 0, pricingPlans: 0 });
     expect((await News.findOne({ slug: "digital-notams-rollout" }))?.title).toBe("Edited");
+  });
+});
+
+describe("news categories (admin panel)", () => {
+  it("adds, renames (moving its articles), reorders and deletes categories", async () => {
+    const { agent } = await signedInAgent("ADMIN", app);
+    const defaults = (await request(app).get("/api/v1/news/categories")).body.data as string[];
+    expect(defaults).toContain("Business Aviation");
+
+    const made = await agent.post(admin("/categories")).send({ name: "Safety" });
+    expect(made.status).toBe(201);
+    expect((await agent.post(admin("/categories")).send({ name: "safety" })).status).toBe(409);
+    const art = await agent.post(admin()).send(article({ category: "Safety" }));
+    expect(art.status).toBe(201);
+
+    const renamed = await agent.patch(admin(`/categories/${made.body.data.id}`)).send({ name: "Flight Safety" });
+    expect(renamed.body.data).toMatchObject({ name: "Flight Safety", articles: 1 });
+    expect((await News.findById(art.body.data.id))?.category).toBe("Flight Safety");
+
+    // In use: can't delete until its articles move.
+    expect((await agent.delete(admin(`/categories/${made.body.data.id}`))).status).toBe(409);
+    await agent.patch(admin(`/${art.body.data.id}`)).send({ category: "Fuel" });
+    expect((await agent.delete(admin(`/categories/${made.body.data.id}`))).status).toBe(204);
+
+    const list = (await agent.get(admin("/categories"))).body.data as { id: string; name: string }[];
+    const reordered = await agent.put(admin("/categories/order")).send({ ids: [...list].reverse().map((c) => c.id) });
+    expect(reordered.body.data[0].name).toBe(list[list.length - 1]!.name);
+    expect((await request(app).get("/api/v1/news/categories")).body.data[0]).toBe(list[list.length - 1]!.name);
   });
 });

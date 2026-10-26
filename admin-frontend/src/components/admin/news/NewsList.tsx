@@ -8,7 +8,7 @@ import type { Paginated } from "@/components/admin/enquiries/types";
 import { ButtonLink } from "@/components/ui/Button";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
-import { NEWS_CATEGORIES, type AdminNews } from "./schema";
+import type { AdminNews } from "./schema";
 import { siteUrl } from "./site";
 
 const PAGE_SIZE = 20;
@@ -17,7 +17,8 @@ export function NewsList() {
   const router = useRouter();
   const { get, page } = useUrlParams();
   const status = ["draft", "published"].includes(get("status")) ? get("status") : "";
-  const category = (NEWS_CATEGORIES as readonly string[]).includes(get("category")) ? get("category") : "";
+  const { data: categories } = useApi<string[]>("/news/categories");
+  const category = get("category").trim();
   const q = get("q").trim();
   const { data, error, loading, reload } = useApi<Paginated<AdminNews>>(withQuery("/admin/news", { page, pageSize: PAGE_SIZE, status, category, q }));
   const filtered = Boolean(status || category || q);
@@ -59,7 +60,7 @@ export function NewsList() {
       <FilterBar>
         <SearchFilter placeholder="Title, excerpt, slug or author" label="Search articles" />
         <SelectFilter param="status" label="Status" options={[{ value: "published", label: "Published" }, { value: "draft", label: "Draft" }]} />
-        <SelectFilter param="category" label="Category" options={NEWS_CATEGORIES.map((c) => ({ value: c, label: c }))} />
+        <SelectFilter param="category" label="Category" options={(categories ?? []).map((c) => ({ value: c, label: c }))} />
       </FilterBar>
       {error ? (
         <ErrorPanel error={error} onRetry={reload} />

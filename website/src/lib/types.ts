@@ -240,7 +240,8 @@ export interface NewsArticle {
   body: string[];
 }
 
-export type NewsCategory = "Industry News" | "FBO Network" | "Regulatory" | "Fuel" | "Technology" | "Business Aviation";
+/** Managed in the admin panel (News → Categories). */
+export type NewsCategory = string;
 
 export interface PricingPlan {
   id: "basic" | "pro" | "ultra_pro" | "enterprise";

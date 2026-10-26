@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { isObjectId } from "../../lib/db.js";
 import { paginationQuery } from "../../lib/pagination.js";
-import { NEWS_CATEGORIES, NEWS_STATUSES } from "./news.model.js";
+import { NEWS_STATUSES } from "./news.model.js";
+
+const categoryName = z.string().trim().min(1, "Choose a category").max(60);
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -10,13 +12,13 @@ export const slugParams = z.object({ slug: z.string().trim().toLowerCase().max(1
 
 export const publicNewsQuery = paginationQuery.extend({
   q: z.string().trim().max(100).optional(),
-  category: z.union([z.enum(NEWS_CATEGORIES), z.literal("all")]).default("all"),
+  category: categoryName.default("all"),
   pageSize: z.coerce.number().int().min(1).max(50).default(9),
 });
 
 export const adminNewsQuery = paginationQuery.extend({
   q: z.string().trim().max(100).optional(),
-  category: z.enum(NEWS_CATEGORIES).optional(),
+  category: categoryName.optional(),
   status: z.enum(NEWS_STATUSES).optional(),
 });
 
@@ -32,7 +34,7 @@ const newsFields = {
   slug: z.string().trim().toLowerCase().max(120).regex(SLUG_PATTERN, "Use lowercase letters, numbers and hyphens"),
   title: z.string().trim().min(3).max(200),
   excerpt: z.string().trim().min(10).max(500),
-  category: z.enum(NEWS_CATEGORIES),
+  category: categoryName,
   image: imageRef,
   body: z.array(z.string().trim().min(1).max(10_000)).min(1, "Add at least one paragraph").max(100),
   author: z.string().trim().min(2).max(120),
@@ -62,6 +64,9 @@ export const updateNewsBody = z
   })
   .partial()
   .refine((v) => Object.keys(v).length > 0, "Nothing to update");
+
+export const newsCategoryBody = z.object({ name: z.string().trim().min(2, "Enter a name").max(60) });
+export const newsCategoryOrderBody = z.object({ ids: z.array(z.string().refine(isObjectId, "Invalid id")).max(100) });
 
 export type CreateNewsInput = z.infer<typeof createNewsBody>;
 export type UpdateNewsInput = z.infer<typeof updateNewsBody>;

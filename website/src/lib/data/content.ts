@@ -1,4 +1,5 @@
 import "server-only";
+import { NEWS_CATEGORIES } from "@/components/news/categories";
 import { AD_FORMATS, type AdFormat } from "@/components/advertise/formats";
 import { config } from "@/lib/config";
 import { ADS } from "@/lib/mock/ads";
@@ -36,6 +37,12 @@ export async function listNews(query: NewsQuery = {}): Promise<Paginated<NewsArt
       totalPages: 1,
     }
   );
+}
+
+/** News categories in display order (admin panel). */
+export async function listNewsCategories(): Promise<NewsCategory[]> {
+  if (config.DATA_SOURCE === "mock") return NEWS_CATEGORIES;
+  return (await apiGet<NewsCategory[]>("/news/categories")) ?? NEWS_CATEGORIES;
 }
 
 export async function getNewsArticle(slug: string): Promise<NewsArticle | null> {
