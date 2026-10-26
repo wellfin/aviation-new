@@ -62,7 +62,8 @@ export function FeaturedAirports({ airports }: { airports: Airport[] }) {
           <p className="mt-9 rounded-[16px] border border-line bg-white p-8 text-center text-sm text-muted">No featured airports right now — browse the full airport directory instead.</p>
         ) : (
           <div className="mt-9 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {airports.map((a) => (
+            {/* Three rows of three. */}
+            {airports.slice(0, 9).map((a) => (
               <AirportCard key={a.icao} airport={a} />
             ))}
           </div>
