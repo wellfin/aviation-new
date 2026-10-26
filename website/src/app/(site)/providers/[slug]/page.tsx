@@ -120,9 +120,11 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
   // FBOs and other services keep the standard profile (content on every tab, Related Providers).
   const charter = isCharter(provider);
   const sponsoredRelated = charter;
+  // Related listings chosen in the admin panel replace the automatic ones (the API returns them in order).
+  const chosen = Boolean(provider.relatedSlugs?.length);
   const [related, sameKind, bannerAd, sidebarAd] = await Promise.all([
-    sponsoredRelated ? Promise.resolve([]) : getRelatedProviders(provider, 4),
-    sponsoredRelated ? getSameCategoryProviders(provider, 4) : Promise.resolve([]),
+    sponsoredRelated ? Promise.resolve([]) : getRelatedProviders(provider, chosen ? 8 : 4),
+    sponsoredRelated ? (chosen ? getRelatedProviders(provider, 8) : getSameCategoryProviders(provider, 4)) : Promise.resolve([]),
     getAdvertisement("header-banner"),
     getAdvertisement("sidebar"),
   ]);

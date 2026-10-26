@@ -112,8 +112,14 @@ export async function getPublishedProvider(slug: string): Promise<ProviderDTO> {
 }
 
 export async function relatedProviders(slug: string, limit: number): Promise<ProviderDTO[]> {
-  const provider = await Provider.findOne({ slug, status: "published" }, { category: 1, countryCode: 1 });
+  const provider = await Provider.findOne({ slug, status: "published" }, { category: 1, countryCode: 1, relatedSlugs: 1 });
   if (!provider) throw notFound("Provider");
+  // Chosen in the admin panel: those listings, in that order (published ones only).
+  if (provider.relatedSlugs?.length) {
+    const chosen = await Provider.find({ slug: { $in: provider.relatedSlugs }, status: "published" }).populate("airports", AIRPORT_REF_FIELDS);
+    const bySlug = new Map(chosen.map((p) => [p.slug, p]));
+    return provider.relatedSlugs.flatMap((s) => bySlug.get(s) ?? []).map((p) => toProviderDTO(p));
+  }
   const related = await Provider.find({
     status: "published",
     _id: { $ne: provider._id },

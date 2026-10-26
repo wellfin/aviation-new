@@ -13,6 +13,7 @@ import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi } from "@/lib/hooks/useApi";
 import { useCategories } from "@/components/admin/services/categories";
 import { AirportsInput } from "./AirportsInput";
+import { RelatedInput } from "./RelatedInput";
 import { FormSection, GalleryEditor, Grid, IconButton, Repeater, Toggle, UploadField } from "./form-kit";
 import {
   emptyProviderState,
@@ -35,6 +36,7 @@ const SECTIONS = [
   ["basics", "Basics"],
   ["media", "Media"],
   ["listing-button", "Button"],
+  ["related", "Related"],
   ["contact", "Contact"],
   ["about", "About"],
   ["services", "Services"],
@@ -253,6 +255,10 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
               />
             </Grid>
             {s.tier !== "ultra_pro" && <p className="text-xs text-[#a16207]">Only Ultra Pro listings show this button.</p>}
+          </FormSection>
+
+          <FormSection id="related" title="Related providers" description="Competitors or partners shown in this profile's sidebar card (e.g. “Related Charter Operators”).">
+            <RelatedInput value={s.relatedSlugs} onChange={(v) => set("relatedSlugs", v)} self={s.slug || undefined} error={e("relatedSlugs")} />
           </FormSection>
 
           <FormSection id="contact" title="Contact & socials">

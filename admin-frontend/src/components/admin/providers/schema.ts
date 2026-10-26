@@ -96,6 +96,7 @@ export const providerSchema = z.object({
   locationsLabel: text(60),
   ctaHidden: z.boolean(),
   listingPosition: z.number().int().min(1).max(3).nullable(),
+  relatedSlugs: z.array(z.string()).max(8, "Up to 8 related listings"),
   ctaLabel: text(40),
   ctaUrl: linkUrl,
   services: z
@@ -218,6 +219,7 @@ export interface ProviderFormState {
   locationsLabel: string;
   ctaHidden: boolean;
   listingPosition: "" | "1" | "2" | "3";
+  relatedSlugs: string[];
   ctaLabel: string;
   ctaUrl: string;
   services: ServiceRow[];
@@ -252,6 +254,7 @@ export function emptyProviderState(): ProviderFormState {
     locationsLabel: "",
     ctaHidden: false,
     listingPosition: "",
+    relatedSlugs: [],
     ctaLabel: "",
     ctaUrl: "",
     services: [],
@@ -287,6 +290,7 @@ export function stateFromProvider(p: AdminProvider): ProviderFormState {
     locationsLabel: p.locationsLabel ?? "",
     ctaHidden: p.ctaHidden ?? false,
     listingPosition: p.listingPosition ? (String(p.listingPosition) as "1" | "2" | "3") : "",
+    relatedSlugs: p.relatedSlugs ?? [],
     ctaLabel: p.ctaLabel ?? "",
     ctaUrl: p.ctaUrl ?? "",
     services: p.services.map((s) => ({ name: s.name, description: s.description, icon: s.icon })),
@@ -337,6 +341,7 @@ export function rawPayload(s: ProviderFormState, mode: "create" | "edit"): Recor
     locationsLabel: s.locationsLabel,
     ctaHidden: s.ctaHidden,
     listingPosition: s.listingPosition ? Number(s.listingPosition) : null,
+    relatedSlugs: s.relatedSlugs,
     ctaLabel: s.ctaLabel,
     ctaUrl: s.ctaUrl,
     services: s.services.map((x) => ({ name: x.name, description: x.description, icon: opt(x.icon) })),

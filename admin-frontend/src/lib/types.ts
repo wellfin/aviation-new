@@ -114,6 +114,7 @@ export interface Provider {
   locationsLabel?: string;
   ctaHidden?: boolean;
   listingPosition?: number;
+  relatedSlugs?: string[];
   ctaLabel?: string;
   ctaUrl?: string;
   services: ProviderService[];

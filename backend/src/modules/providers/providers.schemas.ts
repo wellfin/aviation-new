@@ -172,6 +172,17 @@ const staffFields = {
   ctaHidden: z.boolean(),
   /** 1st, 2nd or 3rd place in airport service lists; null clears it. */
   listingPosition: z.number().int().min(1).max(3).nullable(),
+  /** Listings for the profile's "Related …" card, in order (slugs); empty = automatic. */
+  relatedSlugs: z
+    .array(
+      z
+        .string()
+        .trim()
+        .toLowerCase()
+        .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Invalid listing")
+        .max(120),
+    )
+    .max(8, "Up to 8 related listings"),
   ctaLabel: text(40),
   ctaUrl: linkUrl,
   slug: z

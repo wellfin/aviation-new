@@ -365,6 +365,19 @@ describe("admin providers", () => {
     expect((await Provider.findById(id).lean())?.ctaLabel).toBeUndefined();
   });
 
+  it("lets staff choose a listing's related providers, shown in that order", async () => {
+    await seedProviders();
+    const { agent } = await signedInAgent("MANAGER", app);
+    const sig = await Provider.findOne({ slug: "signature-aviation" }).lean();
+    const others = await Provider.find({ status: "published", slug: { $ne: "signature-aviation" } }, { slug: 1 }).limit(2).lean();
+    const picks = others.map((p) => p.slug).reverse();
+    expect((await agent.patch(adm(`/${sig!._id}`)).send({ relatedSlugs: [...picks, "signature-aviation"] })).status).toBe(200);
+    expect((await Provider.findById(sig!._id).lean())?.relatedSlugs).toEqual(picks);
+    const related = await request(app).get("/api/v1/providers/signature-aviation/related?limit=4");
+    expect(related.body.data.map((p: { slug: string }) => p.slug)).toEqual(picks);
+    expect((await agent.patch(adm(`/${sig!._id}`)).send({ relatedSlugs: ["no-such-listing"] })).status).toBe(422);
+  });
+
   it("approves a pending listing, sets publishedAt, recounts airports and emails the owner", async () => {
     const { owner, id } = await pendingListing();
     const { agent } = await signedInAgent("MANAGER", app);

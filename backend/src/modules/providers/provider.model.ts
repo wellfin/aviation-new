@@ -95,6 +95,8 @@ const providerSchema = new Schema(
     ctaHidden: { type: Boolean, default: false },
     /* 1st, 2nd or 3rd place in airport service lists (staff). */
     listingPosition: { type: Number, min: 1, max: 3 },
+    /* Listings shown in this profile's "Related …" sidebar card, in order (staff). Empty = automatic. */
+    relatedSlugs: { type: [String], default: undefined },
     ctaLabel: { type: String, trim: true, maxlength: 40 },
     ctaUrl: { type: String, trim: true, maxlength: 500 },
     services: [serviceSchema],
@@ -194,6 +196,7 @@ export function toProviderDTO(p: ProviderLike, opts: { reviews?: ReviewDTO[] } =
     ...(p.locationsLabel ? { locationsLabel: p.locationsLabel } : {}),
     ...(p.ctaHidden ? { ctaHidden: true } : {}),
     ...(p.listingPosition ? { listingPosition: p.listingPosition } : {}),
+    ...(p.relatedSlugs?.length ? { relatedSlugs: [...p.relatedSlugs] } : {}),
     ...(p.ctaLabel ? { ctaLabel: p.ctaLabel } : {}),
     ...(p.ctaUrl ? { ctaUrl: p.ctaUrl } : {}),
     services: (p.services ?? []).map((s) => ({ name: s.name, description: s.description ?? "", icon: s.icon ?? "plane" })),
