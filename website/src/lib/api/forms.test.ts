@@ -83,10 +83,11 @@ describe("business email only (enquiry forms)", () => {
     if (!r.success) expect(r.error.issues[0]?.message).toMatch(/work email/i);
   });
 
-  it("is applied to every enquiry form, but not to sign-up or login", () => {
+  it("is applied to the site's own enquiry forms, but not to provider enquiries, sign-up or login", () => {
     const personal = "someone@gmail.com";
+    // Provider enquiries (sidebar form, Aircraft Fleet Enquiry) accept personal mailboxes.
+    expect(enquirySchema.safeParse({ providerSlug: "x", name: "Ann Lee", email: personal, service: "Fuel", message: "Need a fuel quote for Friday." }).success).toBe(true);
     const forms = [
-      enquirySchema.safeParse({ providerSlug: "x", name: "Ann Lee", email: personal, service: "Fuel", message: "Need a fuel quote for Friday." }),
       contactSchema.safeParse({ name: "Ann Lee", email: personal, subject: "Sales", message: "We would like to list our FBO." }),
       advertiseSchema.safeParse({ name: "Ann Lee", email: personal, company: "Jet Fuel Inc", placement: "sidebar" }),
       demoRequestSchema.safeParse({ firstName: "Ann", lastName: "Lee", email: personal, company: "Jet Fuel Inc", interest: "Advertising" }),

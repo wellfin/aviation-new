@@ -7,7 +7,7 @@ import { apiPost } from "@/lib/api/client";
 import { enquirySchema } from "@/lib/api/forms";
 import { useZodForm } from "@/lib/hooks/useZodForm";
 import { DialCodeSelect } from "@/components/contact/DialCodeSelect";
-import { EmailOtp, ENQUIRY_OTP } from "@/components/contact/EmailOtp";
+import { EmailOtp, ENQUIRY_OTP, ENQUIRY_OTP_LENGTH } from "@/components/contact/EmailOtp";
 import { useEmailVerification } from "@/components/contact/useEmailVerification";
 import { useAuth } from "@/lib/auth/auth-context";
 
@@ -39,6 +39,9 @@ export function EnquiryForm({ providerSlug, providerName, services, phoneHref }:
           error={errors.email}
           trustedEmail={user?.emailVerified ? user.email : undefined}
           fieldClassName="h-11 pl-3.5"
+          placeholder="Email Address"
+          codeLength={ENQUIRY_OTP_LENGTH}
+          allowPersonal
         />
         <div>
           <div className="flex gap-3">

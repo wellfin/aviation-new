@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from "react";
 import { ApiError, apiPost } from "@/lib/api/client";
-import { workEmail } from "@/lib/api/forms";
+import { anyEmail, workEmail } from "@/lib/api/forms";
 import { cn } from "@/lib/utils";
 
 export const OTP_LENGTH = 4;
@@ -19,6 +19,8 @@ export const CONTACT_OTP: OtpEndpoints = { send: "/contact/email-otp", verify: "
 export const ADVERTISING_OTP: OtpEndpoints = { send: "/advertising/email-otp", verify: "/advertising/email-otp/verify" };
 export const DATA_LICENCE_OTP: OtpEndpoints = { send: "/data-licence/email-otp", verify: "/data-licence/email-otp/verify" };
 export const ENQUIRY_OTP: OtpEndpoints = { send: "/enquiries/email-otp", verify: "/enquiries/email-otp/verify" };
+/** Provider enquiries (sidebar form and Aircraft Fleet Enquiry) use a 6-digit code (Figma). */
+export const ENQUIRY_OTP_LENGTH = 6;
 
 /**
  * Work-email field with inline "Send OTP" and a 4-digit verification row (Figma 696:81).
@@ -35,6 +37,8 @@ export function EmailOtp({
   fieldClassName,
   placeholder = "Work Email Address",
   layout = "inline",
+  codeLength = OTP_LENGTH,
+  allowPersonal = false,
 }: {
   endpoints?: OtpEndpoints;
   /** Input id (unique per form on the page). */
@@ -54,10 +58,14 @@ export function EmailOtp({
    * timer (Aircraft Fleet Enquiry, Figma).
    */
   layout?: "inline" | "panel";
+  /** Digits in the emailed code (enquiries use 6). */
+  codeLength?: number;
+  /** Accept personal mailboxes (Gmail, Outlook…) as well as work addresses. */
+  allowPersonal?: boolean;
 }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<OtpState>("idle");
-  const [digits, setDigits] = useState<string[]>(() => Array(OTP_LENGTH).fill(""));
+  const [digits, setDigits] = useState<string[]>(() => Array(codeLength).fill(""));
   const [message, setMessage] = useState<{ tone: "error" | "info" | "success"; text: string } | null>(null);
   const refs = useRef<Array<HTMLInputElement | null>>([]);
   // Seconds until another code may be requested (the server enforces a 30 s cooldown).
@@ -73,7 +81,7 @@ export function EmailOtp({
     // Adjust state while rendering (not in an effect) when the parent discards the verification.
     setSeenResetKey(resetKey);
     setState("idle");
-    setDigits(Array(OTP_LENGTH).fill(""));
+    setDigits(Array(codeLength).fill(""));
     setMessage(null);
   }
 
@@ -86,13 +94,13 @@ export function EmailOtp({
     setMessage(null);
     if (state !== "idle") {
       setState("idle");
-      setDigits(Array(OTP_LENGTH).fill(""));
+      setDigits(Array(codeLength).fill(""));
     }
     onVerifiedChange(isTrusted(value) ? value.trim() : null);
   }
 
   async function sendOtp() {
-    const parsed = workEmail.safeParse(email);
+    const parsed = (allowPersonal ? anyEmail : workEmail).safeParse(email);
     if (!parsed.success) {
       setMessage({ tone: "error", text: parsed.error.issues[0]?.message ?? "Enter a valid email address" });
       return;
@@ -103,7 +111,7 @@ export function EmailOtp({
       await apiPost(endpoints.send, { email: parsed.data });
       setState("sent");
       setResendIn(30);
-      setMessage(layout === "panel" ? null : { tone: "info", text: `We sent a ${OTP_LENGTH}-digit code to ${parsed.data}.` });
+      setMessage(layout === "panel" ? null : { tone: "info", text: `We sent a ${codeLength}-digit code to ${parsed.data}.` });
       requestAnimationFrame(() => refs.current[0]?.focus());
     } catch (err) {
       setState("idle");
@@ -113,8 +121,8 @@ export function EmailOtp({
 
   async function verify() {
     const code = digits.join("");
-    if (!new RegExp(`^\\d{${OTP_LENGTH}}$`).test(code)) {
-      setMessage({ tone: "error", text: `Enter the ${OTP_LENGTH}-digit code` });
+    if (!new RegExp(`^\\d{${codeLength}}$`).test(code)) {
+      setMessage({ tone: "error", text: `Enter the ${codeLength}-digit code` });
       return;
     }
     setState("verifying");
@@ -132,7 +140,7 @@ export function EmailOtp({
   function setDigit(i: number, value: string) {
     const d = value.replace(/\D/g, "").slice(-1);
     setDigits((prev) => prev.map((v, j) => (j === i ? d : v)));
-    if (d && i < OTP_LENGTH - 1) refs.current[i + 1]?.focus();
+    if (d && i < codeLength - 1) refs.current[i + 1]?.focus();
   }
 
   function onKeyDown(i: number, e: KeyboardEvent<HTMLInputElement>) {
@@ -144,11 +152,11 @@ export function EmailOtp({
   }
 
   function onPaste(e: ClipboardEvent<HTMLInputElement>) {
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, OTP_LENGTH);
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, codeLength);
     if (!pasted) return;
     e.preventDefault();
-    setDigits(Array.from({ length: OTP_LENGTH }, (_, i) => pasted[i] ?? ""));
-    refs.current[Math.min(pasted.length, OTP_LENGTH - 1)]?.focus();
+    setDigits(Array.from({ length: codeLength }, (_, i) => pasted[i] ?? ""));
+    refs.current[Math.min(pasted.length, codeLength - 1)]?.focus();
   }
 
   const verified = state === "verified" || trusted;
@@ -199,7 +207,7 @@ export function EmailOtp({
           <fieldset className="rounded-xl bg-brand/5 p-4">
             <legend className="sr-only">Verification code</legend>
             <p className="text-sm text-muted">
-              Enter the {OTP_LENGTH}-digit OTP sent to <strong className="font-semibold text-ink">{email.trim()}</strong>
+              Enter the {codeLength}-digit OTP sent to <strong className="font-semibold text-ink">{email.trim()}</strong>
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <input
@@ -208,8 +216,8 @@ export function EmailOtp({
                 }}
                 value={digits.join("")}
                 onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH);
-                  setDigits(Array.from({ length: OTP_LENGTH }, (_, i) => v[i] ?? ""));
+                  const v = e.target.value.replace(/\D/g, "").slice(0, codeLength);
+                  setDigits(Array.from({ length: codeLength }, (_, i) => v[i] ?? ""));
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -219,8 +227,8 @@ export function EmailOtp({
                 }}
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                maxLength={OTP_LENGTH}
-                placeholder={"0".repeat(OTP_LENGTH)}
+                maxLength={codeLength}
+                placeholder={"0".repeat(codeLength)}
                 aria-label="Verification code"
                 className="h-11 w-36 rounded-xl border border-brand/20 bg-white text-center font-mono text-lg tracking-[0.5em] text-ink outline-none placeholder:text-subtle focus:border-brand focus:ring-3 focus:ring-brand/15"
               />

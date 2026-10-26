@@ -8,6 +8,8 @@ import { isTodayOrLater } from "@/lib/dates";
  */
 
 const email = z.string().trim().min(1, "Email is required").email("Enter a valid email address").max(254);
+/** Any valid address, personal mailboxes included (provider enquiries). */
+export const anyEmail = email;
 /** Enquiry forms take professional/business addresses only (the API enforces the same rule). */
 export const workEmail = email.refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE);
 const name = z.string().trim().min(2, "Please enter at least 2 characters").max(100);
@@ -25,7 +27,7 @@ export const newsletterSchema = z.object({ email });
 export const enquirySchema = z.object({
   providerSlug: z.string().min(1),
   name,
-  email: workEmail,
+  email: anyEmail,
   dialCode: z.string().max(6).optional(),
   phone,
   service: z.string().trim().min(1, "Please select a service"),

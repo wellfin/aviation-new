@@ -317,8 +317,8 @@ describe("enquiry email rules", () => {
 
     expect((await rawPost("/enquiries/email-otp").send({ email })).status).toBe(200);
     const code = lastCodeFor(email);
-    expect(code).toHaveLength(4);
-    expect((await rawPost("/enquiries/email-otp/verify").send({ email, code: code === "0000" ? "1111" : "0000" })).status).toBe(400);
+    expect(code).toHaveLength(6);
+    expect((await rawPost("/enquiries/email-otp/verify").send({ email, code: code === "000000" ? "111111" : "000000" })).status).toBe(400);
     expect((await rawPost(path).send(general)).body.error.code).toBe("EMAIL_NOT_VERIFIED");
     expect((await rawPost("/enquiries/email-otp/verify").send({ email, code })).status).toBe(200);
 
@@ -337,19 +337,15 @@ describe("enquiry email rules", () => {
     expect((await agent.post(path).send({ ...general, email: "colleague@example.com" })).body.error.code).toBe("EMAIL_NOT_VERIFIED");
   });
 
-  it("rejects personal email addresses and never sends them a code", async () => {
+  it("accepts personal email addresses (Gmail, Outlook…) once verified with a 6-digit code", async () => {
     const provider = await makeProvider();
-    for (const email of ["ann@gmail.com", "ann@yahoo.co.in", "ann@outlook.com", "ann@mailinator.com"]) {
-      const r = await rawPost(`/providers/${provider.slug}/enquiries`).send({ ...general, email });
-      expect(r.status, email).toBe(422);
-      expect(r.body.error.fieldErrors.email, email).toMatch(/work email/i);
-      const flat = await rawPost("/enquiries").send({ ...uiFleet(provider.slug, String(provider.fleet[0]!._id)), email });
-      expect(flat.status, email).toBe(422);
-      const otp = await rawPost("/enquiries/email-otp").send({ email });
-      expect(otp.status, email).toBe(422);
-      expect(testOutbox.filter((m) => m.to === email)).toHaveLength(0);
-    }
-    expect(await Enquiry.countDocuments()).toBe(0);
+    const email = "ann@gmail.com";
+    expect((await rawPost("/enquiries/email-otp").send({ email })).status).toBe(200);
+    const code = lastCodeFor(email);
+    expect(code).toMatch(/^\d{6}$/);
+    expect((await rawPost("/enquiries/email-otp/verify").send({ email, code })).status).toBe(200);
+    expect((await rawPost(`/providers/${provider.slug}/enquiries`).send({ ...general, email })).status).toBe(201);
+    expect(await Enquiry.countDocuments({ email })).toBe(1);
   });
 });
 

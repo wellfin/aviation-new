@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { workEmail } from "@/lib/api/forms";
+import { anyEmail } from "@/lib/api/forms";
 import { isTodayOrLater } from "@/lib/dates";
 
 /** "Share Your Experience" review form on the provider profile. */
@@ -34,7 +34,7 @@ export const fleetEnquirySchema = z.object({
   passengers: z.coerce.number().int().min(1, "At least 1 passenger").max(500),
   name: z.string().trim().min(2, "Please enter at least 2 characters").max(100),
   company: z.string().trim().max(120).optional().or(z.literal("")),
-  email: workEmail,
+  email: anyEmail,
   dialCode: z.string().max(6).optional(),
   phone: z
     .string()

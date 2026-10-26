@@ -12,7 +12,7 @@ import type { FleetAircraft } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Dialog } from "../Dialog";
 import { DialCodeSelect } from "@/components/contact/DialCodeSelect";
-import { EmailOtp, ENQUIRY_OTP } from "@/components/contact/EmailOtp";
+import { EmailOtp, ENQUIRY_OTP, ENQUIRY_OTP_LENGTH } from "@/components/contact/EmailOtp";
 import { useEmailVerification } from "@/components/contact/useEmailVerification";
 import { useAuth } from "@/lib/auth/auth-context";
 import { fleetEnquirySchema } from "../schema";
@@ -129,8 +129,10 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
           id="fe-email"
           error={errors.email}
           trustedEmail={user?.emailVerified ? user.email : undefined}
-          placeholder="your@company.com"
+          placeholder="your@email.com"
           layout="panel"
+          codeLength={ENQUIRY_OTP_LENGTH}
+          allowPersonal
         />
       </div>
       <div>
@@ -145,7 +147,7 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
         name="message"
         id="fe-message"
         rows={4}
-        placeholder="Please describe your requirements, preferred cabin, catering, pets on board…"
+        placeholder="Please describe your requirements, preferred cabin configuration, catering needs, or any other special requests..."
         error={errors.message}
       />
       {result.status === "error" && <FormResultStatus result={result} />}
@@ -232,7 +234,7 @@ export function FleetTab({
         </ul>
       )}
 
-      <Dialog open={enquire !== null} onClose={() => setEnquire(null)} title="Aircraft Fleet Enquiry" subtitle={enquire ? `${providerName} — ${enquire.model}` : providerName} className="max-w-[600px]">
+      <Dialog open={enquire !== null} onClose={() => setEnquire(null)} title="Aircraft Fleet Enquiry" subtitle={providerName} className="max-w-[600px]">
         {enquire && <FleetEnquiryForm key={enquire.id} providerSlug={providerSlug} aircraft={enquire} onDone={() => setEnquire(null)} />}
       </Dialog>
     </section>
