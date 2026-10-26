@@ -48,7 +48,7 @@ export function ProfileHeader({ provider }: { provider: Provider }) {
                 {provider.name}
               </h1>
               {rules.tierBadge && <TierBadge tier={provider.tier} />}
-              {rules.tierBadge && provider.verified && <VerifiedBadge />}
+              {provider.tier === "ultra_pro" && provider.verified && <VerifiedBadge />}
             </div>
             <p className="mt-2 text-sm text-white/55">
               <CategoryName slug={provider.category} long /> · <Flag code={provider.countryCode} /> {provider.country}

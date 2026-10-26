@@ -36,7 +36,7 @@ export function ProviderListRow({ provider }: { provider: Provider }) {
               </Link>
             </h3>
             <span className={cn(pill, tier.className)}>{tier.label}</span>
-            {provider.verified && (
+            {provider.verified && provider.tier === "ultra_pro" && (
               <span className={cn(pill, "border-success/25 bg-success/12 text-success")} title="Verified provider" aria-label="Verified provider">
                 ✓
               </span>
