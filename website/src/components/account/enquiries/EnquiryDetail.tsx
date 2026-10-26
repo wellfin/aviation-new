@@ -124,6 +124,14 @@ function Detail({ id }: { id: string }) {
                   {e.trip.from} → {e.trip.to}
                 </Row>
                 <Row label="Departure">{e.trip.departAt.replace("T", " at ")}</Row>
+                {e.trip.returnAt && (
+                  <>
+                    <Row label="Return route">
+                      {e.trip.returnFrom} → {e.trip.returnTo}
+                    </Row>
+                    <Row label="Return">{e.trip.returnAt.replace("T", " at ")}</Row>
+                  </>
+                )}
                 <Row label="Passengers">{e.trip.passengers}</Row>
                 {e.trip.aircraft && (
                   <Row label="Aircraft">

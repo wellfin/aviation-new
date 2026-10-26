@@ -349,6 +349,25 @@ describe("enquiry email rules", () => {
   });
 });
 
+describe("round trips", () => {
+  it("needs a return date and saves the return leg (airports reversed by default)", async () => {
+    const provider = await makeProvider();
+    const aircraftId = String(provider.fleet[0]!._id);
+    const base = { ...uiFleet(provider.slug, aircraftId), tripType: "round-trip" };
+
+    const missing = await post("/enquiries").send(base);
+    expect(missing.status).toBe(422);
+    expect(missing.body.error.fieldErrors.returnDate).toMatch(/return date/i);
+    const before = await post("/enquiries").send({ ...base, returnDate: PAST_DAY });
+    expect(before.body.error.fieldErrors.returnDate).toMatch(/before the departure/i);
+
+    const later = new Date(Date.now() + 35 * 86_400_000).toISOString().slice(0, 10);
+    expect((await post("/enquiries").send({ ...base, returnDate: later, returnTime: "18:00" })).status).toBe(201);
+    const saved = await Enquiry.findOne({ provider: provider._id }).lean();
+    expect(saved?.trip).toMatchObject({ tripType: "round-trip", from: "OMDB", to: "EGLL", returnFrom: "EGLL", returnTo: "OMDB", returnAt: `${later}T18:00` });
+  });
+});
+
 describe("departure dates", () => {
   it("rejects a departure day that has already passed, on both fleet enquiry shapes", async () => {
     const provider = await makeProvider();

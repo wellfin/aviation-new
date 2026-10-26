@@ -22,6 +22,10 @@ const enquirySchema = new Schema(
       from: { type: String, trim: true, maxlength: 80 },
       to: { type: String, trim: true, maxlength: 80 },
       departAt: { type: String, trim: true, maxlength: 40 },
+      /* Round trips: the return leg (normally the outbound airports reversed). */
+      returnFrom: { type: String, trim: true, maxlength: 80 },
+      returnTo: { type: String, trim: true, maxlength: 80 },
+      returnAt: { type: String, trim: true, maxlength: 40 },
       passengers: { type: Number, min: 1, max: 600 },
       aircraft: { type: String, trim: true, maxlength: 120 },
     },

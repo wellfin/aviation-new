@@ -37,6 +37,12 @@ function Step({ n, children }: { n: number; children: string }) {
 function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: string; aircraft: FleetAircraft; onDone: () => void }) {
   const [trip, setTrip] = useState<(typeof TRIP_TYPES)[number]["value"]>("one-way");
   const [pax, setPax] = useState(2);
+  // Outbound airports, and the return leg's (filled with them reversed until edited by hand).
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [returnFrom, setReturnFrom] = useState<string | null>(null);
+  const [returnTo, setReturnTo] = useState<string | null>(null);
+  const roundTrip = trip === "round-trip";
   const otp = useEmailVerification();
   const { user } = useAuth();
   const { errors, submitting, result, handleSubmit } = useZodForm(
@@ -87,11 +93,39 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
         ))}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Input label="Departure Airport *" name="from" id="fe-from" placeholder="e.g. EGLL / Heathrow" error={errors.from} />
-        <Input label="Destination Airport *" name="to" id="fe-to" placeholder="e.g. OMDB / Dubai" error={errors.to} />
+        <Input label="Departure Airport *" name="from" id="fe-from" placeholder="e.g. EGLL / Heathrow" value={from} onChange={(e) => setFrom(e.target.value)} error={errors.from} />
+        <Input label="Destination Airport *" name="to" id="fe-to" placeholder="e.g. OMDB / Dubai" value={to} onChange={(e) => setTo(e.target.value)} error={errors.to} />
         <Input label="Departure Date *" name="date" id="fe-date" type="date" ref={minToday} error={errors.date} />
         <Input label="Departure Time" name="time" id="fe-time" type="time" error={errors.time} />
       </div>
+      {roundTrip && from.trim() !== "" && to.trim() !== "" && (
+        // Round trip, once both airports are entered: the way back, from the destination to the departure airport unless changed.
+        <fieldset className="rounded-xl border border-brand/15 bg-brand/4 p-4">
+          <legend className="px-1 text-xs font-bold tracking-[0.6px] text-brand uppercase">Return</legend>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label="Return From"
+              name="returnFrom"
+              id="fe-return-from"
+              placeholder="Destination airport"
+              value={returnFrom ?? to}
+              onChange={(e) => setReturnFrom(e.target.value)}
+              error={errors.returnFrom}
+            />
+            <Input
+              label="Return To"
+              name="returnTo"
+              id="fe-return-to"
+              placeholder="Departure airport"
+              value={returnTo ?? from}
+              onChange={(e) => setReturnTo(e.target.value)}
+              error={errors.returnTo}
+            />
+            <Input label="Return Date *" name="returnDate" id="fe-return-date" type="date" ref={minToday} error={errors.returnDate} />
+            <Input label="Return Time" name="returnTime" id="fe-return-time" type="time" error={errors.returnTime} />
+          </div>
+        </fieldset>
+      )}
       <div>
         <Label htmlFor="fe-pax">Passengers</Label>
         <div className="flex items-center gap-2">

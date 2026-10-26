@@ -97,6 +97,12 @@ export function EnquiryDetail({ id }: { id: string }) {
                       { label: "From", value: trip.from },
                       { label: "To", value: trip.to },
                       { label: "Departure", value: formatDepart(trip.departAt) },
+                      ...(trip.returnAt
+                        ? [
+                            { label: "Return route", value: `${trip.returnFrom ?? trip.to} → ${trip.returnTo ?? trip.from}` },
+                            { label: "Return", value: formatDepart(trip.returnAt) },
+                          ]
+                        : []),
                       { label: "Aircraft", value: trip.aircraft },
                     ]
                   : []),

@@ -82,7 +82,18 @@ export interface Enquiry {
   company: string;
   service: string;
   message: string;
-  trip: { tripType: string; from: string; to: string; departAt: string; passengers: number; aircraft: string } | null;
+  trip: {
+    tripType: string;
+    from: string;
+    to: string;
+    departAt: string;
+    passengers: number;
+    aircraft: string;
+    /** Round trips only. */
+    returnFrom?: string;
+    returnTo?: string;
+    returnAt?: string;
+  } | null;
   createdAt: string;
   updatedAt: string;
 }

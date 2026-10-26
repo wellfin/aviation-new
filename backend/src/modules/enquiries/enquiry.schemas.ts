@@ -44,6 +44,8 @@ const optionalMessage = z.string().trim().max(5000).optional();
 const website = z.string().max(500).optional();
 const tripType = z.enum(["one-way", "round-trip", "multi-leg"]);
 const airportField = (msg: string) => z.string().trim().min(3, msg).max(80).regex(singleLine, msg);
+/** An airport that may be left blank. */
+const optionalAirport = z.string().trim().max(80).regex(singleLine, "Enter a valid airport").optional();
 const passengers = z.coerce.number().int("At least 1 passenger").min(1, "At least 1 passenger").max(500);
 const isoDate = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -73,6 +75,14 @@ export const fleetEnquiryBody = z.object({
     passengers,
     /** Fleet aircraft id from the provider profile. */
     aircraftId: z.string().trim().max(60).optional(),
+    /** Round trips: the return leg; airports default to the outbound ones reversed. */
+    returnFrom: optionalAirport,
+    returnTo: optionalAirport,
+    returnAt: z
+      .string()
+      .trim()
+      .regex(/^(\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?)?$/, "Choose a return date")
+      .optional(),
   }),
 });
 
@@ -95,6 +105,23 @@ export const flatFleetEnquiryBody = z.object({
     .optional(),
   passengers,
   message: optionalMessage,
+  /** Round trips: the return leg (Return section of the form). */
+  returnFrom: optionalAirport,
+  returnTo: optionalAirport,
+  returnDate: z
+    .string()
+    .trim()
+    .regex(/^(\d{4}-\d{2}-\d{2})?$/, "Choose a return date")
+    .optional(),
+  returnTime: z
+    .string()
+    .trim()
+    .regex(/^(\d{2}:\d{2})?$/, "Enter a valid time")
+    .optional(),
+}).superRefine((v, ctx) => {
+  if (v.tripType !== "round-trip") return;
+  if (!v.returnDate) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Choose a return date" });
+  else if (v.returnDate < v.date) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Return date can't be before the departure date" });
 });
 
 export interface TripInput {
@@ -104,6 +131,9 @@ export interface TripInput {
   departAt: string;
   passengers: number;
   aircraftId?: string;
+  returnFrom?: string;
+  returnTo?: string;
+  returnAt?: string;
 }
 
 /** Normalised enquiry, independent of which request shape was used. */
@@ -169,6 +199,13 @@ export function parseEnquiryBody(raw: unknown): EnquiryInput {
         departAt: v.time ? `${v.date}T${v.time}` : v.date,
         passengers: v.passengers,
         aircraftId: v.aircraftId,
+        ...(v.tripType === "round-trip" && v.returnDate
+          ? {
+              returnFrom: v.returnFrom || v.to,
+              returnTo: v.returnTo || v.from,
+              returnAt: v.returnTime ? `${v.returnDate}T${v.returnTime}` : v.returnDate,
+            }
+          : {}),
       },
       isBot: Boolean(v.website),
     };

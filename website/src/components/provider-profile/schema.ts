@@ -44,4 +44,13 @@ export const fleetEnquirySchema = z.object({
     .optional()
     .or(z.literal("")),
   message: z.string().trim().max(5000).optional().or(z.literal("")),
+  /** Round trips: the return leg (airports default to the outbound ones reversed). */
+  returnFrom: z.string().trim().max(80).optional().or(z.literal("")),
+  returnTo: z.string().trim().max(80).optional().or(z.literal("")),
+  returnDate: z.string().trim().optional().or(z.literal("")),
+  returnTime: z.string().trim().max(5).optional().or(z.literal("")),
+}).superRefine((v, ctx) => {
+  if (v.tripType !== "round-trip") return;
+  if (!v.returnDate) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Choose a return date" });
+  else if (v.returnDate < v.date) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Return date can't be before the departure date" });
 });

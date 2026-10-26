@@ -43,7 +43,15 @@ export function toEnquiryDTO(e: EnquiryLike) {
     message: e.message ?? "",
     trip:
       e.type === "fleet" && t?.tripType
-        ? { tripType: t.tripType, from: t.from ?? "", to: t.to ?? "", departAt: t.departAt ?? "", passengers: t.passengers ?? 0, aircraft: t.aircraft ?? "" }
+        ? {
+            tripType: t.tripType,
+            from: t.from ?? "",
+            to: t.to ?? "",
+            departAt: t.departAt ?? "",
+            passengers: t.passengers ?? 0,
+            aircraft: t.aircraft ?? "",
+            ...(t.returnAt ? { returnFrom: t.returnFrom ?? t.to ?? "", returnTo: t.returnTo ?? t.from ?? "", returnAt: t.returnAt } : {}),
+          }
         : null,
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
@@ -120,6 +128,9 @@ export async function submitEnquiry(slug: string, input: EnquiryInput, user: Use
             departAt: input.trip.departAt,
             passengers: input.trip.passengers,
             aircraft,
+            ...(input.trip.tripType === "round-trip" && input.trip.returnAt
+              ? { returnFrom: input.trip.returnFrom || input.trip.to, returnTo: input.trip.returnTo || input.trip.from, returnAt: input.trip.returnAt }
+              : {}),
           },
         }
       : {}),

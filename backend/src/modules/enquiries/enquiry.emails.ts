@@ -16,6 +16,7 @@ export function providerEnquiryEmail(to: string, providerName: string, enquiry: 
   if (enquiry.trip) {
     const t = enquiry.trip;
     lines.push(["Aircraft", aircraft ?? ""], ["Trip", `${t.tripType}: ${t.from} → ${t.to}`], ["Departure", t.departAt], ["Passengers", String(t.passengers)]);
+    if (t.returnAt) lines.push(["Return", `${t.returnFrom ?? t.to} → ${t.returnTo ?? t.from}`], ["Return date", t.returnAt]);
   }
   const details = lines
     .filter(([, v]) => v)

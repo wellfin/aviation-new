@@ -17,6 +17,10 @@ export interface AdminEnquiry {
     from: string;
     to: string;
     departAt: string;
+    /** Round trips only. */
+    returnFrom?: string;
+    returnTo?: string;
+    returnAt?: string;
     passengers: number;
     aircraft: string;
   } | null;
