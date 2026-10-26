@@ -157,6 +157,8 @@ function rffsDetails(fireCategory: string) {
 
 /** How many listings an airport service list shows. */
 const LISTED = 3;
+/** Charter Operator lists show more listings. */
+const LISTED_CHARTER_OPERATOR = 6;
 const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
 
 /**
@@ -164,8 +166,8 @@ const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
  * panel takes that place; places still empty (no position set, or the placed listing doesn't serve this
  * airport) are filled with one Ultra Pro, one Pro and one Basic, then the rest by plan.
  */
-function pickListed(providers: Provider[]): Provider[] {
-  const slots: (Provider | undefined)[] = Array.from({ length: LISTED });
+function pickListed(providers: Provider[], count = LISTED): Provider[] {
+  const slots: (Provider | undefined)[] = Array.from({ length: count });
   const placed = providers.filter((p) => p.listingPosition);
   // Each takes its own place first; two listings given the same place share it in plan order (the
   // second takes the next free place).
@@ -182,8 +184,10 @@ function pickListed(providers: Provider[]): Provider[] {
   const byPlan = providers.filter((p) => !slots.includes(p)).sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]);
   const onePerPlan = (["ultra_pro", "pro", "basic"] as const).flatMap((t) => byPlan.find((p) => p.tier === t) ?? []);
   const fill = [...onePerPlan, ...byPlan.filter((p) => !onePerPlan.includes(p))];
-  for (let i = 0; i < LISTED; i++) if (slots[i] === undefined) slots[i] = fill.shift();
-  return slots.filter((p): p is Provider => p !== undefined);
+  for (let i = 0; i < count; i++) if (slots[i] === undefined) slots[i] = fill.shift();
+  const list = slots.filter((p): p is Provider => p !== undefined);
+  // With nothing placed, show the picked listings plan by plan (Ultra Pro, Pro, Basic).
+  return placed.length ? list : list.sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier]);
 }
 
 export default async function AirportPage({ params, searchParams }: PageProps<"/airports/[code]">) {
@@ -221,7 +225,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
 
   // Provider list (?service=): three listings, in the 1st / 2nd / 3rd positions set in the admin panel
   // (or one Ultra Pro, one Pro and one Basic when none is set), one under the other (Figma).
-  const shown = pickListed(selectedProviders);
+  const shown = pickListed(selectedProviders, service === "charter-operator" ? LISTED_CHARTER_OPERATOR : LISTED);
   const premiumProviders = shown;
   const basicProviders: Provider[] = [];
   const basicPages = Math.max(1, Math.ceil(basicProviders.length / BASIC_PAGE_SIZE));
