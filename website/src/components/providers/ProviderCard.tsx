@@ -11,7 +11,8 @@ import { FavoriteButton, ShareButton } from "./ProviderActions";
 /** Directory grid card (list view uses ProviderListRow). */
 export function ProviderCard({ provider }: { provider: Provider }) {
   const href = `/providers/${provider.slug}`;
-  const showRating = provider.tier !== "basic";
+  // Rating and reviews show on Ultra Pro listings only.
+  const showRating = provider.tier === "ultra_pro" && provider.rating > 0;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-[20px] border border-brand/10 bg-white shadow-soft transition hover:-translate-y-0.5 hover:shadow-card">

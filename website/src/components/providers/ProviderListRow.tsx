@@ -19,7 +19,8 @@ const pill = "inline-flex items-center rounded-full border-[0.755px] px-2.5 py-1
 export function ProviderListRow({ provider }: { provider: Provider }) {
   const href = `/providers/${provider.slug}`;
   const tier = TIER_PILL[provider.tier];
-  const showRating = provider.tier !== "basic" && provider.rating > 0;
+  // Rating and reviews show on Ultra Pro listings only.
+  const showRating = provider.tier === "ultra_pro" && provider.rating > 0;
 
   return (
     <article className="flex flex-col gap-4 rounded-[20px] bg-white px-4 py-5 shadow-[0_4px_12px_rgba(11,31,58,0.08),0_1px_2px_rgba(11,31,58,0.04)] transition hover:shadow-card sm:flex-row sm:items-center sm:py-[30px]">
