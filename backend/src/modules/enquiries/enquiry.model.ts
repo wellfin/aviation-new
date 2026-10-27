@@ -26,6 +26,7 @@ const enquirySchema = new Schema(
       returnFrom: { type: String, trim: true, maxlength: 80 },
       returnTo: { type: String, trim: true, maxlength: 80 },
       returnAt: { type: String, trim: true, maxlength: 40 },
+      returnPassengers: { type: Number, min: 1, max: 600 },
       /* Multi-leg trips: the legs after the first (from / to / departAt above). */
       legs: {
         type: [
@@ -34,6 +35,7 @@ const enquirySchema = new Schema(
             from: { type: String, trim: true, maxlength: 80 },
             to: { type: String, trim: true, maxlength: 80 },
             departAt: { type: String, trim: true, maxlength: 40 },
+            passengers: { type: Number, min: 1, max: 600 },
           },
         ],
         default: undefined,

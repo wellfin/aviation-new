@@ -49,6 +49,8 @@ export const fleetEnquirySchema = z.object({
   returnTo: z.string().trim().max(80).optional().or(z.literal("")),
   returnDate: z.string().trim().optional().or(z.literal("")),
   returnTime: z.string().trim().max(5).optional().or(z.literal("")),
+  /** Round trips: passengers on the return flight (defaults to the outbound count). */
+  returnPassengers: z.coerce.number().int().min(1, "At least 1 passenger").max(500).optional(),
   /** Multi-leg: the legs after the first, as JSON ([{ from, to, date, time }]). */
   legs: z.string().optional(),
 }).superRefine((v, ctx) => {

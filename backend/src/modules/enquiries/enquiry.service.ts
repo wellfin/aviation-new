@@ -50,8 +50,12 @@ export function toEnquiryDTO(e: EnquiryLike) {
             departAt: t.departAt ?? "",
             passengers: t.passengers ?? 0,
             aircraft: t.aircraft ?? "",
-            ...(t.returnAt ? { returnFrom: t.returnFrom ?? t.to ?? "", returnTo: t.returnTo ?? t.from ?? "", returnAt: t.returnAt } : {}),
-            ...(t.legs?.length ? { legs: t.legs.map((l) => ({ from: l.from ?? "", to: l.to ?? "", departAt: l.departAt ?? "" })) } : {}),
+            ...(t.returnAt
+              ? { returnFrom: t.returnFrom ?? t.to ?? "", returnTo: t.returnTo ?? t.from ?? "", returnAt: t.returnAt, returnPassengers: t.returnPassengers ?? t.passengers ?? 0 }
+              : {}),
+            ...(t.legs?.length
+              ? { legs: t.legs.map((l) => ({ from: l.from ?? "", to: l.to ?? "", departAt: l.departAt ?? "", passengers: l.passengers ?? t.passengers ?? 0 })) }
+              : {}),
           }
         : null,
     createdAt: e.createdAt.toISOString(),
@@ -130,7 +134,12 @@ export async function submitEnquiry(slug: string, input: EnquiryInput, user: Use
             passengers: input.trip.passengers,
             aircraft,
             ...(input.trip.tripType === "round-trip" && input.trip.returnAt
-              ? { returnFrom: input.trip.returnFrom || input.trip.to, returnTo: input.trip.returnTo || input.trip.from, returnAt: input.trip.returnAt }
+              ? {
+                  returnFrom: input.trip.returnFrom || input.trip.to,
+                  returnTo: input.trip.returnTo || input.trip.from,
+                  returnAt: input.trip.returnAt,
+                  returnPassengers: input.trip.returnPassengers ?? input.trip.passengers,
+                }
               : {}),
             ...(input.trip.tripType === "multi-leg" && input.trip.legs?.length ? { legs: input.trip.legs } : {}),
           },

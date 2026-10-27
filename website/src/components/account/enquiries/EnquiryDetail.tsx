@@ -130,11 +130,12 @@ function Detail({ id }: { id: string }) {
                       {e.trip.returnFrom} → {e.trip.returnTo}
                     </Row>
                     <Row label="Return">{e.trip.returnAt.replace("T", " at ")}</Row>
+                    <Row label="Return passengers">{e.trip.returnPassengers ?? e.trip.passengers}</Row>
                   </>
                 )}
                 {e.trip.legs?.map((l, i) => (
                   <Row key={i} label={`Leg ${i + 2}`}>
-                    {l.from} → {l.to} · {l.departAt.replace("T", " at ")}
+                    {l.from} → {l.to} · {l.departAt.replace("T", " at ")} · {l.passengers ?? e.trip?.passengers} pax
                   </Row>
                 ))}
                 <Row label="Passengers">{e.trip.passengers}</Row>

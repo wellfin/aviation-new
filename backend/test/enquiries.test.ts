@@ -362,9 +362,9 @@ describe("round trips", () => {
     expect(before.body.error.fieldErrors.returnDate).toMatch(/before the departure/i);
 
     const later = new Date(Date.now() + 35 * 86_400_000).toISOString().slice(0, 10);
-    expect((await post("/enquiries").send({ ...base, returnDate: later, returnTime: "18:00" })).status).toBe(201);
+    expect((await post("/enquiries").send({ ...base, returnDate: later, returnTime: "18:00", returnPassengers: "1" })).status).toBe(201);
     const saved = await Enquiry.findOne({ provider: provider._id }).lean();
-    expect(saved?.trip).toMatchObject({ tripType: "round-trip", from: "OMDB", to: "EGLL", returnFrom: "EGLL", returnTo: "OMDB", returnAt: `${later}T18:00` });
+    expect(saved?.trip).toMatchObject({ tripType: "round-trip", from: "OMDB", to: "EGLL", passengers: 6, returnFrom: "EGLL", returnTo: "OMDB", returnAt: `${later}T18:00`, returnPassengers: 1 });
   });
 });
 
@@ -375,12 +375,12 @@ describe("multi-leg trips", () => {
     const base = { ...uiFleet(provider.slug, aircraftId), tripType: "multi-leg", from: "VIDP", to: "VOGO" };
     expect((await post("/enquiries").send(base)).body.error.fieldErrors.legs).toMatch(/at least one more leg/i);
     const later = new Date(Date.now() + 33 * 86_400_000).toISOString().slice(0, 10);
-    const legsOk = JSON.stringify([{ from: "VOGO", to: "VIJP", date: later, time: "11:00" }]);
+    const legsOk = JSON.stringify([{ from: "VOGO", to: "VIJP", date: later, time: "11:00", passengers: 3 }]);
     const early = JSON.stringify([{ from: "VOGO", to: "VIJP", date: PAST_DAY }]);
     expect((await post("/enquiries").send({ ...base, legs: early })).body.error.fieldErrors.legs).toMatch(/previous leg/i);
     expect((await post("/enquiries").send({ ...base, legs: legsOk })).status).toBe(201);
     const saved = await Enquiry.findOne({ provider: provider._id }).lean();
-    expect(saved?.trip).toMatchObject({ tripType: "multi-leg", from: "VIDP", to: "VOGO", legs: [{ from: "VOGO", to: "VIJP", departAt: `${later}T11:00` }] });
+    expect(saved?.trip).toMatchObject({ tripType: "multi-leg", from: "VIDP", to: "VOGO", legs: [{ from: "VOGO", to: "VIJP", departAt: `${later}T11:00`, passengers: 3 }] });
   });
 });
 

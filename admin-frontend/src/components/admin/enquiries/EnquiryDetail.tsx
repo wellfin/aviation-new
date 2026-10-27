@@ -101,9 +101,10 @@ export function EnquiryDetail({ id }: { id: string }) {
                         ? [
                             { label: "Return route", value: `${trip.returnFrom ?? trip.to} → ${trip.returnTo ?? trip.from}` },
                             { label: "Return", value: formatDepart(trip.returnAt) },
+                            { label: "Return passengers", value: String(trip.returnPassengers ?? trip.passengers) },
                           ]
                         : []),
-                      ...(trip.legs ?? []).map((l, i) => ({ label: `Leg ${i + 2}`, value: `${l.from} → ${l.to} · ${formatDepart(l.departAt)}` })),
+                      ...(trip.legs ?? []).map((l, i) => ({ label: `Leg ${i + 2}`, value: `${l.from} → ${l.to} · ${formatDepart(l.departAt)} · ${l.passengers ?? trip.passengers} pax` })),
                       { label: "Aircraft", value: trip.aircraft },
                     ]
                   : []),

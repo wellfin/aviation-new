@@ -40,6 +40,36 @@ interface Leg {
   to: string;
   date: string;
   time: string;
+  /** Passengers on this leg; null while it follows the first leg's count. */
+  pax: number | null;
+}
+
+/** − n + passenger counter (1 to the aircraft's seats). `name` posts it with the form. */
+function PaxStepper({ id, name, value, max, onChange, label = "Passengers", error }: { id: string; name?: string; value: number; max: number; onChange: (n: number) => void; label?: string; error?: string }) {
+  const clamp = (n: number) => Math.min(max, Math.max(1, n));
+  return (
+    <div>
+      <Label htmlFor={id}>{label}</Label>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => onChange(clamp(value - 1))} aria-label={`Fewer passengers (${label})`} className="flex size-8 items-center justify-center rounded-lg bg-brand/8 text-brand hover:bg-brand/15">
+          <Minus className="size-3.5" />
+        </button>
+        <input
+          id={id}
+          name={name}
+          inputMode="numeric"
+          value={value}
+          onChange={(e) => onChange(clamp(Number(e.target.value.replace(/\D/g, "")) || 1))}
+          className="h-8 w-14 rounded-lg border border-line bg-white text-center text-sm font-bold text-ink outline-none focus:border-brand"
+        />
+        <button type="button" onClick={() => onChange(clamp(value + 1))} aria-label={`More passengers (${label})`} className="flex size-8 items-center justify-center rounded-lg bg-brand/8 text-brand hover:bg-brand/15">
+          <Plus className="size-3.5" />
+        </button>
+        <span className="text-xs text-subtle">max {max} seats</span>
+      </div>
+      <FieldError id={`${id}-error`} message={error} />
+    </div>
+  );
 }
 
 function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: string; aircraft: FleetAircraft; onDone: () => void }) {
@@ -50,15 +80,17 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
   const [to, setTo] = useState("");
   const [returnFrom, setReturnFrom] = useState<string | null>(null);
   const [returnTo, setReturnTo] = useState<string | null>(null);
+  // Return-leg passengers; null while it follows the outbound count.
+  const [returnPax, setReturnPax] = useState<number | null>(null);
   const roundTrip = trip === "round-trip";
   // Multi-leg: the legs after the first. A leg's "from" follows the previous leg's destination until edited.
-  const [legs, setLegs] = useState<Leg[]>([{ from: null, to: "", date: "", time: "" }]);
+  const [legs, setLegs] = useState<Leg[]>([{ from: null, to: "", date: "", time: "", pax: null }]);
   const multiLeg = trip === "multi-leg" && from.trim() !== "" && to.trim() !== "";
   const legFrom = (i: number): string => legs[i]?.from ?? (i === 0 ? to : legs[i - 1]?.to ?? "");
   const setLeg = (i: number, patch: Partial<Leg>) => setLegs((ls) => ls.map((l, j) => (j === i ? { ...l, ...patch } : l)));
   // An added leg left completely blank is ignored rather than rejected.
   const legsJson = JSON.stringify(
-    legs.map((l, i) => ({ from: legFrom(i), to: l.to, date: l.date, time: l.time })).filter((l, i) => i === 0 || l.to.trim() !== "" || l.date !== ""),
+    legs.map((l, i) => ({ from: legFrom(i), to: l.to, date: l.date, time: l.time, passengers: l.pax ?? pax })).filter((l, i) => i === 0 || l.to.trim() !== "" || l.date !== ""),
   );
   const otp = useEmailVerification();
   const { user } = useAuth();
@@ -115,6 +147,8 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
         <Input label="Departure Date *" name="date" id="fe-date" type="date" ref={minToday} error={errors.date} />
         <Input label="Departure Time" name="time" id="fe-time" type="time" error={errors.time} />
       </div>
+      {/* Passengers on the outbound flight (the return and each further leg have their own count). */}
+      <PaxStepper id="fe-pax" name="passengers" value={pax} max={aircraft.seats} onChange={setPax} error={errors.passengers} />
       {roundTrip && from.trim() !== "" && to.trim() !== "" && (
         // Round trip, once both airports are entered: the way back, from the destination to the departure airport unless changed.
         <fieldset className="rounded-xl border border-brand/15 bg-brand/4 p-4">
@@ -141,6 +175,9 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
             <Input label="Return Date *" name="returnDate" id="fe-return-date" type="date" ref={minToday} error={errors.returnDate} />
             <Input label="Return Time" name="returnTime" id="fe-return-time" type="time" error={errors.returnTime} />
           </div>
+          <div className="mt-4">
+            <PaxStepper id="fe-return-pax" name="returnPassengers" value={returnPax ?? pax} max={aircraft.seats} onChange={setReturnPax} error={errors.returnPassengers} />
+          </div>
         </fieldset>
       )}
       {multiLeg && (
@@ -163,13 +200,16 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
                 <Input label="Date *" id={`fe-leg-${i}-date`} type="date" ref={minToday} value={l.date} onChange={(e) => setLeg(i, { date: e.target.value })} />
                 <Input label="Time" id={`fe-leg-${i}-time`} type="time" value={l.time} onChange={(e) => setLeg(i, { time: e.target.value })} />
               </div>
+              <div className="mt-4">
+                <PaxStepper id={`fe-leg-${i}-pax`} value={l.pax ?? pax} max={aircraft.seats} onChange={(n) => setLeg(i, { pax: n })} />
+              </div>
             </fieldset>
           ))}
           <FieldError id="fe-legs-error" message={errors.legs} />
           {legs.length < 8 && legs[legs.length - 1]?.to.trim() && (
             <button
               type="button"
-              onClick={() => setLegs((ls) => [...ls, { from: null, to: "", date: "", time: "" }])}
+              onClick={() => setLegs((ls) => [...ls, { from: null, to: "", date: "", time: "", pax: null }])}
               className="self-start rounded-lg bg-brand/8 px-3.5 py-2 text-[13px] font-semibold text-brand hover:bg-brand/15"
             >
               + Add another leg
@@ -177,28 +217,6 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
           )}
         </div>
       )}
-      <div>
-        <Label htmlFor="fe-pax">Passengers</Label>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setPax((p) => Math.max(1, p - 1))} aria-label="Fewer passengers" className="flex size-8 items-center justify-center rounded-lg bg-brand/8 text-brand hover:bg-brand/15">
-            <Minus className="size-3.5" />
-          </button>
-          <input
-            id="fe-pax"
-            name="passengers"
-            inputMode="numeric"
-            value={pax}
-            onChange={(e) => setPax(Math.min(aircraft.seats, Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1)))}
-            className="h-8 w-14 rounded-lg border border-line text-center text-sm font-bold text-ink outline-none focus:border-brand"
-          />
-          <button type="button" onClick={() => setPax((p) => Math.min(aircraft.seats, p + 1))} aria-label="More passengers" className="flex size-8 items-center justify-center rounded-lg bg-brand/8 text-brand hover:bg-brand/15">
-            <Plus className="size-3.5" />
-          </button>
-          <span className="text-xs text-subtle">max {aircraft.seats} seats</span>
-        </div>
-        <FieldError id="fe-pax-error" message={errors.passengers} />
-      </div>
-
       <hr className="border-line" />
       <Step n={2}>Customer Contact Information</Step>
       <div className="grid gap-4 sm:grid-cols-2">

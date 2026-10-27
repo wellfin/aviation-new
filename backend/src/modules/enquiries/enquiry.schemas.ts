@@ -54,6 +54,7 @@ const extraLeg = z.object({
     .trim()
     .regex(/^(\d{2}:\d{2})?$/, "Enter a valid time")
     .optional(),
+  passengers: z.coerce.number().int().min(1).max(500).optional(),
 });
 /** The form sends its extra legs as a JSON string (FormData has no arrays). */
 const extraLegs = z.preprocess((v) => {
@@ -140,6 +141,8 @@ export const flatFleetEnquiryBody = z.object({
     .trim()
     .regex(/^(\d{2}:\d{2})?$/, "Enter a valid time")
     .optional(),
+  /** Round trips: passengers on the return flight (defaults to the outbound count). */
+  returnPassengers: passengers.optional(),
   /** Multi-leg: the legs after the first. */
   legs: extraLegs.optional(),
 }).superRefine((v, ctx) => {
@@ -171,7 +174,8 @@ export interface TripInput {
   returnFrom?: string;
   returnTo?: string;
   returnAt?: string;
-  legs?: { from: string; to: string; departAt: string }[];
+  returnPassengers?: number;
+  legs?: { from: string; to: string; departAt: string; passengers: number }[];
 }
 
 /** Normalised enquiry, independent of which request shape was used. */
@@ -242,10 +246,11 @@ export function parseEnquiryBody(raw: unknown): EnquiryInput {
               returnFrom: v.returnFrom || v.to,
               returnTo: v.returnTo || v.from,
               returnAt: v.returnTime ? `${v.returnDate}T${v.returnTime}` : v.returnDate,
+              returnPassengers: v.returnPassengers ?? v.passengers,
             }
           : {}),
         ...(v.tripType === "multi-leg" && v.legs?.length
-          ? { legs: v.legs.map((l) => ({ from: l.from, to: l.to, departAt: l.time ? `${l.date}T${l.time}` : l.date })) }
+          ? { legs: v.legs.map((l) => ({ from: l.from, to: l.to, departAt: l.time ? `${l.date}T${l.time}` : l.date, passengers: l.passengers ?? v.passengers })) }
           : {}),
       },
       isBot: Boolean(v.website),
