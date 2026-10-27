@@ -1,16 +1,16 @@
 import { Search } from "lucide-react";
+import { heroCopy } from "./hero-copy";
 import { toQuery, type DirectoryParams } from "./params";
 
 /** Navy hero with the provider search form (GET /directory, keeps active filters). */
 export function DirectoryHero({ params }: { params: DirectoryParams }) {
   const keep = toQuery(params);
+  const copy = heroCopy(params.category);
   return (
     <section className="bg-header-gradient mt-4 px-4 py-12 sm:px-6">
       <div className="mx-auto flex max-w-[1400px] flex-col items-center text-center">
-        <h1 className="text-[32px] leading-10 font-extrabold tracking-[-0.72px] text-white sm:text-[46px]">Aviation Services Directory</h1>
-        <p className="pt-3 text-base leading-6 font-semibold text-white/60 sm:text-2xl">
-          Browse 50,000+ verified aviation service providers across 180 countries.
-        </p>
+        <h1 className="text-[32px] leading-10 font-extrabold tracking-[-0.72px] text-white sm:text-[46px] sm:leading-[54px]">{copy.title}</h1>
+        <p className="max-w-[900px] pt-3 text-base leading-6 font-semibold text-white/60 sm:text-2xl sm:leading-8">{copy.subtitle}</p>
         <form action="/directory" role="search" className="mt-6 flex w-full max-w-[903px] flex-col gap-3 sm:flex-row">
           {(["category", "tier", "sort", "view"] as const).map((k) => (keep[k] ? <input key={k} type="hidden" name={k} value={keep[k]} /> : null))}
           <label className="relative flex-1">
