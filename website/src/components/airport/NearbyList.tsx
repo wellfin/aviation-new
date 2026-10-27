@@ -34,8 +34,11 @@ export function NearbyList({ results, radiusKm }: { results: NearbyAirport[]; ra
           </div>
           <Link
             href={`/airports/${a.icao.toLowerCase()}`}
+            // Opens the airport in a new browser tab, keeping this page open.
+            target="_blank"
+            rel="noopener noreferrer"
             className="shrink-0 rounded-xl bg-brand-gradient px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-110"
-            aria-label={`View ${a.name}`}
+            aria-label={`View ${a.name} (opens in a new tab)`}
           >
             View →
           </Link>
