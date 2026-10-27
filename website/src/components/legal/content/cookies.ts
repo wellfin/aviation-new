@@ -48,7 +48,7 @@ export const COOKIE_CATEGORIES: CookieCategory[] = [
 export const COOKIES_POLICY: LegalDoc = {
   crumb: "Cookies Policy",
   title: "Cookies Policy",
-  summary: "This policy explains what cookies we use, why we use them, and how you can manage your preferences.",
+  summary: "This document outlines the types of cookies used, the purposes behind the usage of those cookies, and ways of managing the cookies.",
   updated: "Last updated: 1 September 2026",
   tocTitle: "Contents",
   numberedHeadings: false,
@@ -56,7 +56,7 @@ export const COOKIES_POLICY: LegalDoc = {
     {
       type: "banner",
       title: "Manage Your Cookie Preferences",
-      text: "Customise which cookies you allow us to use. Essential cookies cannot be disabled as they are required for the site to work.",
+      text: "Customize the types of cookies used by the company. It is not possible to disable essential cookies since these cookies are needed for the operation of the website.",
       cta: { label: "Manage Preferences ↓", href: "#types-of-cookies" },
     },
   ],
@@ -67,11 +67,11 @@ export const COOKIES_POLICY: LegalDoc = {
       blocks: [
         {
           type: "p",
-          text: "Cookies are small text files placed on your device when you visit a website. They serve many functions: keeping you logged in, remembering your preferences, and helping us understand how you use our platform.",
+          text: "Cookies are small text files placed on your computer when visiting a website. They have several uses, including keeping you logged in, saving your preferences, and understanding how you interact with the website.",
         },
         {
           type: "p",
-          text: "Cookies are processed on the lawful basis of consent (for non-essential cookies) and legitimate interests / contract performance (for essential cookies) under GDPR Article 6.",
+          text: "Cookies are processed on the lawful basis of consent (for non-essential cookies) and legitimate interests/contract performance (for essential cookies) under GDPR Article 6.",
         },
       ],
     },
@@ -82,16 +82,16 @@ export const COOKIES_POLICY: LegalDoc = {
     },
     {
       id: "managing-cookies",
-      label: "Managing Cookies",
-      heading: "Managing Cookies in Your Browser",
+      label: "Manage Cookies",
+      heading: "Manage Cookies in Your Browser",
       blocks: [
         {
           type: "p",
-          text: "Your choices above are stored on this device and apply each time you visit. You can change them at any time. Most browsers also let you view, block or delete cookies from their settings; blocking essential cookies will prevent sign-in and some features from working.",
+          text: "The selections you make above are stored in your browser on this device and will apply each time you access the site. These settings can be altered at any time. Browsers usually also allow you to inspect, block, or delete cookies via the browser settings; blocking essential cookies will render sign-on and other functionalities unavailable.",
         },
         {
           type: "p",
-          text: "Session cookies are deleted when you close your browser. Persistent cookies remain for a set period — analytics cookies for up to 24 months and functional cookies for up to 12 months — unless you delete them sooner.",
+          text: "Session cookies will expire once your browser is closed, whereas persistent cookies will exist for a specified amount of time – analytics cookies for up to 24 months and functional cookies for up to 12 months, unless deleted sooner.",
         },
       ],
     },
@@ -102,12 +102,8 @@ export const COOKIES_POLICY: LegalDoc = {
         {
           type: "p",
           text: [
-            "For questions about our cookie usage, please contact ",
-            { text: "privacy@gasdirectory.aero", href: "mailto:privacy@gasdirectory.aero" },
-            " or see our ",
-            { text: "Privacy Policy", href: "/legal/privacy" },
-            " and ",
-            { text: "GDPR page", href: "/legal/gdpr" },
+            "For any inquiries regarding cookies and how we use them, please get in touch with us via ",
+            { text: "info@bookmyfbo.com", href: "mailto:info@bookmyfbo.com" },
             ".",
           ],
         },
