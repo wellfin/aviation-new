@@ -3,8 +3,7 @@ import type { LegalDoc } from "../types";
 export const GDPR_COMPLIANCE: LegalDoc = {
   crumb: "GDPR",
   title: "GDPR Compliance",
-  summary:
-    "Global Aviation Services Directory is committed to protecting your personal data and complying fully with the General Data Protection Regulation (GDPR).",
+  summary: "Book My FBO is committed to protecting your personal data and complying fully with the General Data Protection Regulation (GDPR).",
   updated: "Last updated: 1 September 2026",
   badge: "GDPR Compliant",
   tocTitle: "Contents",
@@ -12,19 +11,15 @@ export const GDPR_COMPLIANCE: LegalDoc = {
   sections: [
     {
       id: "overview",
-      label: "Overview",
+      label: "Introduction",
       blocks: [
         {
           type: "p",
-          text: "The General Data Protection Regulation (GDPR) is a regulation in EU law on data protection and privacy for all individuals within the European Union and the European Economic Area. It also addresses the transfer of personal data outside the EU and EEA areas.",
+          text: "The General Data Protection Regulation (GDPR) is a regulation of EU law about data protection and privacy for all individuals in the European Union and the European Economic Area. The regulation also deals with the transfer of personal data outside the EU and EEA jurisdictions.",
         },
         {
           type: "p",
-          text: 'Global Aviation Services Directory ("we", "our", "us") acts as both a Data Controller (for user account and registration data) and a Data Processor (for provider listing data submitted by business customers). This page explains your rights and our obligations under GDPR.',
-        },
-        {
-          type: "p",
-          text: ["Our Data Protection Officer can be contacted at ", { text: "dpo@gasdirectory.aero", href: "mailto:dpo@gasdirectory.aero" }, " for any GDPR-related enquiries."],
+          text: "Book My FBO serves as both a Data Controller (regarding user account and registration data) and a Data Processor (regarding business customer data for providers' listings). This document describes your rights and our responsibilities concerning GDPR.",
         },
       ],
     },
@@ -40,52 +35,55 @@ export const GDPR_COMPLIANCE: LegalDoc = {
             { title: "Right to Erasure (“Right to be Forgotten”)", text: "You may request deletion of your personal data subject to certain legal conditions." },
             { title: "Right to Restriction", text: "You may request that we restrict the processing of your personal data in certain circumstances." },
             { title: "Right to Data Portability", text: "You have the right to receive your personal data in a structured, machine-readable format." },
-            { title: "Right to Object", text: "You have the right to object to processing of your data for marketing or profiling purposes." },
-            { title: "Right to Withdraw Consent", text: "Where processing is based on consent, you may withdraw it at any time without affecting lawfulness of prior processing." },
+            { title: "Right to Object", text: "You have the right to object to the processing of your data for marketing or profiling purposes." },
+            {
+              title: "Right to Withdraw Consent",
+              text: "Where processing is based on consent, you may withdraw it at any time without affecting the lawfulness of prior processing.",
+            },
           ],
         },
         {
           type: "p",
           text: [
-            "To exercise any of these rights, please submit a Subject Access Request (SAR) via your account settings or email ",
-            { text: "dpo@gasdirectory.aero", href: "mailto:dpo@gasdirectory.aero" },
-            ". We will respond within 30 days.",
+            "To exercise any of these rights, please submit a Subject Access Request (SAR) via your account settings or email us at ",
+            { text: "info@bookmyfbo.com", href: "mailto:info@bookmyfbo.com" },
+            ".",
           ],
         },
       ],
     },
     {
       id: "data-we-collect",
-      label: "Data We Collect",
+      label: "The Data We Collect",
       blocks: [
-        { type: "p", text: "We collect only the data necessary to provide our services. Categories of data include:" },
+        { type: "p", text: "Only the data that is required to deliver our services will be collected. The data categories are as follows:" },
         {
           type: "list",
           items: [
-            "Identity data (name, username)",
-            "Contact data (email address, phone number)",
-            "Account data (password hash, preferences, subscription tier)",
-            "Usage data (pages visited, features used, session duration)",
+            "Identification data (name, username)",
+            "Contact information (email address, phone number)",
+            "Account data (password hash, preferences, subscription level)",
+            "Use data (pages accessed, features utilized, session duration)",
             "Technical data (IP address, browser type, device identifiers)",
-            "Payment data (processed by Stripe — we do not store card numbers)",
-            "Communication data (support tickets, enquiry forms)",
+            "Transaction data (Stripe handles transaction data and does not store any credit card information)",
+            "Communications data (support ticket and enquiry forms)",
           ],
         },
       ],
     },
     {
       id: "data-processing",
-      label: "Data Processing",
+      label: "Processing Your Personal Data",
       blocks: [
-        { type: "p", text: "We process your personal data on the following lawful bases under Article 6 GDPR:" },
+        { type: "p", text: "Your personal data is processed on the following legal grounds according to Article 6 GDPR:" },
         {
           type: "cards",
           columns: 2,
           items: [
-            { title: "Contract Performance", text: "Delivering subscription services, managing your account" },
-            { title: "Legitimate Interests", text: "Fraud prevention, service improvement, security monitoring" },
-            { title: "Legal Obligation", text: "Tax, accounting, anti-money laundering compliance" },
-            { title: "Consent", text: "Marketing communications, non-essential cookies, data sharing with partners" },
+            { title: "Contract performance", text: "Providing subscription services, managing accounts" },
+            { title: "Legitimate interests", text: "Preventing fraud, improving our services and security" },
+            { title: "Legal obligation", text: "Taxation, accounting, anti-money laundering compliance" },
+            { title: "Consent", text: "Marketing communication, non-essential cookies, data sharing with partners" },
           ],
         },
       ],
@@ -96,11 +94,7 @@ export const GDPR_COMPLIANCE: LegalDoc = {
       blocks: [
         {
           type: "p",
-          text: "Your data is stored on servers located within the European Economic Area (EEA), primarily in the United Kingdom and Ireland. All data at rest is encrypted using AES-256. Data in transit is protected using TLS 1.3.",
-        },
-        {
-          type: "p",
-          text: "We retain personal data only as long as necessary for the purpose it was collected, or as required by law. Typical retention periods: active account data — duration of account plus 3 years; payment records — 7 years (legal requirement); support communications — 2 years; anonymised analytics — indefinite.",
+          text: "We keep your personal data only for as long as it is necessary for its original purpose, or as dictated by law. Example retention periods: active user data, while the account exists + 3 years; payment information: 7 years (mandatory); support correspondence: 2 years; anonymized data analysis: indefinite period.",
         },
       ],
     },
@@ -110,16 +104,16 @@ export const GDPR_COMPLIANCE: LegalDoc = {
       blocks: [
         {
           type: "p",
-          text: "We do not sell your personal data. We share data only with trusted service providers under strict data processing agreements, and only to the extent necessary:",
+          text: "We do not sell your personal data. We disclose your personal data to only trustworthy service providers who enter into data processing agreements with us, and to the extent it is necessary for our operations:",
         },
         {
           type: "list",
           items: [
-            "Stripe — payment processing",
-            "Amazon Web Services — cloud infrastructure (EEA region)",
-            "Mailchimp — transactional email delivery",
-            "Cloudflare — security and CDN",
-            "Google Analytics — anonymised usage analytics (IP anonymisation enabled)",
+            "Stripe – payment processing",
+            "Amazon Web Services – cloud hosting (in EEA region)",
+            "Mailchimp – transactional email delivery",
+            "Cloudflare – security and CDN services",
+            "Google Analytics – anonymized usage analytics (IP anonymization enabled)",
           ],
         },
       ],
@@ -130,14 +124,14 @@ export const GDPR_COMPLIANCE: LegalDoc = {
       blocks: [
         {
           type: "p",
-          text: "Where we rely on consent as our lawful basis, we obtain clear, specific, and informed consent. You may withdraw consent at any time without penalty. Managing consent preferences is available from Account Settings → Privacy.",
+          text: "If our lawful basis for processing your personal information is consent, then we will seek and obtain your consent, which is clear, specific, and informed. You can revoke your consent at any time without any consequences.",
         },
         {
           type: "p",
           text: [
-            "For cookie consent, please see our ",
+            "Regarding cookie consent, please refer to our ",
             { text: "Cookies Policy", href: "/legal/cookies" },
-            ". For marketing communications, you may unsubscribe at any time via the link in our emails or by updating your notification settings.",
+            ". Unsubscribing from marketing communications is easy at any time by clicking the link contained in our emails or by adjusting your notification preferences.",
           ],
         },
       ],
@@ -146,19 +140,12 @@ export const GDPR_COMPLIANCE: LegalDoc = {
       id: "contact-us",
       label: "Contact Us",
       blocks: [
-        { type: "p", text: "For all data protection enquiries, subject access requests, or to exercise your rights, please contact our Data Protection Officer:" },
-        {
-          type: "address",
-          title: "Data Protection Officer",
-          lines: ["Global Aviation Services Directory Ltd", "Hangar 7, Aviation House, London W2 1RN, United Kingdom"],
-          email: "dpo@gasdirectory.aero",
-        },
         {
           type: "p",
           text: [
-            "You also have the right to lodge a complaint with the UK Information Commissioner’s Office (ICO) at ",
-            { text: "ico.org.uk", href: "https://ico.org.uk" },
-            " if you believe we have processed your data unlawfully.",
+            "For any queries regarding data protection or subject access requests, please contact ",
+            { text: "info@bookmyfbo.com", href: "mailto:info@bookmyfbo.com" },
+            ".",
           ],
         },
       ],
