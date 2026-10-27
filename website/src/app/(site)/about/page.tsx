@@ -11,7 +11,7 @@ import { CountUp } from "@/components/ui/CountUp";
 export const metadata: Metadata = {
   title: "About Us — The World's Most Trusted Aviation Directory",
   description:
-    "Founded in 2018 by aviation professionals, Global Aviation Services Directory connects pilots, operators and dispatchers with 20,000+ verified service providers in 180+ countries.",
+    "Established in 2025, Book My FBO connects aviation service providers with 2.4 million professionals who require their services every day.",
 };
 
 function SectionEyebrow({ children }: { children: string }) {
@@ -38,9 +38,9 @@ export default function AboutPage() {
                   The World&rsquo;s Most Trusted <span className="text-brand-gradient block">Aviation Directory</span>
                 </h1>
                 <p className="mt-6 max-w-[600px] text-base leading-7 text-white/70 sm:text-[17px] sm:leading-[30px]">
-                  Founded in 2018 by aviation professionals, Global Aviation Services Directory bridges the gap between aviation businesses and the 2.4
-                  million professionals who need them — every single day. From a single-pilot operator planning a first trip into a new region to an
-                  airline ops centre sourcing handling across a network, we make finding the right provider fast, reliable and verified.
+                  Established in 2025, Book My FBO connects aviation service providers with 2.4 million professionals who require their services every
+                  day. Whether you&rsquo;re an operator flying for the very first time in an unfamiliar region or an airline operations centre seeking to
+                  arrange handling services, we make it easy to find the right provider.
                 </p>
               </div>
               <div className="relative aspect-[672/360] overflow-hidden rounded-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
@@ -82,8 +82,8 @@ export default function AboutPage() {
             </span>
             <h2 className="mt-8 text-xl font-bold">Our Mission</h2>
             <p className="mt-4 text-[15px] leading-6 text-white/65">
-              To be the definitive global resource for aviation services — empowering every aviation professional, from single-pilot operators to
-              multinational airlines, to discover, connect, and transact with confidence anywhere in the world.
+              To become the premier international resource for aviation services, giving every aviation professional a place to discover, network,
+              and conduct business anywhere in the world.
             </p>
           </article>
           <article className="rounded-2xl border border-brand-cyan/10 bg-gradient-to-br from-navy-900 to-navy-950 p-8 text-white shadow-card sm:p-10">
@@ -92,8 +92,8 @@ export default function AboutPage() {
             </span>
             <h2 className="mt-8 text-xl font-bold">Our Vision</h2>
             <p className="mt-4 text-[15px] leading-6 text-white/65">
-              A world where every aviation professional, regardless of location, has instant access to verified, accurate, and comprehensive aviation
-              services data — making every flight safer, more efficient, and more commercially successful.
+              An international aviation world where every aviation professional can access verified, accurate, and complete aviation service
+              information at any time.
             </p>
           </article>
         </section>
@@ -104,7 +104,7 @@ export default function AboutPage() {
             Everything Aviation Professionals Need
           </h2>
           <p className="mx-auto mt-3 max-w-[440px] text-[15px] leading-6 text-muted">
-            From pre-flight planning to post-flight analysis — one platform covering every aspect of global aviation services.
+            From pre-flight planning to post-flight analysis, one platform covers every aspect of Book My FBO.
           </p>
           <ul className="mt-10 grid gap-5 text-left sm:grid-cols-2 lg:grid-cols-3">
             {CAPABILITIES.map((c) => (
@@ -137,7 +137,7 @@ export default function AboutPage() {
 
         <section className="pt-20 text-center" aria-labelledby="services-heading">
           <h2 id="services-heading" className="text-[26px] font-extrabold tracking-[-0.6px] text-ink sm:text-[30px]">
-            Every Aviation Service, One Platform
+            Find All Aviation Services on One Platform
           </h2>
           <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
             {SERVICE_CHIPS.map((s) => (
@@ -157,7 +157,7 @@ export default function AboutPage() {
           <h2 id="cta-heading" className="text-[26px] font-extrabold tracking-[-0.6px] text-ink">
             Ready to get started?
           </h2>
-          <p className="mt-3 text-[15px] text-muted">Join 2.4 million aviation professionals who rely on the Global Aviation Services Directory every day.</p>
+          <p className="mt-3 text-[15px] text-muted">Join 2.4 million aviation professionals who rely on Book My FBO every day.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <ButtonLink href="/signup" className="h-[50px] px-8 text-[15px]">
               Create Free Account →

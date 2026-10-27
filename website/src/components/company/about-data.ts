@@ -17,7 +17,7 @@ export const ABOUT_STATS: AboutStat[] = [
 ];
 
 export const CAPABILITIES = [
-  { emoji: "🔍", title: "Global Directory", text: "The world's largest searchable database of aviation service providers, updated in real time." },
+  { emoji: "🔍", title: "Global Aviation Directory", text: "The world's largest searchable database of aviation service providers, updated in real time." },
   { emoji: "🌤️", title: "Live Aviation Weather", text: "METAR and TAF data refreshed every 30 minutes from authoritative global sources." },
   { emoji: "⚠️", title: "NOTAM Intelligence", text: "Hourly NOTAM feeds from all ICAO contracting states with criticality flagging." },
   { emoji: "✈️", title: "Runway Diagrams", text: "Technical runway diagrams with surface data, ILS frequencies, and heading information." },
@@ -26,12 +26,12 @@ export const CAPABILITIES = [
 ] as const;
 
 export const WHY_CHOOSE_US = [
-  "Every provider listing is verified by our aviation data team and re-confirmed at least every 90 days.",
-  "Search by ICAO or IATA code and see every handler, FBO and supplier at an airport in seconds.",
-  "Live METAR, TAF and NOTAM data sits alongside provider listings, so planning happens in one place.",
-  "Coverage across 180+ countries, from major hubs to remote regional and private airfields.",
-  "Direct enquiries to providers with no booking fees or commission added to your quotes.",
-  "A 24/7 support team of former dispatchers, pilots and ground-ops specialists behind the platform.",
+  "Each of our provider entries is checked by our aviation data specialists and re-checked at least once every 90 days.",
+  "Find all handling, FBO, and suppliers at any airport instantly using the ICAO or IATA code search function.",
+  "METAR, TAF, and NOTAM data are always available next to each provider entry, making planning simple.",
+  "Service in 180+ countries, from busy international airports to smaller regional and even private ones.",
+  "Make direct contact with the providers with no booking fee or commission charged.",
+  "Professional 24/7 customer service from former dispatchers, pilots, and ground operations specialists.",
 ] as const;
 
 /** Service categories shown as chips; each links to the filtered directory. */
@@ -47,7 +47,7 @@ export const SERVICE_CHIPS: Array<{ label: string; href: string }> = [
   { label: "Charter Operators", href: "/directory?category=charter-operator" },
   { label: "Charter Brokers", href: "/directory?category=charter-broker" },
   { label: "Supervisory Agent", href: "/directory?category=supervisory-agent" },
-  { label: "Hotels", href: "/directory?q=hotel" },
+  { label: "Hotels", href: "/directory?category=hotels" },
   { label: "MRO", href: "/directory?category=mro" },
-  { label: "Other Services", href: "/directory" },
+  { label: "Other Services", href: "/directory?category=other-services" },
 ];
