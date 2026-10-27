@@ -3,7 +3,7 @@ import type { LegalDoc } from "../types";
 export const PRIVACY_POLICY: LegalDoc = {
   crumb: "Privacy Policy",
   title: "Privacy Policy",
-  summary: "Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.",
+  summary: "Your privacy matters to us. This document outlines our policies regarding collecting, processing, and storing your personal data.",
   updated: "Last updated: 1 September 2026",
   tocTitle: "Sections",
   numberedHeadings: true,
@@ -15,15 +15,7 @@ export const PRIVACY_POLICY: LegalDoc = {
       blocks: [
         {
           type: "p",
-          text: 'Global Aviation Services Directory Ltd ("we", "our", "us") is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, who we share it with, and your rights regarding that data.',
-        },
-        {
-          type: "p",
-          text: [
-            "This policy applies to all users of gasdirectory.aero and related subdomains. If you have questions, contact our Privacy Team at ",
-            { text: "privacy@gasdirectory.aero", href: "mailto:privacy@gasdirectory.aero" },
-            ".",
-          ],
+          text: "Book My FBO strives to keep your personal information safe. The following Privacy Policy sets out the types of information we collect, how we process your data, who we share it with, and your rights regarding your data.",
         },
       ],
     },
@@ -51,17 +43,17 @@ export const PRIVACY_POLICY: LegalDoc = {
           type: "p",
           text: "When you create an account, we collect your name, email address, password (stored as a secure hash), account type, and subscription details. This information is used to authenticate you, deliver services, and communicate regarding your account.",
         },
-        { type: "p", text: "You may update your account information at any time via Account Settings. Email address changes require re-verification." },
+        { type: "p", text: "You may update your account information at any time. Email address changes require re-verification." },
       ],
     },
     {
       id: "search-activity",
       label: "Search & Activity",
-      heading: "Search & Activity Information",
+      heading: "Search and Activity Information",
       blocks: [
         {
           type: "p",
-          text: "We log your search queries, pages viewed, features used, and interaction patterns to improve the Platform and personalise your experience. This data is anonymised for aggregate analytics purposes. You may disable personalisation from Account Settings → Privacy.",
+          text: "Your searches, pages you viewed, features used, and activity on the Platform are logged to enhance the Platform and customize your experience. The information is anonymized for aggregate analysis purposes.",
         },
       ],
     },
@@ -72,7 +64,7 @@ export const PRIVACY_POLICY: LegalDoc = {
         {
           type: "p",
           text: [
-            "We use cookies and similar tracking technologies to keep you signed in, remember your preferences and understand how the Platform is used. You can manage your preferences at any time via the Cookie Preference Centre. Full details are in our ",
+            "Cookies and other similar tracking technologies are used to maintain your login, save your preferences, and learn how the Platform is being used by you. You can change your preference at any time using the Cookie Preference Centre. For more information, refer to our ",
             { text: "Cookies Policy", href: "/legal/cookies" },
             ".",
           ],
@@ -81,11 +73,11 @@ export const PRIVACY_POLICY: LegalDoc = {
     },
     {
       id: "data-usage",
-      label: "Data Usage",
+      label: "Use of Personal Information",
       blocks: [
         {
           type: "p",
-          text: "We use your personal data to: provide and improve the Platform, process payments, send transactional communications (receipts, security alerts), send marketing communications (with your consent), comply with legal obligations, and prevent fraud and abuse.",
+          text: "Your personal information is used for the following purposes: to deliver and enhance our Platform, payment processing, transactional communication (receipts, security information), marketing communications (with your consent), compliance with legal requirements, and preventing fraudulent or abusive conduct.",
         },
       ],
     },
@@ -95,7 +87,7 @@ export const PRIVACY_POLICY: LegalDoc = {
       blocks: [
         {
           type: "p",
-          text: "We do not sell personal data. We share data only with verified service providers under data processing agreements: cloud infrastructure, payment processors, email delivery, analytics, and fraud prevention. No data is shared with advertising networks without explicit consent.",
+          text: "We do not sell any personal information. We will only disclose personal information to verified service providers who enter into data processing agreements with us, such as cloud storage, payment processors, email delivery services, analytics services, and fraud prevention. No personal information is disclosed to any advertising networks without express consent.",
         },
       ],
     },
@@ -105,7 +97,7 @@ export const PRIVACY_POLICY: LegalDoc = {
       blocks: [
         {
           type: "p",
-          text: "Active account data is retained for the duration of your account plus 3 years. Payment records are retained for 7 years. Support communications are retained for 2 years. Anonymised analytics data is retained indefinitely. You may request deletion of your personal data subject to legal retention requirements.",
+          text: "Active account information is kept for the duration of your account plus 3 years. Payment information is kept for 7 years. Support communications are kept for 2 years. Anonymous analytics information is kept forever.",
         },
       ],
     },
@@ -116,9 +108,9 @@ export const PRIVACY_POLICY: LegalDoc = {
         {
           type: "p",
           text: [
-            "Under GDPR and UK data protection law, you have rights to access, rectify, erase, restrict, and port your data, and to object to processing. See our ",
+            "You are entitled to certain rights regarding access, correction, erasure, restriction of processing, data portability, and objection to processing. For more information on these rights, see our ",
             { text: "GDPR page", href: "/legal/gdpr" },
-            " for full details on exercising these rights.",
+            ".",
           ],
         },
       ],
@@ -130,8 +122,8 @@ export const PRIVACY_POLICY: LegalDoc = {
         {
           type: "p",
           text: [
-            "We employ industry-standard security measures including AES-256 encryption at rest, TLS 1.3 in transit, multi-factor authentication, regular penetration testing, and 24/7 security monitoring. No security measure is 100% effective; please report any suspected security vulnerabilities to ",
-            { text: "security@gasdirectory.aero", href: "mailto:security@gasdirectory.aero" },
+            "We use industry-standard security procedures including AES-256 encryption, TLS 1.3 encryption, multi-factor authentication, regular penetration testing, and round-the-clock security monitoring. There is no such thing as foolproof security; please notify us if you become aware of any security issues at ",
+            { text: "info@bookmyfbo.com", href: "mailto:info@bookmyfbo.com" },
             ".",
           ],
         },
@@ -143,12 +135,7 @@ export const PRIVACY_POLICY: LegalDoc = {
       blocks: [
         {
           type: "p",
-          text: [
-            "For privacy enquiries: ",
-            { text: "privacy@gasdirectory.aero", href: "mailto:privacy@gasdirectory.aero" },
-            " | Data Protection Officer: ",
-            { text: "dpo@gasdirectory.aero", href: "mailto:dpo@gasdirectory.aero" },
-          ],
+          text: ["For privacy queries, contact us at ", { text: "info@bookmyfbo.com", href: "mailto:info@bookmyfbo.com" }, "."],
         },
         { type: "cta", label: "Contact Privacy Team", href: "/contact" },
       ],
