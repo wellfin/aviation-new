@@ -192,7 +192,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
               // Basic and Pro (Figma): one sponsored card of listings of the same kind, e.g. other charter operators.
               <RelatedProviders heading={sameKindHeading} providers={sameKind} sponsored />
             ) : (
-              <RelatedProviders heading={relatedHeading(provider)} providers={related} />
+              <RelatedProviders heading={relatedHeading(provider)} providers={related} sponsored />
             )}
           </aside>
         </div>
