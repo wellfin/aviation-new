@@ -15,7 +15,7 @@ const API_FEATURES = [
   { icon: KeyRound, title: "API key authentication", text: "Every request is authenticated with a per-environment key sent in the Authorization header." },
   { icon: FileJson, title: "JSON, CSV & XML", text: "REST endpoints return JSON; bulk exports are delivered as CSV, JSON or XML via secure download." },
   { icon: Gauge, title: "Rate limits by tier", text: "Licences include generous rate limits, with burst capacity and WebSocket streams for live feeds." },
-  { icon: ShieldCheck, title: "99.9% uptime SLA", text: "Enterprise licences carry an uptime SLA, versioned endpoints and 12 months' deprecation notice." },
+  { icon: ShieldCheck, title: "99.7% uptime SLA", text: "Enterprise licences carry an uptime SLA, versioned endpoints and 12 months' deprecation notice." },
 ] as const;
 
 export default function DataLicencePage() {
@@ -30,8 +30,8 @@ export default function DataLicencePage() {
                 Enterprise Aviation <span className="text-brand-gradient block">Data Licensing</span>
               </h1>
               <p className="mx-auto mt-6 max-w-[540px] text-base leading-7 text-white/65 sm:text-lg">
-                Power your aviation products and services with the world&rsquo;s most comprehensive and accurate aviation data. Trusted by airlines,
-                software companies, and government agencies globally.
+                Power your aviation products and services with the most comprehensive and accurate aviation data, trusted by airlines, software
+                companies, and government agencies across the world.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <ButtonLink href="#request-data" className="h-[52px] px-7 text-base">
@@ -62,10 +62,10 @@ export default function DataLicencePage() {
             Available Datasets
           </span>
           <h2 id="datasets-heading" className="mt-5 text-[26px] font-extrabold tracking-[-0.6px] text-ink sm:text-[30px]">
-            Aviation Data You Can Build On
+            Aviation Data, You Can Build On
           </h2>
           <p className="mx-auto mt-3 max-w-[500px] text-sm leading-5 text-muted">
-            All datasets are available via REST API and bulk export. Customise your licence to include only the data you need.
+            All datasets are accessible via REST API and bulk export. Customise your licence to use only the datasets that you need.
           </p>
           <ul className="mt-10 grid gap-5 text-left md:grid-cols-2 lg:grid-cols-3">
             {DATASETS.map((d) => (

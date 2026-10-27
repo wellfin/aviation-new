@@ -14,7 +14,7 @@ export const DATASETS: Dataset[] = [
     emoji: "🏢",
     name: "Airport Database",
     frequency: "Monthly",
-    description: "Complete global airport data including ICAO/IATA codes, coordinates, elevation, timezone, runway details, navaids, and communication frequencies.",
+    description: "Full list of airports worldwide with ICAO/IATA codes, coordinates, elevation, timezone, runway information, navaids, and communication frequencies.",
     endpoint: "GET /v1/airports/{icao}",
   },
   {
@@ -22,7 +22,7 @@ export const DATASETS: Dataset[] = [
     emoji: "🏭",
     name: "Provider Database",
     frequency: "Daily",
-    description: "Full service provider database with company details, service categories, airport coverage, contact information, and verified status.",
+    description: "Complete service provider database with company information, services, covered airports, contacts, and verification.",
     endpoint: "GET /v1/providers?airport={icao}",
   },
   {
@@ -38,7 +38,7 @@ export const DATASETS: Dataset[] = [
     emoji: "⚠️",
     name: "NOTAM Feed",
     frequency: "Hourly",
-    description: "Full NOTAM feeds from all ICAO NOF contracting states with parsed, structured data and criticality classification.",
+    description: "Full NOTAM feed of all ICAO NOF contracting states with parsed, structured data and criticality classification.",
     endpoint: "GET /v1/notams/{icao}",
   },
   {
@@ -46,7 +46,7 @@ export const DATASETS: Dataset[] = [
     emoji: "✈️",
     name: "Runway Database",
     frequency: "Quarterly",
-    description: "Technical runway data including designators, dimensions, surface type, ILS frequencies, lighting, and obstacle clearance data.",
+    description: "Technical runway database including designators, dimensions, surface type, ILS frequencies, lighting, and obstacle clearance data.",
     endpoint: "GET /v1/airports/{icao}/runways",
   },
   {
@@ -54,7 +54,7 @@ export const DATASETS: Dataset[] = [
     emoji: "📍",
     name: "Nearby Airports",
     frequency: "Monthly",
-    description: "Airports within a chosen radius of any airport or coordinate, with distance, bearing, and the FBOs and handlers available at each.",
+    description: "Airports within a specified radius from any airport or point with distance and bearing information, along with a list of FBOs and handlers.",
     endpoint: "GET /v1/airports/{icao}/nearby?radius={nm}",
   },
 ];
@@ -62,6 +62,6 @@ export const DATASETS: Dataset[] = [
 export const DATA_STATS = [
   { value: "40K+", label: "Airports indexed" },
   { value: "50K+", label: "Providers" },
-  { value: "180", label: "Countries" },
+  { value: "180+", label: "Countries" },
   { value: "99.7%", label: "Data accuracy" },
 ] as const;
