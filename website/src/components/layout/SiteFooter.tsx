@@ -101,14 +101,14 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col items-start gap-4 rounded-2xl border border-brand/20 bg-brand/8 p-6 md:flex-row md:items-center">
           <div className="flex-1">
-            <h4 className="text-base font-bold text-white">Aviation Intelligence Newsletter</h4>
+            <h4 className="text-base font-bold text-white">Aviation Intelligence</h4>
             <p className="pt-1 text-sm text-white/50">Weekly updates on new service providers, airport openings, and industry news.</p>
           </div>
           <NewsletterForm />
         </div>
 
         <div className="mt-10 border-t border-white/8 pt-6">
-          <p className="text-xs text-white/35">© {new Date().getFullYear()} Global Aviation Services Directory. All rights reserved.</p>
+          <p className="text-xs text-white/35">© {new Date().getFullYear()} Book My FBO Aviation Services Directory. All rights reserved.</p>
         </div>
       </div>
     </footer>

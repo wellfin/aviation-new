@@ -12,7 +12,7 @@ const poppins = Poppins({ variable: "--font-poppins-face", subsets: ["latin"], w
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Global Aviation Services Directory — Your Aviation Command Center",
+    default: "Book My FBO — Your Global Aviation Directory",
     template: "%s | Global Aviation Services Directory",
   },
   description:

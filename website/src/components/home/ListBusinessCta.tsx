@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-/** "List Your Aviation Business Today" provider acquisition banner. */
+/** "Get Listed for Free" provider acquisition banner. */
 export function ListBusinessCta() {
   return (
     <section aria-labelledby="list-business-heading" className="relative isolate overflow-hidden bg-[#001b45] text-white">
@@ -10,7 +10,7 @@ export function ListBusinessCta() {
       </div>
       <div className="container-site py-16 md:py-[100px]">
         <h2 id="list-business-heading" className="max-w-[780px] text-[34px] leading-tight font-bold tracking-[-0.5px] md:text-5xl md:leading-[58px]">
-          List Your Aviation Business Today
+          Get Listed for Free
         </h2>
         <p className="mt-6 max-w-[620px] text-base leading-[27px] text-white/80 md:pl-1">
           Join 50,000+ aviation businesses. Get discovered by pilots, operators, and aviation professionals worldwide.
