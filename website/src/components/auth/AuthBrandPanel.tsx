@@ -1,17 +1,16 @@
-import { Eyebrow } from "@/components/ui/Eyebrow";
 import { Logo } from "@/components/ui/Logo";
 
 const FEATURES = [
   { emoji: "✈️", text: "Discover airports, FBOs & handlers globally" },
-  { emoji: "⛽", text: "Compare fuel prices across 12,000+ airports" },
+  { emoji: "⛽", text: "Compare fuel prices across 20,000+ airports" },
   { emoji: "📋", text: "Live NOTAMs, METAR & TAF in one place" },
-  { emoji: "🏆", text: "List your business to 2.4M+ monthly visitors" },
+  { emoji: "🏆", text: "List your business to 1M+ monthly visitors" },
 ] as const;
 
 const STATS = [
   { value: "50K+", label: "Providers" },
-  { value: "180", label: "Countries" },
-  { value: "12K+", label: "Airports" },
+  { value: "180+", label: "Countries" },
+  { value: "20K+", label: "Airports" },
 ] as const;
 
 /** Glowing "radar blip" dots scattered over the panel (positions from the design, as % of the panel). */
@@ -23,7 +22,7 @@ const BLIPS = [
   { left: "80%", top: "32%", opacity: 0.69 },
 ] as const;
 
-/** Left-hand navy "Aviation Command Centre" panel shared by every auth screen (desktop only). */
+/** Left-hand navy brand panel shared by every auth screen (desktop only). */
 export function AuthBrandPanel() {
   return (
     <aside className="relative hidden overflow-hidden bg-[linear-gradient(157deg,#071423_8%,#0b1f3a_46%,#0e3060_92%)] text-white lg:flex lg:flex-col">
@@ -46,20 +45,15 @@ export function AuthBrandPanel() {
         <Logo size="lg" />
 
         <div className="flex flex-1 flex-col justify-center py-8">
-          <div>
-            <Eyebrow tone="light" className="border-brand-cyan/22 bg-brand-cyan/12">
-              Aviation Command Centre
-            </Eyebrow>
-          </div>
-          <h2 className="mt-6 text-4xl leading-[45px] font-extrabold tracking-[-0.72px]">
-            The World&apos;s Most
+          <h2 className="text-4xl leading-[45px] font-extrabold tracking-[-0.72px]">
+            The Most
             <br />
-            <span className="text-brand-gradient">Trusted Aviation</span>
+            <span className="text-brand-gradient">Comprehensive Aviation</span>
             <br />
             Directory
           </h2>
           <p className="mt-5 max-w-[640px] text-sm leading-[22.75px] text-white/60">
-            50,000+ verified service providers across 180 countries. Trusted by pilots, operators, and FBOs worldwide.
+            More than 50,000+ verified service providers across 180+ countries, trusted by pilots, operators, and FBOs around the globe.
           </p>
           <ul className="mt-8 space-y-3">
             {FEATURES.map((f) => (

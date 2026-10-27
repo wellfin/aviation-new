@@ -26,7 +26,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
   return (
     <>
-      <AuthHeading title="Welcome back 👋" subtitle="Sign in to your aviation command centre" />
+      <AuthHeading title="Welcome back 👋" subtitle="Sign in to your Book My FBO account" />
       <LoginForm next={firstParam(sp.next)} notice={notice} error={oauthError} />
       <AuthSwitch prompt="Don't have an account?" href="/signup" cta="Create free account" />
       <LoginDemoHint />
