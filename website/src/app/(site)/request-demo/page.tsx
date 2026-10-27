@@ -6,16 +6,16 @@ import { PageHero, PageShell } from "@/components/company/PageShell";
 export const metadata: Metadata = {
   title: "Request Your Demo",
   description:
-    "Book a personalised 30-minute demonstration of the Global Aviation Services Directory — provider search, aviation tools, analytics and the data licence API — tailored to your operation.",
+    "Request a personalized 30-minute demo of Book My FBO from one of our aviation experts — provider search, aviation tools, analytics and the data licence API — tailored to your unique needs.",
 };
 
 const INCLUDED = [
-  { emoji: "🗺️", title: "50,000+ Verified Providers", text: "Live walkthrough of the complete global directory" },
-  { emoji: "⚡", title: "Aviation Tools in Action", text: "Weather, NOTAMs, runway diagrams, and trip planning demonstrated" },
-  { emoji: "📊", title: "Analytics Dashboard", text: "See real-time provider analytics and market insights" },
-  { emoji: "🔗", title: "API Integration", text: "Technical overview of data licence and API endpoints" },
-  { emoji: "🛡️", title: "Enterprise Security", text: "Compliance, GDPR, and security posture explained" },
-  { emoji: "🎯", title: "Custom Setup", text: "Tailored demo focusing on your specific use case" },
+  { emoji: "🗺️", title: "50,000+ Providers Verified", text: "Live walkthrough of the complete global directory" },
+  { emoji: "⚡", title: "Aviation Solutions Live", text: "Demo of weather, NOTAM, runways, and trip planning services" },
+  { emoji: "📊", title: "Analytics Dashboard", text: "Real-time provider analytics and market intelligence" },
+  { emoji: "🔗", title: "API Integration", text: "Technical overview of the Data Licence & API integration process" },
+  { emoji: "🛡️", title: "Enterprise Security", text: "GDPR compliance and security posture demo" },
+  { emoji: "🎯", title: "Customized Demo", text: "Tailored demo of aviation solutions tailored to your unique use case" },
 ] as const;
 
 export default function RequestDemoPage() {
@@ -24,7 +24,7 @@ export default function RequestDemoPage() {
       hero={
         <PageHero
           title="Request Your Demo"
-          subtitle="Request a personalised 30-minute demonstration with one of our aviation specialists. We'll tailor the session to your specific requirements."
+          subtitle="Request a personalized 30-minute demo from one of our aviation experts. We will conduct the demo as per your unique needs."
           subtitleClassName="max-w-[480px]"
           crumbs={[{ label: "Home", href: "/" }, { label: "Company", href: "/about" }, { label: "Request Demo" }]}
         />
