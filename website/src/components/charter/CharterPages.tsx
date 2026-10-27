@@ -129,8 +129,7 @@ export async function CharterResultsPage({ kind, searchParams }: { kind: Charter
             <div className="space-y-[5px]">
               {result.items.map((provider, i) => (
                 <Fragment key={provider.id}>
-                  {/* The operator cards are drawn without the star line. */}
-                  <ProviderRow provider={provider} rating={!operators} />
+                  <ProviderRow provider={provider} />
                   {i === Math.min(AD_AFTER, result.items.length) - 1 && <SponsoredStrip ad={stripAd} className="my-2" />}
                 </Fragment>
               ))}

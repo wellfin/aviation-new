@@ -234,7 +234,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   const basicList = basicOnPage.length > 0 && (
     <div className="space-y-[5px]">
       {basicOnPage.map((p) => (
-        <ProviderRow key={p.slug} provider={p} rating={service !== "charter-operator"} />
+        <ProviderRow key={p.slug} provider={p} />
       ))}
     </div>
   );
@@ -252,7 +252,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
         {premiumProviders.length > 0 ? (
           <div className="space-y-[5px]">
             {premiumProviders.map((p) => (
-              <ProviderRow key={p.slug} provider={p} rating={service !== "charter-operator"} />
+              <ProviderRow key={p.slug} provider={p} />
             ))}
           </div>
         ) : basicList ? (
