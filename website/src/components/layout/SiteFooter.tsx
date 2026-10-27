@@ -66,7 +66,7 @@ export function SiteFooter() {
           <div className="col-span-2 md:col-span-4 lg:col-span-2">
             <Logo size="lg" />
             <p className="pt-4 text-sm leading-[23.8px] text-white/50 lg:max-w-[430px]">
-              The world&apos;s most comprehensive aviation services directory, trusted by pilots, operators, and aviation businesses globally.
+              The most extensive aviation services directory, trusted by pilots, operators, and aviation businesses worldwide.
             </p>
             <div className="flex gap-3 pt-5">
               {SOCIALS.map((s) => (
