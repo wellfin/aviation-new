@@ -53,7 +53,7 @@ export async function seedContent(): Promise<ContentSeedResult> {
     ),
     PricingPlan.bulkWrite(
       PRICING_SEED.map(({ id, ...p }, order) => ({
-        updateOne: { filter: { _id: id }, update: { $setOnInsert: { ...p, currency: "INR", active: true, order } }, upsert: true },
+        updateOne: { filter: { _id: id }, update: { $setOnInsert: { ...p, currency: "USD", active: true, order } }, upsert: true },
       })),
     ),
   ]);

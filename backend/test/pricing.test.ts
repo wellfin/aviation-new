@@ -50,7 +50,7 @@ describe("pricing — admin", () => {
     const { agent } = await signedInAgent("ADMIN", app);
     const c = await agent.put(admin("/enterprise")).send(plan({ razorpayPlanIds: { monthly: "plan_Mon12345", yearly: "plan_Year12345" } }));
     expect(c.status).toBe(201);
-    expect(c.body.data).toMatchObject({ id: "enterprise", currency: "INR", active: true, razorpayPlanIds: { monthly: "plan_Mon12345", yearly: "plan_Year12345" } });
+    expect(c.body.data).toMatchObject({ id: "enterprise", currency: "USD", active: true, razorpayPlanIds: { monthly: "plan_Mon12345", yearly: "plan_Year12345" } });
 
     const u = await agent.put(admin("/enterprise")).send(plan({ name: "Enterprise+" }));
     expect(u.status).toBe(200);
@@ -76,6 +76,6 @@ describe("pricing — admin", () => {
     await seedContent();
     expect(await getPlanForBilling("enterprise")).toBeNull();
     const pro = await getPlanForBilling("pro");
-    expect(pro).toMatchObject({ id: "pro", monthlyPrice: 5, yearlyPrice: 49, currency: "INR", active: true, razorpayPlanIds: { monthly: null, yearly: null } });
+    expect(pro).toMatchObject({ id: "pro", monthlyPrice: 5, yearlyPrice: 49, currency: "USD", active: true, razorpayPlanIds: { monthly: null, yearly: null } });
   });
 });

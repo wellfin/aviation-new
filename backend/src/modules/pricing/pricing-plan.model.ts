@@ -12,7 +12,7 @@ const pricingPlanSchema = new Schema(
     /** Price in major currency units; null means "contact us" (e.g. enterprise). */
     monthlyPrice: { type: Number, min: 0, default: null },
     yearlyPrice: { type: Number, min: 0, default: null },
-    currency: { type: String, required: true, uppercase: true, trim: true, minlength: 3, maxlength: 3, default: "INR" },
+    currency: { type: String, required: true, uppercase: true, trim: true, minlength: 3, maxlength: 3, default: "USD" },
     highlighted: { type: Boolean, default: false },
     features: { type: [String], default: [] },
     cta: { type: String, required: true, trim: true, maxlength: 60 },

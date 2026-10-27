@@ -31,7 +31,7 @@ function toValues(plan: AdminPlan | undefined, id: PlanId): PlanFormValues {
       tagline: "",
       monthlyPrice: "",
       yearlyPrice: "",
-      currency: "INR",
+      currency: "USD",
       highlighted: false,
       features: [],
       cta: "Get started",

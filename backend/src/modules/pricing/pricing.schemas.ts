@@ -22,7 +22,7 @@ export const upsertPlanBody = z.object({
     .trim()
     .toUpperCase()
     .regex(/^[A-Z]{3}$/, "Use a 3-letter currency code")
-    .default("INR"),
+    .default("USD"),
   highlighted: z.boolean().default(false),
   features: z.array(z.string().trim().min(1).max(200)).max(50).default([]),
   cta: z.string().trim().min(2).max(60),
