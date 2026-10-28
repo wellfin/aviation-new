@@ -70,7 +70,14 @@ export function ProviderRow({ provider: p, rating = true }: { provider: Provider
         style={p.logoHeight || p.logoWidth ? { height: p.logoHeight ?? 110, width: p.logoWidth ?? 380, maxWidth: "100%" } : undefined}
       >
         {p.logo ? (
-          <Image src={p.logo} alt={`${p.name} logo`} fill sizes="380px" className="object-contain object-left-top" />
+          <Image
+            src={p.logo}
+            alt={`${p.name} logo`}
+            fill
+            sizes="380px"
+            // A size set in the admin panel stretches the logo to fill it; otherwise it keeps its shape.
+            className={p.logoHeight || p.logoWidth ? "object-fill" : "object-contain object-left-top"}
+          />
         ) : (
           <span className="bg-brand-gradient flex size-[90px] items-center justify-center rounded-2xl text-3xl font-extrabold text-white sm:size-[110px] sm:text-4xl" aria-hidden>
             {p.name

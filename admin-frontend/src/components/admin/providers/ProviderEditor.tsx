@@ -1,10 +1,11 @@
 "use client";
 
 import { siteUrl } from "@/components/admin/news/site";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ExternalLink, Plus, Trash2 } from "lucide-react";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Card, EmptyState, ErrorPanel, StatusPill, formatDateTime } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Select, Textarea } from "@/components/ui/Field";
@@ -34,8 +35,30 @@ type Feedback = { status: "success" | "error"; message: string } | null;
 
 /** − value + control for a size in px (10 px a click, or type a number). Blank = the default size. */
 function PxStepper({ id, label, value, fallback, onChange, error }: { id: string; label: string; value: string; fallback: number; onChange: (v: string) => void; error?: string }) {
-  const n = Number(value) || fallback;
-  const step = (d: number) => onChange(String(Math.max(10, n + d)));
+  // Holding − / + repeats, speeding up the longer it's held. The latest value is kept in a ref so repeats build on it.
+  const current = useRef(Number(value) || fallback);
+  useEffect(() => {
+    current.current = Number(value) || fallback;
+  }, [value, fallback]);
+  const timer = useRef<number | null>(null);
+  const stop = () => {
+    if (timer.current !== null) window.clearTimeout(timer.current);
+    timer.current = null;
+  };
+  const bump = (by: number) => {
+    current.current = Math.max(10, Math.min(2000, current.current + by));
+    onChange(String(current.current));
+  };
+  const start = (dir: 1 | -1) => {
+    stop();
+    let ticks = 0;
+    const tick = () => {
+      bump(dir * (ticks < 8 ? 10 : ticks < 20 ? 20 : 50));
+      ticks += 1;
+      timer.current = window.setTimeout(tick, ticks === 1 ? 400 : ticks < 8 ? 120 : 60);
+    };
+    tick();
+  };
   const btn = "flex size-10 shrink-0 items-center justify-center rounded-xl border border-line text-lg font-bold text-ink transition hover:bg-surface";
   return (
     <div>
@@ -43,7 +66,20 @@ function PxStepper({ id, label, value, fallback, onChange, error }: { id: string
         {label}
       </label>
       <div className="flex items-center gap-2">
-        <button type="button" className={btn} onClick={() => step(-10)} aria-label={`Decrease ${label.toLowerCase()}`}>
+        <button type="button" className={btn} onPointerDown={(ev) => {
+            ev.preventDefault();
+            start(-1);
+          }}
+          onPointerUp={stop}
+          onPointerLeave={stop}
+          onPointerCancel={stop}
+          onKeyDown={(ev) => {
+            // Keyboard: one step per Enter / Space press.
+            if (ev.key === "Enter" || ev.key === " ") {
+              ev.preventDefault();
+              bump(-10);
+            }
+          }} aria-label={`Decrease ${label.toLowerCase()}`}>
           −
         </button>
         <div className="relative min-w-0 flex-1">
@@ -58,7 +94,20 @@ function PxStepper({ id, label, value, fallback, onChange, error }: { id: string
           />
           <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted">px</span>
         </div>
-        <button type="button" className={btn} onClick={() => step(10)} aria-label={`Increase ${label.toLowerCase()}`}>
+        <button type="button" className={btn} onPointerDown={(ev) => {
+            ev.preventDefault();
+            start(1);
+          }}
+          onPointerUp={stop}
+          onPointerLeave={stop}
+          onPointerCancel={stop}
+          onKeyDown={(ev) => {
+            // Keyboard: one step per Enter / Space press.
+            if (ev.key === "Enter" || ev.key === " ") {
+              ev.preventDefault();
+              bump(10);
+            }
+          }} aria-label={`Increase ${label.toLowerCase()}`}>
           +
         </button>
       </div>
@@ -275,7 +324,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
                     <div className="overflow-x-auto">
                       <div className="border border-dashed border-brand/40" style={{ width: Number(s.logoWidth) || 380, height: Number(s.logoHeight) || 110 }}>
                         {/* eslint-disable-next-line @next/next/no-img-element -- live preview of the chosen size */}
-                        <img src={siteUrl(s.logo)} alt="" className="size-full object-contain object-left-top" />
+                        <img src={siteUrl(s.logo)} alt="" className={cn("size-full", s.logoHeight || s.logoWidth ? "object-fill" : "object-contain object-left-top")} />
                       </div>
                     </div>
                   </div>
