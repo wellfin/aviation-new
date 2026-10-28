@@ -96,8 +96,8 @@ const providerSchema = new Schema(
     /* 1st, 2nd or 3rd place in airport service lists (staff). */
     listingPosition: { type: Number, min: 1, max: 3 },
     /* Logo box size on listing cards, in px (staff); unset = default 110 x 380. */
-    logoHeight: { type: Number, min: 30, max: 200 },
-    logoWidth: { type: Number, min: 60, max: 600 },
+    logoHeight: { type: Number, min: 10, max: 2000 },
+    logoWidth: { type: Number, min: 10, max: 2000 },
     /* Listings shown in this profile's "Related …" sidebar card, in order (staff). Empty = automatic. */
     relatedSlugs: { type: [String], default: undefined },
     ctaLabel: { type: String, trim: true, maxlength: 40 },

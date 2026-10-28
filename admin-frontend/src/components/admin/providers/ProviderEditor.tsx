@@ -32,9 +32,47 @@ import { formatBytes } from "./upload";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
 
-/** Logo size choices for listing cards, in px. */
-const LOGO_HEIGHTS = [40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 180, 200];
-const LOGO_WIDTHS = [120, 160, 200, 240, 280, 320, 380, 420, 480, 540, 600];
+/** − value + control for a size in px (10 px a click, or type a number). Blank = the default size. */
+function PxStepper({ id, label, value, fallback, onChange, error }: { id: string; label: string; value: string; fallback: number; onChange: (v: string) => void; error?: string }) {
+  const n = Number(value) || fallback;
+  const step = (d: number) => onChange(String(Math.max(10, n + d)));
+  const btn = "flex size-10 shrink-0 items-center justify-center rounded-xl border border-line text-lg font-bold text-ink transition hover:bg-surface";
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-xs font-semibold tracking-[0.6px] text-muted uppercase">
+        {label}
+      </label>
+      <div className="flex items-center gap-2">
+        <button type="button" className={btn} onClick={() => step(-10)} aria-label={`Decrease ${label.toLowerCase()}`}>
+          −
+        </button>
+        <div className="relative min-w-0 flex-1">
+          <input
+            id={id}
+            inputMode="numeric"
+            value={value}
+            placeholder={String(fallback)}
+            onChange={(ev) => onChange(ev.target.value.replace(/\D/g, "").slice(0, 4))}
+            aria-invalid={error ? true : undefined}
+            className="h-10 w-full rounded-xl border border-line bg-white pr-9 pl-3 text-center text-sm font-semibold outline-none focus:border-brand focus:ring-3 focus:ring-brand/15 aria-invalid:border-danger"
+          />
+          <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted">px</span>
+        </div>
+        <button type="button" className={btn} onClick={() => step(10)} aria-label={`Increase ${label.toLowerCase()}`}>
+          +
+        </button>
+      </div>
+      {value ? (
+        <button type="button" onClick={() => onChange("")} className="mt-1 text-xs font-semibold text-brand hover:underline">
+          Reset to default ({fallback} px)
+        </button>
+      ) : (
+        <p className="mt-1 text-xs text-muted">Default {fallback} px</p>
+      )}
+      {error && <p className="mt-1 text-xs text-danger">{error}</p>}
+    </div>
+  );
+}
 
 const SECTIONS = [
   ["basics", "Basics"],
@@ -225,33 +263,21 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
                 <UploadField id="logo" label="Logo" kind="image" value={s.logo} onChange={(v) => set("logo", v)} error={e("logo")} previewClassName="size-24" fit="contain" />
                 {/* Size of the logo on listing cards (airport lists, charter results, directory list). */}
                 <div className="grid grid-cols-2 gap-3">
-                  <Select label="Logo height" name="logoHeight" value={s.logoHeight} onChange={(ev) => set("logoHeight", ev.target.value)} error={e("logoHeight")}>
-                    <option value="">Default (110 px)</option>
-                    {LOGO_HEIGHTS.map((h) => (
-                      <option key={h} value={h}>
-                        {h} px
-                      </option>
-                    ))}
-                  </Select>
-                  <Select label="Logo width (max)" name="logoWidth" value={s.logoWidth} onChange={(ev) => set("logoWidth", ev.target.value)} error={e("logoWidth")}>
-                    <option value="">Default (380 px)</option>
-                    {LOGO_WIDTHS.map((w) => (
-                      <option key={w} value={w}>
-                        {w} px
-                      </option>
-                    ))}
-                  </Select>
+                  <PxStepper id="logoHeight" label="Logo height" value={s.logoHeight} fallback={110} onChange={(v) => set("logoHeight", v)} error={e("logoHeight")} />
+                  <PxStepper id="logoWidth" label="Logo width" value={s.logoWidth} fallback={380} onChange={(v) => set("logoWidth", v)} error={e("logoWidth")} />
                 </div>
                 {s.logo && (
+                  // Updates as the numbers change, before saving. The dashed box is the logo's space on the card.
                   <div className="rounded-xl border border-line bg-[#eaf7ff] p-3">
-                    <p className="mb-2 text-xs font-semibold tracking-[0.6px] text-muted uppercase">Preview on listing cards</p>
-                    {/* eslint-disable-next-line @next/next/no-img-element -- live preview of the chosen size */}
-                    <img
-                      src={siteUrl(s.logo)}
-                      alt=""
-                      style={{ height: Number(s.logoHeight) || 110, maxWidth: Number(s.logoWidth) || 380 }}
-                      className="w-auto max-w-full object-contain object-left"
-                    />
+                    <p className="mb-2 text-xs font-semibold tracking-[0.6px] text-muted uppercase">
+                      Preview on listing cards · {Number(s.logoWidth) || 380} × {Number(s.logoHeight) || 110} px
+                    </p>
+                    <div className="overflow-x-auto">
+                      <div className="border border-dashed border-brand/40" style={{ width: Number(s.logoWidth) || 380, height: Number(s.logoHeight) || 110 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- live preview of the chosen size */}
+                        <img src={siteUrl(s.logo)} alt="" className="size-full object-contain object-left-top" />
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

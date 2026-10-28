@@ -67,7 +67,7 @@ export function ProviderRow({ provider: p, rating = true }: { provider: Provider
       <div
         className={cn("relative w-full max-w-[380px]", !p.logoHeight && "h-[90px] sm:h-[110px]")}
         // Size set in the admin panel (Logo height / width), else the default box.
-        style={p.logoHeight || p.logoWidth ? { height: p.logoHeight ?? 110, maxWidth: p.logoWidth ?? 380 } : undefined}
+        style={p.logoHeight || p.logoWidth ? { height: p.logoHeight ?? 110, width: p.logoWidth ?? 380, maxWidth: "100%" } : undefined}
       >
         {p.logo ? (
           <Image src={p.logo} alt={`${p.name} logo`} fill sizes="380px" className="object-contain object-left-top" />

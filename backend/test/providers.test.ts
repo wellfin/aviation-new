@@ -362,7 +362,7 @@ describe("admin providers", () => {
     // Logo size on listing cards (px).
     expect((await agent.patch(adm(`/${id}`)).send({ logoHeight: 80, logoWidth: 240 })).status).toBe(200);
     expect(await Provider.findById(id).lean()).toMatchObject({ logoHeight: 80, logoWidth: 240 });
-    expect((await agent.patch(adm(`/${id}`)).send({ logoHeight: 500 })).status).toBe(422);
+    expect((await agent.patch(adm(`/${id}`)).send({ logoHeight: 5000 })).status).toBe(422);
     expect((await agent.patch(adm(`/${id}`)).send({ ctaUrl: "javascript:alert(1)" })).status).toBe(422);
     await agent.patch(adm(`/${id}`)).send({ ctaLabel: "", ctaUrl: "", ctaHidden: false });
     expect(await Provider.findById(id).lean()).toMatchObject({ ctaHidden: false });

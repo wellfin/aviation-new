@@ -173,8 +173,8 @@ const staffFields = {
   /** 1st, 2nd or 3rd place in airport service lists; null clears it. */
   listingPosition: z.number().int().min(1).max(3).nullable(),
   /** Logo box on listing cards, in px; null = default size. */
-  logoHeight: z.number().int().min(30).max(200).nullable(),
-  logoWidth: z.number().int().min(60).max(600).nullable(),
+  logoHeight: z.number().int().min(10).max(2000).nullable(),
+  logoWidth: z.number().int().min(10).max(2000).nullable(),
   /** Listings for the profile's "Related …" card, in order (slugs); empty = automatic. */
   relatedSlugs: z
     .array(
