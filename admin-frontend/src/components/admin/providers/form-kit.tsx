@@ -138,6 +138,7 @@ export function UploadField({
   error,
   hint,
   previewClassName = "aspect-video w-40",
+  fit = "cover",
 }: {
   id: string;
   label: string;
@@ -148,6 +149,8 @@ export function UploadField({
   error?: string;
   hint?: string;
   previewClassName?: string;
+  /** "contain" shows the whole image (logos) instead of cropping it. */
+  fit?: "cover" | "contain";
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -179,7 +182,7 @@ export function UploadField({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
         {kind === "image" && (
           <div className={cn("relative shrink-0 overflow-hidden rounded-xl border border-line bg-surface", previewClassName)}>
-            {value ? <Image src={siteUrl(value)} alt="" fill unoptimized sizes="160px" className="object-cover" /> : <span className="absolute inset-0 flex items-center justify-center text-xs text-subtle">No image</span>}
+            {value ? <Image src={siteUrl(value)} alt="" fill unoptimized sizes="160px" className={fit === "contain" ? "object-contain p-1.5" : "object-cover"} /> : <span className="absolute inset-0 flex items-center justify-center text-xs text-subtle">No image</span>}
           </div>
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-2">

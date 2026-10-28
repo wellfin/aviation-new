@@ -114,6 +114,8 @@ export interface Provider {
   locationsLabel?: string;
   ctaHidden?: boolean;
   listingPosition?: number;
+  logoHeight?: number;
+  logoWidth?: number;
   relatedSlugs?: string[];
   ctaLabel?: string;
   ctaUrl?: string;

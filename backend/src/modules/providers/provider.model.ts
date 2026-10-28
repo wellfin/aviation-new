@@ -95,6 +95,9 @@ const providerSchema = new Schema(
     ctaHidden: { type: Boolean, default: false },
     /* 1st, 2nd or 3rd place in airport service lists (staff). */
     listingPosition: { type: Number, min: 1, max: 3 },
+    /* Logo box size on listing cards, in px (staff); unset = default 110 x 380. */
+    logoHeight: { type: Number, min: 30, max: 200 },
+    logoWidth: { type: Number, min: 60, max: 600 },
     /* Listings shown in this profile's "Related …" sidebar card, in order (staff). Empty = automatic. */
     relatedSlugs: { type: [String], default: undefined },
     ctaLabel: { type: String, trim: true, maxlength: 40 },
@@ -196,6 +199,8 @@ export function toProviderDTO(p: ProviderLike, opts: { reviews?: ReviewDTO[] } =
     ...(p.locationsLabel ? { locationsLabel: p.locationsLabel } : {}),
     ...(p.ctaHidden ? { ctaHidden: true } : {}),
     ...(p.listingPosition ? { listingPosition: p.listingPosition } : {}),
+    ...(p.logoHeight ? { logoHeight: p.logoHeight } : {}),
+    ...(p.logoWidth ? { logoWidth: p.logoWidth } : {}),
     ...(p.relatedSlugs?.length ? { relatedSlugs: [...p.relatedSlugs] } : {}),
     ...(p.ctaLabel ? { ctaLabel: p.ctaLabel } : {}),
     ...(p.ctaUrl ? { ctaUrl: p.ctaUrl } : {}),

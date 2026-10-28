@@ -32,6 +32,10 @@ import { formatBytes } from "./upload";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
 
+/** Logo size choices for listing cards, in px. */
+const LOGO_HEIGHTS = [40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 180, 200];
+const LOGO_WIDTHS = [120, 160, 200, 240, 280, 320, 380, 420, 480, 540, 600];
+
 const SECTIONS = [
   ["basics", "Basics"],
   ["media", "Media"],
@@ -217,7 +221,40 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
 
           <FormSection id="media" title="Media" description="Upload PNG, JPG or WebP images, or paste a URL.">
             <Grid>
-              <UploadField id="logo" label="Logo" kind="image" value={s.logo} onChange={(v) => set("logo", v)} error={e("logo")} previewClassName="size-24" />
+              <div className="flex flex-col gap-3">
+                <UploadField id="logo" label="Logo" kind="image" value={s.logo} onChange={(v) => set("logo", v)} error={e("logo")} previewClassName="size-24" fit="contain" />
+                {/* Size of the logo on listing cards (airport lists, charter results, directory list). */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Select label="Logo height" name="logoHeight" value={s.logoHeight} onChange={(ev) => set("logoHeight", ev.target.value)} error={e("logoHeight")}>
+                    <option value="">Default (110 px)</option>
+                    {LOGO_HEIGHTS.map((h) => (
+                      <option key={h} value={h}>
+                        {h} px
+                      </option>
+                    ))}
+                  </Select>
+                  <Select label="Logo width (max)" name="logoWidth" value={s.logoWidth} onChange={(ev) => set("logoWidth", ev.target.value)} error={e("logoWidth")}>
+                    <option value="">Default (380 px)</option>
+                    {LOGO_WIDTHS.map((w) => (
+                      <option key={w} value={w}>
+                        {w} px
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                {s.logo && (
+                  <div className="rounded-xl border border-line bg-[#eaf7ff] p-3">
+                    <p className="mb-2 text-xs font-semibold tracking-[0.6px] text-muted uppercase">Preview on listing cards</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- live preview of the chosen size */}
+                    <img
+                      src={siteUrl(s.logo)}
+                      alt=""
+                      style={{ height: Number(s.logoHeight) || 110, maxWidth: Number(s.logoWidth) || 380 }}
+                      className="w-auto max-w-full object-contain object-left"
+                    />
+                  </div>
+                )}
+              </div>
               <UploadField id="coverImage" label="Cover image" kind="image" value={s.coverImage} onChange={(v) => set("coverImage", v)} error={e("coverImage")} />
             </Grid>
             <div>

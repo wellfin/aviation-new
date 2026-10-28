@@ -96,6 +96,8 @@ export const providerSchema = z.object({
   locationsLabel: text(60),
   ctaHidden: z.boolean(),
   listingPosition: z.number().int().min(1).max(3).nullable(),
+  logoHeight: z.number().int().min(30).max(200).nullable(),
+  logoWidth: z.number().int().min(60).max(600).nullable(),
   relatedSlugs: z.array(z.string()).max(8, "Up to 8 related listings"),
   ctaLabel: text(40),
   ctaUrl: linkUrl,
@@ -219,6 +221,9 @@ export interface ProviderFormState {
   locationsLabel: string;
   ctaHidden: boolean;
   listingPosition: "" | "1" | "2" | "3";
+  /** px as text; "" = default. */
+  logoHeight: string;
+  logoWidth: string;
   relatedSlugs: string[];
   ctaLabel: string;
   ctaUrl: string;
@@ -254,6 +259,8 @@ export function emptyProviderState(): ProviderFormState {
     locationsLabel: "",
     ctaHidden: false,
     listingPosition: "",
+    logoHeight: "",
+    logoWidth: "",
     relatedSlugs: [],
     ctaLabel: "",
     ctaUrl: "",
@@ -290,6 +297,8 @@ export function stateFromProvider(p: AdminProvider): ProviderFormState {
     locationsLabel: p.locationsLabel ?? "",
     ctaHidden: p.ctaHidden ?? false,
     listingPosition: p.listingPosition ? (String(p.listingPosition) as "1" | "2" | "3") : "",
+    logoHeight: p.logoHeight ? String(p.logoHeight) : "",
+    logoWidth: p.logoWidth ? String(p.logoWidth) : "",
     relatedSlugs: p.relatedSlugs ?? [],
     ctaLabel: p.ctaLabel ?? "",
     ctaUrl: p.ctaUrl ?? "",
@@ -341,6 +350,8 @@ export function rawPayload(s: ProviderFormState, mode: "create" | "edit"): Recor
     locationsLabel: s.locationsLabel,
     ctaHidden: s.ctaHidden,
     listingPosition: s.listingPosition ? Number(s.listingPosition) : null,
+    logoHeight: s.logoHeight ? Number(s.logoHeight) : null,
+    logoWidth: s.logoWidth ? Number(s.logoWidth) : null,
     relatedSlugs: s.relatedSlugs,
     ctaLabel: s.ctaLabel,
     ctaUrl: s.ctaUrl,

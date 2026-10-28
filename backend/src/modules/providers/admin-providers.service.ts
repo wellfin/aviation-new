@@ -124,7 +124,7 @@ function slugTaken(err: unknown): never {
 /** Staff-curated listing; may be published immediately and assigned to a provider account. */
 export async function adminCreateProvider(input: AdminCreateInput) {
   await assertActiveCategory(input.category);
-  const { ownerEmail, tier, verified, slug, status, ctaHidden, ctaLabel, ctaUrl, listingPosition, relatedSlugs, ...fields } = input;
+  const { ownerEmail, tier, verified, slug, status, ctaHidden, ctaLabel, ctaUrl, listingPosition, relatedSlugs, logoHeight, logoWidth, ...fields } = input;
   const create = () =>
     withTransaction(async (session) => {
       const doc = new Provider({
@@ -139,6 +139,8 @@ export async function adminCreateProvider(input: AdminCreateInput) {
         verified: verified ?? false,
         ctaHidden: ctaHidden ?? false,
         ...(listingPosition ? { listingPosition } : {}),
+        ...(logoHeight ? { logoHeight } : {}),
+        ...(logoWidth ? { logoWidth } : {}),
         ...(relatedSlugs?.length ? { relatedSlugs: await existingSlugs(relatedSlugs) } : {}),
         ...(ctaLabel ? { ctaLabel } : {}),
         ...(ctaUrl ? { ctaUrl } : {}),
@@ -160,7 +162,7 @@ export async function adminCreateProvider(input: AdminCreateInput) {
 
 export async function adminUpdateProvider(id: string, input: AdminUpdateInput) {
   if (input.category !== undefined) await assertActiveCategory(input.category);
-  const { ownerEmail, tier, verified, slug, ctaHidden, ctaLabel, ctaUrl, listingPosition, relatedSlugs, ...fields } = input;
+  const { ownerEmail, tier, verified, slug, ctaHidden, ctaLabel, ctaUrl, listingPosition, relatedSlugs, logoHeight, logoWidth, ...fields } = input;
   try {
     const doc = await withTransaction(async (session) => {
       const listing = await Provider.findById(id).session(session);
@@ -170,6 +172,8 @@ export async function adminUpdateProvider(id: string, input: AdminUpdateInput) {
       if (slug !== undefined) listing.slug = slug;
       if (ctaHidden !== undefined) listing.ctaHidden = ctaHidden;
       if (listingPosition !== undefined) listing.listingPosition = listingPosition ?? undefined;
+      if (logoHeight !== undefined) listing.logoHeight = logoHeight ?? undefined;
+      if (logoWidth !== undefined) listing.logoWidth = logoWidth ?? undefined;
       if (relatedSlugs !== undefined) listing.relatedSlugs = (await existingSlugs(relatedSlugs, listing.slug)) as typeof listing.relatedSlugs;
       if (ctaLabel !== undefined) listing.ctaLabel = ctaLabel || undefined;
       if (ctaUrl !== undefined) listing.ctaUrl = ctaUrl || undefined;

@@ -123,6 +123,9 @@ export interface Provider {
   socials: SocialLinks;
   locationsLabel?: string;
   /** The blue Ultra Pro listing button (admin panel); blank = "See More Details" to the profile. */
+  /** Logo box size on listing cards, in px (admin panel); unset = default. */
+  logoHeight?: number;
+  logoWidth?: number;
   /** Listings chosen in the admin panel for the profile's "Related …" card, in order; unset = automatic. */
   relatedSlugs?: string[];
   /** 1st, 2nd or 3rd place in airport service lists (admin panel); unset = not placed. */
