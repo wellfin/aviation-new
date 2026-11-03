@@ -54,7 +54,6 @@ const SOCIALS = [
   { label: "LinkedIn", href: "https://www.linkedin.com", text: "in" },
   { label: "Instagram", href: "https://www.instagram.com", icon: "/images/shared/instagram.svg" },
   { label: "Facebook", href: "https://www.facebook.com", text: "f" },
-  { label: "X", href: "https://x.com", text: "𝕏" },
 ];
 
 export function SiteFooter() {
