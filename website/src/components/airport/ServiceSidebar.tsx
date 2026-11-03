@@ -133,7 +133,7 @@ export function ServiceSidebar({
       <details className="group mt-2" open>
         <summary className="flex h-[46px] cursor-pointer list-none items-center justify-center gap-3 rounded-xl border-[0.755px] border-white/10 bg-navy-900 text-[13px] leading-[15px] font-bold text-white transition hover:bg-navy-800 [&::-webkit-details-marker]:hidden">
           View All
-          <Image src="/images/airport/view-all-arrow.svg" alt="" width={17} height={17} className="size-[17px]" />
+          <Image src="/images/airport/view-all-arrow.svg" alt="" width={17} height={17} className="size-[13px]" />
         </summary>
         <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-1">{MORE.map(renderItem)}</ul>
       </details>
