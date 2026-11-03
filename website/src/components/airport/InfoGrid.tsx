@@ -63,18 +63,18 @@ export function InfoGrid({
       </dl>
       {more && more.length > 0 && (
         <details className="group">
-          {/* Closed: square top, 48px down arrow (Figma 752:589). Open: blue bottom rule and a 61px arrow, drawn per `openBar`. */}
+          {/* Closed: square top and a small down arrow. Open: blue bottom rule and the open-state arrow, drawn per `openBar`. */}
           <summary className={cn("flex min-h-[75px] cursor-pointer list-none items-center justify-between gap-4 rounded-b-[18px] border-b-[0.61px] border-transparent bg-brand/41 px-5 py-2 text-ink transition hover:bg-brand/50 group-open:border-[#0073e7] lg:px-[45px] [&::-webkit-details-marker]:hidden", square ? "group-open:rounded-none" : "group-open:rounded-[20px]")}>
             <span className="text-base leading-5 font-bold md:text-xl">{moreLabel ?? "More Information"} (Click to expand)</span>
-            {/* The arrow artwork overhangs its 19px-tall slot's bottom edge, as in the design. */}
-            <span className="relative h-[19px] w-12 shrink-0 group-open:hidden" aria-hidden>
-              <Image src="/images/airport/expand-arrow.svg" alt="" width={48} height={23} className="absolute top-0 left-0 h-[22.7px] w-12 max-w-none" />
+            {/* Small arrow (half the design's size). */}
+            <span className="flex w-6 shrink-0 items-center group-open:hidden" aria-hidden>
+              <Image src="/images/airport/expand-arrow.svg" alt="" width={48} height={23} className="h-[11.4px] w-6 max-w-none" />
             </span>
-            <span className="relative hidden h-[19px] w-[61px] shrink-0 group-open:block" aria-hidden>
+            <span className="hidden w-6 shrink-0 items-center group-open:flex" aria-hidden>
               {square ? (
-                <Image src="/images/airport/expand-arrow-wide.svg" alt="" width={61} height={29} className="absolute top-0 left-0 h-[29.2px] w-[61px] max-w-none" />
+                <Image src="/images/airport/expand-arrow-wide.svg" alt="" width={61} height={29} className="h-[11.5px] w-6 max-w-none" />
               ) : (
-                <Image src="/images/airport/collapse-arrow.svg" alt="" width={61} height={23} className="absolute top-0 left-0 h-[22.9px] w-[61px] max-w-none" />
+                <Image src="/images/airport/collapse-arrow.svg" alt="" width={61} height={23} className="h-[9px] w-6 max-w-none" />
               )}
             </span>
           </summary>
