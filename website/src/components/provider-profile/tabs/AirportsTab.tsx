@@ -71,7 +71,8 @@ export function AirportsTab({ provider }: { provider: Provider }) {
       )}
 
       <Dialog open={open} onClose={() => setOpen(false)} title="Airport Coverage" subtitle={`${provider.name} · ${count}`} className="max-w-[720px]">
-        <ul className="grid max-h-[60vh] gap-2 overflow-y-auto sm:grid-cols-2">
+        {/* About six rows show; the rest scroll, with a visible scrollbar. */}
+        <ul className="grid max-h-[min(60vh,330px)] gap-2 overflow-y-scroll pr-2 [scrollbar-color:#2f80ed_#eef2f7] [scrollbar-width:thin] sm:grid-cols-2">
           {airports.map((a) => (
             <li key={a.icao}>
               <Link href={`/airports/${a.icao.toLowerCase()}`} className="flex items-center gap-2 rounded-xl border border-line px-3 py-2.5 text-sm transition hover:border-brand/40 hover:bg-brand/4">
