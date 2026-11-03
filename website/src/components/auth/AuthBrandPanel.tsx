@@ -13,15 +13,6 @@ const STATS = [
   { value: "20K+", label: "Airports" },
 ] as const;
 
-/** Glowing "radar blip" dots scattered over the panel (positions from the design, as % of the panel). */
-const BLIPS = [
-  { left: "20%", top: "38%", opacity: 1 },
-  { left: "55%", top: "25%", opacity: 0.82 },
-  { left: "72%", top: "55%", opacity: 0.61 },
-  { left: "35%", top: "65%", opacity: 0.94 },
-  { left: "80%", top: "32%", opacity: 0.69 },
-] as const;
-
 /** Left-hand navy brand panel shared by every auth screen (desktop only). */
 export function AuthBrandPanel() {
   return (
@@ -32,14 +23,6 @@ export function AuthBrandPanel() {
       />
       <div aria-hidden className="absolute -top-15 -left-15 size-[300px] rounded-full bg-[radial-gradient(circle,rgba(47,128,237,0.06)_0%,transparent_70%)]" />
       <div aria-hidden className="absolute top-[62%] left-[56%] size-[400px] rounded-full bg-[radial-gradient(circle,rgba(0,194,255,0.08)_0%,transparent_70%)]" />
-      {BLIPS.map((b) => (
-        <span
-          key={`${b.left}-${b.top}`}
-          aria-hidden
-          className="absolute size-2 rounded-full bg-brand-cyan shadow-[0_0_10px_rgba(0,194,255,0.7)] motion-safe:animate-pulse"
-          style={{ left: b.left, top: b.top, opacity: b.opacity }}
-        />
-      ))}
 
       <div className="relative flex flex-1 flex-col p-10">
         <Logo size="lg" />
