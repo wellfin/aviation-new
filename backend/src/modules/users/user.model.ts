@@ -1,7 +1,7 @@
 import { type HydratedDocument, type InferSchemaType, Schema, model } from "mongoose";
 import { ROLES } from "../rbac/permissions.js";
 
-export const ACCOUNT_SERVICES = ["pilot", "business", "charter", "airport"] as const;
+export const ACCOUNT_SERVICES = ["pilot", "business", "charter", "airport", "dispatcher", "student"] as const;
 
 const userSchema = new Schema(
   {

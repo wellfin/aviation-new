@@ -39,7 +39,7 @@ interface SignupInput {
   company?: string;
   country?: string;
   phone?: string;
-  /** What the account is for, e.g. "pilot", "business", "charter", "airport". */
+  /** What the account is for, e.g. "pilot", "dispatcher", "student", "business", "charter", "airport". */
   service?: string;
   /** Pricing plan selected before signing up (provider accounts). */
   plan?: string;

@@ -1,15 +1,21 @@
 import { z } from "zod";
 import { otpSchema, passwordSchema } from "@/lib/api/forms";
 
-/** Services a new member can pick on signup step 02; anything but "pilot" is a provider account. */
+/** Services a new member can pick on signup step 02; the individual ones are user accounts, the rest provider accounts. */
 export const SIGNUP_SERVICES = [
   { value: "pilot", label: "Pilot / Individual", emoji: null },
   { value: "business", label: "Aviation Business", emoji: "🏢" },
   { value: "charter", label: "Operator", emoji: "🛩️" },
   { value: "airport", label: "Airport Authority", emoji: "✈️" },
+  { value: "dispatcher", label: "Dispatcher", emoji: "🎧" },
+  { value: "student", label: "Student", emoji: "🎓" },
 ] as const;
 
 export type SignupService = (typeof SIGNUP_SERVICES)[number]["value"];
+
+/** Individual roles: a user account, company optional. */
+export const INDIVIDUAL_SERVICES: readonly SignupService[] = ["pilot", "dispatcher", "student"];
+export const isIndividual = (s: SignupService) => INDIVIDUAL_SERVICES.includes(s);
 
 const serviceValues = SIGNUP_SERVICES.map((s) => s.value) as [SignupService, ...SignupService[]];
 
@@ -27,7 +33,7 @@ export const signupDetailsSchema = z
     company: z.string().trim().max(120),
   })
   .superRefine((v, ctx) => {
-    if (v.service !== "pilot" && v.company.length < 2) {
+    if (!isIndividual(v.service) && v.company.length < 2) {
       ctx.addIssue({ code: "custom", path: ["company"], message: "Company name is required for business accounts" });
     }
   });

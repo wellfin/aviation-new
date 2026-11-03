@@ -15,7 +15,7 @@ import { useZodForm } from "@/lib/hooks/useZodForm";
 import { cn } from "@/lib/utils";
 import { AuthHeading } from "./AuthHeading";
 import { PasswordField, PasswordStrengthMeter } from "./PasswordField";
-import { SIGNUP_SERVICES, signupDetailsSchema, type SignupService } from "./schema";
+import { SIGNUP_SERVICES, isIndividual, signupDetailsSchema, type SignupService } from "./schema";
 import { AUTH_INPUT, AUTH_SUBMIT } from "./shared";
 import { SocialButtons } from "./SocialButtons";
 
@@ -84,7 +84,7 @@ export function SignupForm({ defaultService, plan }: { defaultService: SignupSer
       if (!basics) return;
       const payload: SignupPayload = {
         ...basics,
-        accountType: details.service === "pilot" ? "user" : "provider",
+        accountType: isIndividual(details.service) ? "user" : "provider",
         company: details.company || undefined,
         country: details.country,
         phone: details.phone ? `${dial.dial} ${details.phone}` : undefined,
@@ -270,7 +270,7 @@ export function SignupForm({ defaultService, plan }: { defaultService: SignupSer
 
           <div className="pt-[30px]">
             <Label htmlFor="company">
-              Company name{service === "pilot" && <span className="font-normal normal-case tracking-normal text-subtle"> (optional)</span>}
+              Company name{isIndividual(service) && <span className="font-normal normal-case tracking-normal text-subtle"> (optional)</span>}
             </Label>
             <Input
               id="company"
@@ -279,7 +279,7 @@ export function SignupForm({ defaultService, plan }: { defaultService: SignupSer
               placeholder="Enter Company Name"
               className={AUTH_INPUT}
               error={stepTwo.errors.company}
-              required={service !== "pilot"}
+              required={!isIndividual(service)}
             />
           </div>
 
