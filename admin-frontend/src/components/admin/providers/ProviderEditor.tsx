@@ -33,6 +33,9 @@ import { formatBytes } from "./upload";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
 
+/** 1 → "1st", 12 → "12th", 22 → "22nd". */
+const ordinal = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+
 /** − value + control for a size in px (10 px a click, or type a number). Blank = the default size. */
 function PxStepper({ id, label, value, fallback, onChange, error }: { id: string; label: string; value: string; fallback: number; onChange: (v: string) => void; error?: string }) {
   // Holding − / + repeats, speeding up the longer it's held. The latest value is kept in a ref so repeats build on it.
@@ -343,11 +346,13 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
           </FormSection>
 
           <FormSection id="listing-button" title="Airport listing & button" description="Where this listing appears in airport service lists, and the blue button on Ultra Pro listings. The button is optional — Pro and Basic listings never show it.">
-            <Select label="Position in airport lists" name="listingPosition" value={s.listingPosition} onChange={(ev) => set("listingPosition", ev.target.value as "" | "1" | "2" | "3")} error={e("listingPosition")} hint="Airport service lists show 3 listings. Placed listings show in this order; with none placed, one Ultra Pro, one Pro and one Basic show.">
+            <Select label="Position in airport lists" name="listingPosition" value={s.listingPosition} onChange={(ev) => set("listingPosition", ev.target.value)} error={e("listingPosition")} hint="Airport service lists show 6 listings a page: 1st – 6th on page 1, 7th – 12th on page 2, 13th – 18th on page 3. Unplaced listings fill the free places by plan.">
               <option value="">Not placed</option>
-              <option value="1">1st</option>
-              <option value="2">2nd</option>
-              <option value="3">3rd</option>
+              {Array.from({ length: 18 }, (_, i) => i + 1).map((n) => (
+                <option key={n} value={n}>
+                  {ordinal(n)} (page {Math.ceil(n / 6)})
+                </option>
+              ))}
             </Select>
             <label className="flex items-center gap-3 text-sm font-medium text-ink">
               <input type="checkbox" checked={!s.ctaHidden} onChange={(ev) => set("ctaHidden", !ev.target.checked)} className="size-4 accent-brand" />

@@ -155,18 +155,19 @@ function rffsDetails(fireCategory: string) {
   return { length: lengths[cat], vehicles: cat <= 5 ? 1 : cat <= 7 ? 2 : 3 };
 }
 
-/** How many listings an airport service list shows. */
-const LISTED = 3;
-/** Charter Operator lists show more listings. */
-const LISTED_CHARTER_OPERATOR = 6;
+/** Listings per page on an airport service list. */
+const LISTED = 6;
+/** Positions the admin panel can give (the first three pages). */
+const MAX_POSITION = 18;
 const TIER_ORDER = { ultra_pro: 0, pro: 1, basic: 2 } as const;
 
 /**
- * The three listings an airport service list shows. A listing given a position (1st, 2nd, 3rd) in the admin
- * panel takes that place; places still empty (no position set, or the placed listing doesn't serve this
- * airport) are filled with one Ultra Pro, one Pro and one Basic, then the rest by plan.
+ * An airport service list in order. A listing given a position (1st – 18th) in the admin panel takes that
+ * place; places still empty (no position set, or the placed listing doesn't serve this airport) are filled
+ * with one Ultra Pro, one Pro and one Basic, then the rest by plan. Gaps close up when there are fewer listings.
  */
-function pickListed(providers: Provider[], count = LISTED): Provider[] {
+function pickListed(providers: Provider[]): Provider[] {
+  const count = Math.max(providers.length, MAX_POSITION);
   const slots: (Provider | undefined)[] = Array.from({ length: count });
   const placed = providers.filter((p) => p.listingPosition);
   // Each takes its own place first; two listings given the same place share it in plan order (the
@@ -223,13 +224,13 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // Services and Nearby tabs end with the distance calculator, which spans the content and ad columns (Figma 752:7836).
   const showCalculator = !service && (tab === "services" || tab === "nearby");
 
-  // Provider list (?service=): three listings, in the 1st / 2nd / 3rd positions set in the admin panel
-  // (or one Ultra Pro, one Pro and one Basic when none is set), one under the other (Figma).
-  const shown = pickListed(selectedProviders, service === "charter-operator" ? LISTED_CHARTER_OPERATOR : LISTED);
-  const premiumProviders = shown;
+  // Provider list (?service=): six listings a page, in the positions set in the admin panel
+  // (or one Ultra Pro, one Pro and one Basic first when none is set), one under the other (Figma).
+  const ordered = pickListed(selectedProviders);
+  const listPages = Math.max(1, Math.ceil(ordered.length / LISTED));
+  const page = Math.min(listPages, Math.max(1, Number.parseInt(firstParam(sp.page) ?? "1", 10) || 1));
+  const premiumProviders = ordered.slice((page - 1) * LISTED, page * LISTED);
   const basicProviders: Provider[] = [];
-  const basicPages = Math.max(1, Math.ceil(basicProviders.length / BASIC_PAGE_SIZE));
-  const page = Math.min(basicPages, Math.max(1, Number.parseInt(firstParam(sp.page) ?? "1", 10) || 1));
   const basicOnPage = basicProviders.slice((page - 1) * BASIC_PAGE_SIZE, page * BASIC_PAGE_SIZE);
   const basicList = basicOnPage.length > 0 && (
     <div className="space-y-[5px]">
@@ -345,8 +346,8 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   const fillAd = "h-auto min-h-[400px] flex-1";
 
   // Without page links the lower list still keeps clear of the bottom banner.
-  const pagination = !providersLayout ? null : basicPages > 1 ? (
-    <Pagination page={page} totalPages={basicPages} basePath={`/airports/${canonical}`} params={{ service }} className="container-site pt-6 pb-[22px]" />
+  const pagination = !providersLayout ? null : listPages > 1 ? (
+    <Pagination page={page} totalPages={listPages} basePath={`/airports/${canonical}`} params={{ service }} className="container-site pt-6 pb-[22px]" />
   ) : basicBelow ? (
     <div className="h-10" aria-hidden />
   ) : null;

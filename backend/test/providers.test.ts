@@ -358,7 +358,7 @@ describe("admin providers", () => {
     expect(r.status).toBe(200);
     const saved = await Provider.findById(id).lean();
     expect(saved).toMatchObject({ ctaLabel: "Request a Quote", ctaUrl: "/contact", ctaHidden: true, listingPosition: 2 });
-    expect((await agent.patch(adm(`/${id}`)).send({ listingPosition: 4 })).status).toBe(422);
+    expect((await agent.patch(adm(`/${id}`)).send({ listingPosition: 19 })).status).toBe(422);
     // Logo size on listing cards (px).
     expect((await agent.patch(adm(`/${id}`)).send({ logoHeight: 80, logoWidth: 240 })).status).toBe(200);
     expect(await Provider.findById(id).lean()).toMatchObject({ logoHeight: 80, logoWidth: 240 });

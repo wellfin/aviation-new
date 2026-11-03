@@ -171,7 +171,7 @@ const staffFields = {
    * (blank = "See More Details" to the profile). */
   ctaHidden: z.boolean(),
   /** 1st, 2nd or 3rd place in airport service lists; null clears it. */
-  listingPosition: z.number().int().min(1).max(3).nullable(),
+  listingPosition: z.number().int().min(1).max(18).nullable(),
   /** Logo box on listing cards, in px; null = default size. */
   logoHeight: z.number().int().min(10).max(2000).nullable(),
   logoWidth: z.number().int().min(10).max(2000).nullable(),

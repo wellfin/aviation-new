@@ -94,7 +94,7 @@ const providerSchema = new Schema(
     /* The blue button on Ultra Pro listings; blank means "See More Details" linking to the profile. */
     ctaHidden: { type: Boolean, default: false },
     /* 1st, 2nd or 3rd place in airport service lists (staff). */
-    listingPosition: { type: Number, min: 1, max: 3 },
+    listingPosition: { type: Number, min: 1, max: 18 },
     /* Logo box size on listing cards, in px (staff); unset = default 110 x 380. */
     logoHeight: { type: Number, min: 10, max: 2000 },
     logoWidth: { type: Number, min: 10, max: 2000 },

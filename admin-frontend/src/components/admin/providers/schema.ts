@@ -95,7 +95,7 @@ export const providerSchema = z.object({
   socials: z.object({ linkedin: httpsUrl, instagram: httpsUrl, facebook: httpsUrl, x: httpsUrl }),
   locationsLabel: text(60),
   ctaHidden: z.boolean(),
-  listingPosition: z.number().int().min(1).max(3).nullable(),
+  listingPosition: z.number().int().min(1).max(18).nullable(),
   logoHeight: z.number().int().min(10, "At least 10 px").max(2000, "At most 2000 px").nullable(),
   logoWidth: z.number().int().min(10, "At least 10 px").max(2000, "At most 2000 px").nullable(),
   relatedSlugs: z.array(z.string()).max(8, "Up to 8 related listings"),
@@ -220,7 +220,8 @@ export interface ProviderFormState {
   socials: { linkedin: string; instagram: string; facebook: string; x: string };
   locationsLabel: string;
   ctaHidden: boolean;
-  listingPosition: "" | "1" | "2" | "3";
+  /** "1" – "18" as text; "" = not placed. */
+  listingPosition: string;
   /** px as text; "" = default. */
   logoHeight: string;
   logoWidth: string;
@@ -296,7 +297,7 @@ export function stateFromProvider(p: AdminProvider): ProviderFormState {
     socials: { linkedin: p.socials.linkedin ?? "", instagram: p.socials.instagram ?? "", facebook: p.socials.facebook ?? "", x: p.socials.x ?? "" },
     locationsLabel: p.locationsLabel ?? "",
     ctaHidden: p.ctaHidden ?? false,
-    listingPosition: p.listingPosition ? (String(p.listingPosition) as "1" | "2" | "3") : "",
+    listingPosition: p.listingPosition ? String(p.listingPosition) : "",
     logoHeight: p.logoHeight ? String(p.logoHeight) : "",
     logoWidth: p.logoWidth ? String(p.logoWidth) : "",
     relatedSlugs: p.relatedSlugs ?? [],
