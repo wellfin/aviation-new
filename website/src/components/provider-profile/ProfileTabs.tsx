@@ -17,7 +17,7 @@ export function ProfileTabs({ tabs, active, basePath, premiumLabel }: { tabs: Ta
                 aria-current={current ? "page" : undefined}
                 className={cn(
                   "flex h-[37px] items-center justify-center gap-1.5 rounded-[24px] px-5 text-sm font-semibold whitespace-nowrap text-white transition",
-                  current ? "bg-brand-gradient" : "hover:bg-white/10",
+                  current ? "bg-brand-gradient" : "hover:bg-brand-gradient",
                 )}
               >
                 {t.label}
