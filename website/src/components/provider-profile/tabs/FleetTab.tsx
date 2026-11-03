@@ -17,7 +17,7 @@ import { useEmailVerification } from "@/components/contact/useEmailVerification"
 import { useAuth } from "@/lib/auth/auth-context";
 import { fleetEnquirySchema } from "../schema";
 import { CARD_TITLE } from "../styles";
-import { minToday } from "@/lib/dates";
+import { minToday, todayIso } from "@/lib/dates";
 
 const TRIP_TYPES = [
   { value: "one-way", label: "One Way" },
@@ -72,6 +72,14 @@ function PaxStepper({ id, name, value, max, onChange, label = "Passengers", erro
   );
 }
 
+/** Ref callback for a date input: no day before today or before `after` (YYYY-MM-DD). */
+const minDate = (after: string) => (el: HTMLInputElement | null) => {
+  if (el) {
+    const today = todayIso();
+    el.min = after > today ? after : today;
+  }
+};
+
 function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: string; aircraft: FleetAircraft; onDone: () => void }) {
   const [trip, setTrip] = useState<(typeof TRIP_TYPES)[number]["value"]>("one-way");
   const [pax, setPax] = useState(2);
@@ -82,6 +90,9 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
   const [returnTo, setReturnTo] = useState<string | null>(null);
   // Return-leg passengers; null while it follows the outbound count.
   const [returnPax, setReturnPax] = useState<number | null>(null);
+  // Dates: the return, and each further leg, can't be earlier than the flight before it.
+  const [date, setDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
   const roundTrip = trip === "round-trip";
   // Multi-leg: the legs after the first. A leg's "from" follows the previous leg's destination until edited.
   const [legs, setLegs] = useState<Leg[]>([{ from: null, to: "", date: "", time: "", pax: null }]);
@@ -144,7 +155,22 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
       <div className="grid gap-4 sm:grid-cols-2">
         <Input label="Departure Airport *" name="from" id="fe-from" placeholder="e.g. EGLL / Heathrow" value={from} onChange={(e) => setFrom(e.target.value)} error={errors.from} />
         <Input label="Destination Airport *" name="to" id="fe-to" placeholder="e.g. OMDB / Dubai" value={to} onChange={(e) => setTo(e.target.value)} error={errors.to} />
-        <Input label="Departure Date *" name="date" id="fe-date" type="date" ref={minToday} error={errors.date} />
+        <Input
+          label="Departure Date *"
+          name="date"
+          id="fe-date"
+          type="date"
+          ref={minToday}
+          value={date}
+          onChange={(e) => {
+            const d = e.target.value;
+            setDate(d);
+            // A return or leg date now earlier than the departure is cleared.
+            if (returnDate && d && returnDate < d) setReturnDate("");
+            if (d) setLegs((ls) => ls.map((l) => (l.date && l.date < d ? { ...l, date: "" } : l)));
+          }}
+          error={errors.date}
+        />
         <Input label="Departure Time" name="time" id="fe-time" type="time" error={errors.time} />
       </div>
       {/* Passengers on the outbound flight (the return and each further leg have their own count). */}
@@ -172,7 +198,16 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
               onChange={(e) => setReturnTo(e.target.value)}
               error={errors.returnTo}
             />
-            <Input label="Return Date *" name="returnDate" id="fe-return-date" type="date" ref={minToday} error={errors.returnDate} />
+            <Input
+              label="Return Date *"
+              name="returnDate"
+              id="fe-return-date"
+              type="date"
+              ref={minDate(date)}
+              value={returnDate}
+              onChange={(e) => setReturnDate(e.target.value)}
+              error={errors.returnDate}
+            />
             <Input label="Return Time" name="returnTime" id="fe-return-time" type="time" error={errors.returnTime} />
           </div>
           <div className="mt-4">
@@ -197,7 +232,18 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input label="From" id={`fe-leg-${i}-from`} placeholder="e.g. VOGO / Goa" value={legFrom(i)} onChange={(e) => setLeg(i, { from: e.target.value })} />
                 <Input label="To *" id={`fe-leg-${i}-to`} placeholder="e.g. VIJP / Jaipur" value={l.to} onChange={(e) => setLeg(i, { to: e.target.value })} />
-                <Input label="Date *" id={`fe-leg-${i}-date`} type="date" ref={minToday} value={l.date} onChange={(e) => setLeg(i, { date: e.target.value })} />
+                <Input
+                  label="Date *"
+                  id={`fe-leg-${i}-date`}
+                  type="date"
+                  ref={minDate(legs.slice(0, i).reduce((d, x) => (x.date > d ? x.date : d), date))}
+                  value={l.date}
+                  onChange={(e) => {
+                    const d = e.target.value;
+                    // Later legs dated before this one are cleared.
+                    setLegs((ls) => ls.map((x, j) => (j === i ? { ...x, date: d } : j > i && x.date && d && x.date < d ? { ...x, date: "" } : x)));
+                  }}
+                />
                 <Input label="Time" id={`fe-leg-${i}-time`} type="time" value={l.time} onChange={(e) => setLeg(i, { time: e.target.value })} />
               </div>
               <div className="mt-4">
