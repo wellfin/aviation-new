@@ -24,7 +24,8 @@ export const metadata: Metadata = {
     "Browse verified FBOs, ground handlers, trip support, fuel suppliers, caterers, charter operators and more across 180 countries. Filter by service, tier and rating.",
 };
 
-const PAGE_SIZE = 9;
+/** Listings per page: two rows of three cards in the grid, five rows in the list. */
+const PAGE_SIZE = { grid: 6, list: 5 } as const;
 /** The sponsored strip sits after the first row of grid results. */
 const STRIP_AFTER = 3;
 
@@ -38,7 +39,7 @@ export default async function DirectoryPage({ searchParams }: PageProps<"/direct
       tier: params.tier,
       sort: params.sort,
       page: params.page,
-      pageSize: PAGE_SIZE,
+      pageSize: PAGE_SIZE[params.view],
     }),
     getAdvertisement("header-banner"),
     getAdvertisement("sponsored-strip"),
