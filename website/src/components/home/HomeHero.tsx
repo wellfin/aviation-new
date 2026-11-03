@@ -29,7 +29,7 @@ export function HomeHero() {
         <h1 className="max-w-[820px] text-[38px] leading-[46px] font-extrabold tracking-[-1.5px] sm:text-5xl sm:leading-[60px] md:text-[60px] md:leading-[75px]">
           Your Global Aviation Directory
         </h1>
-        <p className="pt-3 text-base leading-[25.6px] text-white/72">Search Airports, FBOs, Handlers, and Aviation Services Information Worldwide</p>
+        <p className="pt-3 text-base leading-[25.6px] tracking-[0.6px] text-white/72">Search Airports, FBOs, Handlers, and Aviation Services Information Worldwide</p>
         <ul className="flex flex-wrap justify-center gap-x-4 gap-y-2 pt-5">
           {HIGHLIGHTS.map((h) => (
             <li key={h.label} className="flex items-center gap-1.5 text-sm font-medium text-white/75">
