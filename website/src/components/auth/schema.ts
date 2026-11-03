@@ -5,7 +5,7 @@ import { otpSchema, passwordSchema } from "@/lib/api/forms";
 export const SIGNUP_SERVICES = [
   { value: "pilot", label: "Pilot / Individual", emoji: null },
   { value: "business", label: "Aviation Business", emoji: "🏢" },
-  { value: "charter", label: "Charter Operator", emoji: "🛩️" },
+  { value: "charter", label: "Operator", emoji: "🛩️" },
   { value: "airport", label: "Airport Authority", emoji: "✈️" },
 ] as const;
 
