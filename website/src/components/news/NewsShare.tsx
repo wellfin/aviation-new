@@ -48,7 +48,6 @@ export function ArticleShareLinks({ title, path }: { title: string; path: string
   const enc = encodeURIComponent;
   const targets = [
     { label: "in", name: "LinkedIn", href: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}` },
-    { label: "𝕏", name: "X", href: `https://x.com/intent/post?url=${enc(url)}&text=${enc(title)}` },
     { label: "f", name: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${enc(url)}` },
   ];
   const btn = "flex size-9 items-center justify-center rounded-[10px] border border-brand/20 bg-brand/6 text-sm font-bold text-brand transition hover:bg-brand/12";
