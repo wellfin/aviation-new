@@ -42,7 +42,7 @@ export function NewsShareButton({ title, path, className }: { title: string; pat
 }
 
 /** Row of share targets for the article page. */
-export function ArticleShareLinks({ title, path }: { title: string; path: string }) {
+export function ArticleShareLinks({ path }: { title: string; path: string }) {
   const [copied, setCopied] = useState(false);
   const url = new URL(path, publicConfig.siteUrl).toString();
   const enc = encodeURIComponent;
