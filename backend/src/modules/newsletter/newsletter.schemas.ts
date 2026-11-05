@@ -1,7 +1,10 @@
 import { z } from "zod";
+import { isObjectId } from "../../lib/db.js";
 import { paginationQuery } from "../../lib/pagination.js";
 import { emailField } from "../leads/leads.schemas.js";
 import { SUBSCRIBER_STATUSES } from "./subscriber.model.js";
+
+export const subscriberIdParams = z.object({ id: z.string().refine(isObjectId, "Invalid id") });
 
 export const subscribeBody = z.object({
   email: emailField,

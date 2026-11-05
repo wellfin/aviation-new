@@ -3,6 +3,7 @@ import type { QueryFilter } from "mongoose";
 import { env } from "../../config/env.js";
 import { randomToken, sha256 } from "../../lib/crypto.js";
 import { isDuplicateKeyError } from "../../lib/db.js";
+import { notFound } from "../../lib/errors.js";
 import { logger } from "../../lib/logger.js";
 import { containsRegex, paginated, skipFor, type Paginated } from "../../lib/pagination.js";
 import { startCsvDownload, writeCsvRow } from "../leads/csv.js";
@@ -78,6 +79,25 @@ export async function unsubscribe(token: string): Promise<boolean> {
   );
   if (sub) return true;
   return Boolean(await Subscriber.exists({ unsubscribeTokenHash: hash }));
+}
+
+/**
+ * Staff unsubscribe (e.g. someone asked by email to be removed). Works for pending and subscribed
+ * addresses; an already-unsubscribed one is returned unchanged. The person can opt in again later.
+ */
+export async function adminUnsubscribe(id: string): Promise<SubscriberDTO> {
+  const sub = await Subscriber.findOneAndUpdate(
+    { _id: id, status: { $ne: "unsubscribed" } },
+    { $set: { status: "unsubscribed", unsubscribedAt: new Date() }, $unset: { confirmTokenHash: 1, confirmTokenExpiresAt: 1 } },
+    { returnDocument: "after" },
+  );
+  if (sub) {
+    logger.info({ subscriberId: sub.id }, "Newsletter subscriber unsubscribed by staff");
+    return toSubscriberDTO(sub);
+  }
+  const existing = await Subscriber.findById(id);
+  if (!existing) throw notFound("Subscriber");
+  return toSubscriberDTO(existing);
 }
 
 function subscriberFilter(status?: SubscriberStatus, q?: string): QueryFilter<SubscriberAttrs> {

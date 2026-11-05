@@ -131,4 +131,24 @@ describe("newsletter admin", () => {
     expect(text).toContain("'=cmd@example.com");
     expect(text).not.toContain("b@example.com");
   });
+
+  it("lets staff unsubscribe an address", async () => {
+    const email = "remove-me@example.com";
+    await subscribe({ email });
+    await request(app).get(await linkFor(email, "confirm"));
+    const sub = await Subscriber.findOne({ email }).lean();
+    const path = `/api/v1/admin/newsletter/subscribers/${String(sub!._id)}/unsubscribe`;
+
+    const { agent: provider } = await signedInAgent("PROVIDER", app);
+    expect((await provider.post(path)).status).toBe(401);
+
+    const { agent } = await signedInAgent("MANAGER", app);
+    const r = await agent.post(path);
+    expect(r.status).toBe(200);
+    expect(r.body.data).toMatchObject({ email, status: "unsubscribed" });
+    expect(r.body.data.unsubscribedAt).toBeTruthy();
+    expect((await agent.post(path)).body.data.status).toBe("unsubscribed");
+    expect((await agent.post("/api/v1/admin/newsletter/subscribers/000000000000000000000000/unsubscribe")).status).toBe(404);
+    expect((await agent.post("/api/v1/admin/newsletter/subscribers/nope/unsubscribe")).status).toBe(422);
+  });
 });

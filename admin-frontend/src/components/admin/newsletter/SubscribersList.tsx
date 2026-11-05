@@ -1,8 +1,11 @@
 "use client";
 
-import { DataTable, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { useState } from "react";
+import { ConfirmButton, DataTable, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
 import type { Paginated } from "@/components/admin/enquiries/types";
 import { CsvExportLink } from "@/components/admin/leads/CsvExportLink";
+import { ApiError, apiRequest } from "@/lib/api/client";
+import { can, useAuth } from "@/lib/auth/auth-context";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import { cn } from "@/lib/utils";
@@ -31,8 +34,8 @@ const PAGE_SIZE = 25;
 
 /** Total for one status (a 1-row page is enough — only `total` is used). */
 function useCount(status: SubscriberStatus) {
-  const { data, loading } = useApi<Paginated<Subscriber>>(`/admin/newsletter/subscribers?status=${status}&pageSize=1`);
-  return loading ? null : (data?.total ?? null);
+  const { data, loading, reload } = useApi<Paginated<Subscriber>>(`/admin/newsletter/subscribers?status=${status}&pageSize=1`);
+  return { total: loading ? null : (data?.total ?? null), reload };
 }
 
 export function SubscribersList() {
@@ -40,7 +43,24 @@ export function SubscribersList() {
   const statusParam = get("status");
   const status = (STATUSES as readonly string[]).includes(statusParam) ? (statusParam as SubscriberStatus) : "";
   const { data, error, loading, reload } = useApi<Paginated<Subscriber>>(withQuery("/admin/newsletter/subscribers", { page, pageSize: PAGE_SIZE, status, q: get("q").trim() }));
-  const counts: Record<SubscriberStatus, number | null> = { subscribed: useCount("subscribed"), pending: useCount("pending"), unsubscribed: useCount("unsubscribed") };
+  const countOf = { subscribed: useCount("subscribed"), pending: useCount("pending"), unsubscribed: useCount("unsubscribed") };
+  const counts: Record<SubscriberStatus, number | null> = { subscribed: countOf.subscribed.total, pending: countOf.pending.total, unsubscribed: countOf.unsubscribed.total };
+  const { user } = useAuth();
+  const canManage = can(user, "leads:manage");
+  const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Staff removal, e.g. when someone asks by email. They can subscribe again later from the website.
+  async function unsubscribe(s: Subscriber) {
+    setFeedback(null);
+    try {
+      await apiRequest("POST", `/admin/newsletter/subscribers/${s.id}/unsubscribe`);
+      setFeedback({ ok: true, text: `${s.email} has been unsubscribed.` });
+      reload();
+      for (const c of Object.values(countOf)) c.reload();
+    } catch (err) {
+      setFeedback({ ok: false, text: err instanceof ApiError ? err.message : "Couldn't unsubscribe this address. Please try again." });
+    }
+  }
 
   const columns: Column<Subscriber>[] = [
     { key: "email", header: "Email", render: (s) => <span className="font-semibold">{s.email}</span> },
@@ -49,6 +69,20 @@ export function SubscribersList() {
     { key: "signed", header: "Signed up", render: (s) => <span className="whitespace-nowrap text-muted">{formatDateTime(s.createdAt)}</span> },
     { key: "confirmed", header: "Confirmed", render: (s) => <span className="whitespace-nowrap text-muted">{formatDateTime(s.confirmedAt)}</span> },
     { key: "unsub", header: "Unsubscribed", render: (s) => <span className="whitespace-nowrap text-muted">{formatDateTime(s.unsubscribedAt)}</span> },
+    ...(canManage
+      ? [
+          {
+            key: "actions",
+            header: "Action",
+            render: (s: Subscriber) =>
+              s.status === "unsubscribed" ? null : (
+                <ConfirmButton onConfirm={() => unsubscribe(s)} confirmLabel="Yes, unsubscribe">
+                  Unsubscribe
+                </ConfirmButton>
+              ),
+          } satisfies Column<Subscriber>,
+        ]
+      : []),
   ];
 
   return (
@@ -80,6 +114,11 @@ export function SubscribersList() {
         <SearchFilter placeholder="Search by email" label="Search subscribers" />
         <SelectFilter param="status" label="Status" options={STATUSES.map((s) => ({ value: s, label: STATUS_LABEL[s] }))} />
       </FilterBar>
+      {feedback && (
+        <p role="status" className={cn("mb-4 rounded-xl border px-4 py-3 text-sm font-medium", feedback.ok ? "border-success/30 bg-success/5 text-success" : "border-danger/30 bg-danger/5 text-danger")}>
+          {feedback.text}
+        </p>
+      )}
       {error ? (
         <ErrorPanel error={error} onRetry={reload} />
       ) : (

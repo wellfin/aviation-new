@@ -2,7 +2,7 @@ import { Router } from "express";
 import { requirePermission } from "../../middleware/auth.js";
 import { formRateLimit } from "../../middleware/security.js";
 import { handler, ok } from "../../lib/http.js";
-import { exportSubscribersQuery, listSubscribersQuery, subscribeBody, tokenQuery } from "./newsletter.schemas.js";
+import { exportSubscribersQuery, listSubscribersQuery, subscribeBody, subscriberIdParams, tokenQuery } from "./newsletter.schemas.js";
 import * as newsletter from "./newsletter.service.js";
 
 const GENERIC_RESPONSE = { message: "Thanks! Please check your inbox to confirm your subscription." } as const;
@@ -52,5 +52,14 @@ adminNewsletterRouter.get(
   "/subscribers/export.csv",
   handler({ query: exportSubscribersQuery }, async ({ query }, _req, res) => {
     await newsletter.exportSubscribersCsv(query.status, res);
+  }),
+);
+
+/** Staff removes an address from the list (needs leads:manage on top of leads:read). */
+adminNewsletterRouter.post(
+  "/subscribers/:id/unsubscribe",
+  requirePermission("leads:manage"),
+  handler({ params: subscriberIdParams }, async ({ params }, _req, res) => {
+    ok(res, await newsletter.adminUnsubscribe(params.id));
   }),
 );
