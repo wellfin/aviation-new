@@ -155,6 +155,8 @@ function rffsDetails(fireCategory: string) {
   return { length: lengths[cat], vehicles: cat <= 5 ? 1 : cat <= 7 ? 2 : 3 };
 }
 
+/** Rough desktop height of the scrolling listings box, for sizing the side ads. */
+const LIST_BOX_HEIGHT = 820;
 /** Listings per page on an airport service list. */
 const LISTED = 6;
 /** Positions the admin panel can give (the first three pages). */
@@ -251,7 +253,9 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
           {serviceName} providers at {airport.shortName} ({selectedProviders.length})
         </h2>
         {premiumProviders.length > 0 ? (
-          <div className="space-y-[5px]">
+          // On desktop the listings scroll inside their own box (mouse wheel over it), while the rail and ads stay put;
+          // the wheel anywhere else scrolls the page.
+          <div className="space-y-[5px] md:max-h-[calc(100vh-120px)] md:min-h-[480px] md:overflow-y-auto md:overscroll-contain md:pr-1.5 md:[scrollbar-color:#2f80ed_#eef2f7] md:[scrollbar-width:thin]">
             {premiumProviders.map((p) => (
               <ProviderRow key={p.slug} provider={p} />
             ))}
@@ -336,7 +340,8 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
   // so their number follows an estimate of that height — roughly one ad per 650px, as drawn.
   const adsFor = (height: number) => Math.max(1, Math.round(height / 650));
   const extraLines = (p: Provider) => (p.contact.fax ? 27 : 0) + (p.contact.phone2 ? 29 : 0) + (p.contact.email2 ? 31 : 0) + (p.contact.sita ? 27 : 0);
-  const topListHeight = premiumProviders.reduce((h, p) => h + (p.tier === "ultra_pro" ? 395 : p.tier === "pro" ? 330 : 235) + extraLines(p), 0);
+  // The list scrolls in a box about one screen tall (see above), so the ads beside it follow that height.
+  const topListHeight = Math.min(LIST_BOX_HEIGHT, premiumProviders.reduce((h, p) => h + (p.tier === "ultra_pro" ? 395 : p.tier === "pro" ? 330 : 235) + extraLines(p), 0));
   const railHeight = 40 + (categories.filter(isDesignCategory).length + 1) * 54;
   const underRail = 70 + topListHeight - railHeight - 21;
   const adsUnderRail = underRail >= 400 ? adsFor(underRail) : 0;
