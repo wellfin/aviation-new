@@ -37,7 +37,8 @@ export function ContactStrip({ provider }: { provider: Provider }) {
             </a>
           </li>
         )}
-        {contact.website && (
+        {/* No website on Basic listings. */}
+        {contact.website && provider.tier !== "basic" && (
           <li>
             <a href={websiteHref(contact.website)} target="_blank" rel="noopener noreferrer" className={item}>
               <span aria-hidden>🌐</span>

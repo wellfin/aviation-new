@@ -65,14 +65,17 @@ export function ProfileHeader({ provider }: { provider: Provider }) {
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <ShareButton title={provider.name} path={path} label="Share" />
-          <a
-            href={websiteHref(provider.contact.website)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-[52px] items-center rounded-full border-[1.5px] border-brand px-7 text-[15px] font-semibold text-brand transition hover:bg-brand/10"
-          >
-            Visit Website
-          </a>
+          {/* Basic listings don't link out to their website. */}
+          {provider.tier !== "basic" && provider.contact.website && (
+            <a
+              href={websiteHref(provider.contact.website)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-[52px] items-center rounded-full border-[1.5px] border-brand px-7 text-[15px] font-semibold text-brand transition hover:bg-brand/10"
+            >
+              Visit Website
+            </a>
+          )}
         </div>
       </div>
     </section>
