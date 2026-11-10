@@ -10,7 +10,7 @@ const HIGHLIGHTS = [
 /** Full-bleed business-jet hero with the global airport / provider search. Submits GET /search?q=… */
 export function HomeHero() {
   return (
-    <section className="relative isolate overflow-hidden bg-navy-950 pt-14 pb-20 text-white md:pt-[78px] md:pb-[70px]">
+    <section className="relative isolate overflow-hidden bg-navy-950 pt-20 pb-28 text-white md:pt-[130px] md:pb-[150px]">
       <Image src="/images/home/hero-jet.jpg" alt="" fill priority sizes="100vw" className="-z-20 object-cover object-[50%_45%]" />
       {/* Plane video over the still image (the image shows while it loads, and stays for reduced-motion users). */}
       <video
