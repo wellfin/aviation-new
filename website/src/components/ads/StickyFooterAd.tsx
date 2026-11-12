@@ -23,11 +23,11 @@ function Bar({ ad, open, onToggle }: { ad: Advertisement; open: boolean; onToggl
         <a
           {...adLinkProps(ad)}
           tabIndex={onToggle ? undefined : -1}
-          className="block overflow-hidden rounded-t-md bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.25)]"
+          className="block h-[120px] w-[min(1000px,calc(100vw-32px))] overflow-hidden rounded-t-md bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.25)]"
           aria-label={`Advertisement: ${ad.advertiser}${ad.headline ? ` — ${ad.headline}` : ""}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- any size the admin uploads, often from the API host */}
-          <img src={ad.image} alt={ad.advertiser} className="block h-auto max-h-[120px] w-auto max-w-full" />
+          <img src={ad.image} alt={ad.advertiser} className="block size-full object-contain" />
         </a>
       )}
     </div>
