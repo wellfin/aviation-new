@@ -22,7 +22,7 @@ export const PLACEMENT_HINT: Record<AdPlacement, string> = {
   "header-banner": "Full-width banner on listing pages. Shows advertiser, headline, body (large screens) and CTA over the image. Image: 2700×900 px, no text.",
   sidebar: "Dark card on listing sidebars. Shows advertiser, headline, body and CTA over the dimmed image. Image: 2700×900 px, no text.",
   "sponsored-strip": "Strip between results and sponsor cards. Shows advertiser, headline, one line of body and a CTA. Image: 2700×900 px, no text.",
-  "sticky-footer": "Collapsible bar pinned to the bottom of desktop screens. Shows advertiser, headline, body and CTA. Image: 2700×900 px, no text.",
+  "sticky-footer": "Collapsible banner pinned to the bottom of desktop screens. The image is shown as-is, so put the logo, text and phone numbers in the image. Up to 120 px tall, centred; e.g. 2262×240 px (wide banner). Advertiser is the image's alt text; headline, body and CTA aren't shown.",
   inline: "Not shown on the website yet.",
 };
 

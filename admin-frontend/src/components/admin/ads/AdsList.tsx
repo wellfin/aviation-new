@@ -85,6 +85,19 @@ export function AdsList() {
     }
   }
 
+  async function toggleActive(ad: AdminAd) {
+    setFeedback(null);
+    try {
+      await apiRequest("PATCH", `/admin/ads/${ad.id}`, { active: !ad.active });
+      setFeedback({ status: "success", message: ad.active ? `The ${ad.advertiser} ad is hidden on the site.` : `The ${ad.advertiser} ad is shown on the site.` });
+      list.reload();
+      stats.reload();
+      traffic.reload();
+    } catch (err) {
+      setFeedback({ status: "error", message: err instanceof ApiError ? err.body.message : "Couldn't update the ad." });
+    }
+  }
+
   const columns: Column<AdminAd>[] = [
     {
       key: "ad",
@@ -150,7 +163,14 @@ export function AdsList() {
       key: "actions",
       header: "",
       render: (a) => (
-        <span onClick={(e) => e.stopPropagation()} className="flex justify-end">
+        <span onClick={(e) => e.stopPropagation()} className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => toggleActive(a)}
+            className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-ink transition hover:border-brand hover:text-brand"
+          >
+            {a.active ? "Hide" : "Show"}
+          </button>
           <ConfirmButton onConfirm={() => remove(a)} confirmLabel="Delete">
             Delete
           </ConfirmButton>
