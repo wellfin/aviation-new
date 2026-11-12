@@ -12,9 +12,9 @@ export function HomeHero() {
   return (
     <section className="relative isolate overflow-hidden bg-navy-950 pt-20 pb-28 text-white md:pt-[130px] md:pb-[150px]">
       <Image src="/images/home/hero-jet.jpg" alt="" fill priority sizes="100vw" className="-z-20 object-cover object-[50%_45%]" />
-      {/* Plane video over the still image (the image shows while it loads, and stays for reduced-motion users). */}
+      {/* Plane video over the still image (the image shows while it loads, and stays for reduced-motion users). Dimmed so the white text reads. */}
       <video
-        className="absolute inset-0 -z-20 size-full object-cover object-[50%_45%] motion-reduce:hidden"
+        className="absolute inset-0 -z-20 size-full object-cover object-[50%_45%] brightness-[0.65] motion-reduce:hidden"
         src="/videos/home/plane.mp4"
         poster="/images/home/hero-jet.jpg"
         autoPlay
@@ -24,7 +24,7 @@ export function HomeHero() {
         preload="auto"
         aria-hidden
       />
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-navy-950/25 via-navy-950/20 via-60% to-black/85" aria-hidden />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-navy-950/55 via-navy-950/45 via-60% to-black/85" aria-hidden />
       <div className="container-site flex flex-col items-center text-center">
         <h1 className="max-w-[820px] text-[38px] leading-[46px] font-extrabold tracking-[-1.5px] sm:text-5xl sm:leading-[60px] md:text-[60px] md:leading-[75px]">
           Your Global Aviation Directory
