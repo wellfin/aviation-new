@@ -28,7 +28,7 @@ export const airportSchema = z.object({
   city: text(80).min(1, "Enter the city"),
   region: text(120),
   country: text(80).min(2, "Enter the country"),
-  countryCode: z.string().trim().regex(/^[A-Za-z]{2}$/, "Enter a 2-letter country code"),
+  countryCode: z.string().trim().regex(/^[A-Za-z]{2}$/, "Choose the country flag"),
   continent: z.enum(CONTINENTS, { error: "Choose a continent" }),
   type: z.enum(["large_airport", "medium_airport", "small_airport"]),
   lat: num(-90, 90),
@@ -303,4 +303,11 @@ export function airportRequestBody(p: z.infer<typeof airportSchema>): Record<str
     ...(timezone ? { timezone } : {}),
     runways: runways.map(({ ils, ...r }) => (ils ? { ...r, ils } : r)),
   };
+}
+
+/** Short name shown on cards, derived from the airport name: "London Heathrow Airport" → "London Heathrow". */
+export function shortNameFor(name: string): string {
+  const full = name.trim().replace(/\s+/g, " ");
+  const short = full.replace(/\s+airport$/i, "").trim();
+  return (short.length >= 2 ? short : full).slice(0, 80);
 }

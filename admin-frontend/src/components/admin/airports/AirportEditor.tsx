@@ -9,11 +9,14 @@ import { FormSection, Grid, Repeater, ChipInput, Toggle, UploadField } from "@/c
 import { Card, EmptyState, ErrorPanel, formatDateTime } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Select } from "@/components/ui/Field";
+import { Flag } from "@/components/ui/Flag";
+import { countries, countryName } from "@/lib/countries";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { fieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { DeleteAirportButton } from "./DeleteAirportButton";
 import {
+  shortNameFor,
   AIRPORT_TYPES,
   airportRequestBody,
   airportSchema,
@@ -142,7 +145,7 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
           <FormSection title="Identity">
             <Grid cols={4}>
               <Input
-                label="ICAO *"
+                label="ICAO Code *"
                 name="icao"
                 value={s.icao}
                 maxLength={4}
@@ -152,7 +155,7 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                 hint={mode === "edit" ? "The ICAO code can't be changed." : undefined}
                 className="font-mono"
               />
-              <Input label="IATA" name="iata" value={s.iata} maxLength={3} onChange={(ev) => set("iata", ev.target.value.toUpperCase())} error={e("iata")} className="font-mono" />
+              <Input label="IATA Code" name="iata" value={s.iata} maxLength={3} onChange={(ev) => set("iata", ev.target.value.toUpperCase())} error={e("iata")} className="font-mono" />
               <Select label="Type *" name="type" value={s.type} onChange={(ev) => set("type", ev.target.value as AirportFormState["type"])} error={e("type")} wrapperClassName="sm:col-span-2">
                 {AIRPORT_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -162,19 +165,53 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               </Select>
             </Grid>
             <Grid>
-              <Input label="Full name *" name="name" value={s.name} maxLength={150} onChange={(ev) => set("name", ev.target.value)} error={e("name")} />
-              <Input label="Short name *" name="shortName" value={s.shortName} maxLength={80} onChange={(ev) => set("shortName", ev.target.value)} error={e("shortName")} />
+              {/* The short name used on cards is derived from this (minus a trailing "Airport"). */}
+              <Input
+                label="Airport Name *"
+                name="name"
+                value={s.name}
+                maxLength={150}
+                onChange={(ev) => setS((prev) => ({ ...prev, name: ev.target.value, shortName: shortNameFor(ev.target.value) }))}
+                error={e("name") ?? e("shortName")}
+                wrapperClassName="sm:col-span-2"
+              />
             </Grid>
           </FormSection>
 
           <FormSection title="Location">
             <Grid>
-              <Input label="City *" name="city" value={s.city} maxLength={80} onChange={(ev) => set("city", ev.target.value)} error={e("city")} />
+              <Input label="City Name *" name="city" value={s.city} maxLength={80} onChange={(ev) => set("city", ev.target.value)} error={e("city")} />
               <Input label="Region" name="region" value={s.region} maxLength={120} onChange={(ev) => set("region", ev.target.value)} error={e("region")} />
             </Grid>
             <Grid cols={3}>
-              <Input label="Country *" name="country" value={s.country} maxLength={80} onChange={(ev) => set("country", ev.target.value)} error={e("country")} />
-              <Input label="Country code *" name="countryCode" value={s.countryCode} maxLength={2} placeholder="IN" onChange={(ev) => set("countryCode", ev.target.value.toUpperCase())} error={e("countryCode")} />
+              <Input label="Country Name *" name="country" value={s.country} maxLength={80} onChange={(ev) => set("country", ev.target.value)} error={e("country")} />
+              <div>
+                <Select
+                  label="Country Flag *"
+                  name="countryCode"
+                  value={s.countryCode}
+                  onChange={(ev) => {
+                    const code = ev.target.value;
+                    // Fill the country name when it's empty or still the previous flag's name.
+                    setS((prev) => ({ ...prev, countryCode: code, country: !prev.country.trim() || prev.country === countryName(prev.countryCode) ? (code ? countryName(code) : "") : prev.country }));
+                  }}
+                  error={e("countryCode")}
+                >
+                  <option value="">Choose a country</option>
+                  {/* A saved code missing from the list stays selectable. */}
+                  {s.countryCode && !countries().some((c) => c.code === s.countryCode) && <option value={s.countryCode}>{s.countryCode}</option>}
+                  {countries().map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name} ({c.code})
+                    </option>
+                  ))}
+                </Select>
+                {s.countryCode && !e("countryCode") && (
+                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-subtle">
+                    <Flag code={s.countryCode} /> {countryName(s.countryCode)}
+                  </p>
+                )}
+              </div>
               <Select label="Continent *" name="continent" value={s.continent} onChange={(ev) => set("continent", ev.target.value)} error={e("continent")}>
                 <option value="">Choose…</option>
                 {CONTINENTS.map((c) => (
