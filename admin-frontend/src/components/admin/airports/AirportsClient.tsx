@@ -12,7 +12,7 @@ import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import type { Paginated } from "@/lib/types";
 import { Flag } from "@/components/ui/Flag";
 import { DeleteAirportButton } from "./DeleteAirportButton";
-import { AIRPORT_TYPES, CONTINENTS, type AdminAirport } from "./schema";
+import { AIRPORT_TYPES, CONTINENT_OPTIONS, type AdminAirport } from "./schema";
 
 const TYPE_LABEL = Object.fromEntries(AIRPORT_TYPES.map((t) => [t.value, t.label]));
 
@@ -65,7 +65,7 @@ export function AirportsClient() {
         </span>
       ),
     },
-    { key: "continent", header: "Continent", render: (a) => a.continent },
+    { key: "continent", header: "Continent", render: (a) => (a.continent === "Oceania" ? "Australia" : a.continent) },
     { key: "services", header: "Listings", render: (a) => <span className="tabular-nums">{a.servicesCount}</span>, className: "text-right" },
     { key: "customs", header: "Customs", render: (a) => (a.customs ? <StatusPill status="yes" tone="green" /> : <StatusPill status="no" tone="slate" />) },
     {
@@ -110,7 +110,7 @@ export function AirportsClient() {
       )}
       <FilterBar>
         <SearchFilter placeholder="Code, name or city…" label="Search airports" />
-        <SelectFilter param="continent" label="Continent" options={CONTINENTS.map((c) => ({ value: c, label: c }))} />
+        <SelectFilter param="continent" label="Continent" options={CONTINENT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))} />
         <CountryFilter value={country} onChange={(v) => set({ country: v })} />
         <SelectFilter param="featured" label="Featured" options={[{ value: "true", label: "Featured" }, { value: "false", label: "Not featured" }]} />
         <label className="flex items-center gap-2 text-sm">
