@@ -41,6 +41,8 @@ const ICON_LABEL: Record<(typeof SERVICE_ICONS)[number], string> = {
   tag: "Pricing",
   settings: "Maintenance",
   "heart-pulse": "Medical",
+  helicopter: "Helicopter",
+  cargo: "Cargo",
 };
 
 /* ------------------------------------------------------------------ services */

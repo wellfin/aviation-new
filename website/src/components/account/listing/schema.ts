@@ -39,7 +39,7 @@ export const FLEET_CATEGORIES = ["Light Jet", "Midsize Jet", "Super Midsize Jet"
 export const FLEET_LISTING_CATEGORIES: ServiceCategorySlug[] = ["charter-operator", "charter-broker"];
 
 /** Icons the public profile knows how to draw for services. */
-export const SERVICE_ICONS = ["plane", "plane-takeoff", "fuel", "sofa", "shield-check", "warehouse", "concierge-bell", "tag", "settings", "heart-pulse"] as const;
+export const SERVICE_ICONS = ["plane", "plane-takeoff", "fuel", "sofa", "shield-check", "warehouse", "concierge-bell", "tag", "settings", "heart-pulse", "helicopter", "cargo"] as const;
 
 export const basicsSchema = z.object({
   name: text(120).min(2, "Please enter at least 2 characters"),

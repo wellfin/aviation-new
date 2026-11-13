@@ -13,6 +13,8 @@ import {
   Users,
   Wrench,
   HeartPulse,
+  Helicopter,
+  Package,
   Plane,
   PlaneTakeoff,
   Settings,
@@ -37,6 +39,8 @@ const ICONS: Record<string, LucideIcon> = {
   tag: Tag,
   settings: Settings,
   "heart-pulse": HeartPulse,
+  helicopter: Helicopter,
+  cargo: Package,
   // The 14 directory services as drawn in the Figma Services Offered card.
   building: Store,
   globe: Globe,

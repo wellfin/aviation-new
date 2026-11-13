@@ -31,6 +31,32 @@ import {
 import { StatusActions } from "./StatusActions";
 import { formatBytes } from "./upload";
 
+/** Icons the website draws for a service (website ServicesTab ICONS); anything else shows a generic icon. */
+const SERVICE_ICON_OPTIONS = [
+  { value: "plane", label: "Aircraft" },
+  { value: "plane-takeoff", label: "Departure" },
+  { value: "helicopter", label: "Helicopter" },
+  { value: "cargo", label: "Cargo" },
+  { value: "fuel", label: "Fuel" },
+  { value: "sofa", label: "Lounge" },
+  { value: "shield-check", label: "Security" },
+  { value: "warehouse", label: "Hangar" },
+  { value: "concierge-bell", label: "Concierge" },
+  { value: "tag", label: "Pricing" },
+  { value: "settings", label: "Maintenance" },
+  { value: "heart-pulse", label: "Medical" },
+  { value: "building", label: "Building" },
+  { value: "globe", label: "Globe" },
+  { value: "coffee", label: "Catering" },
+  { value: "user-check", label: "Agent" },
+  { value: "users", label: "Crew / people" },
+  { value: "file-text", label: "Permits / documents" },
+  { value: "truck", label: "Transport" },
+  { value: "home", label: "Hotel" },
+  { value: "wrench", label: "MRO / repair" },
+  { value: "info", label: "Information" },
+] as const;
+
 type Feedback = { status: "success" | "error"; message: string } | null;
 
 /** 1 → "1st", 12 → "12th", 22 → "22nd". */
@@ -450,7 +476,14 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
               {(it, i, update) => (
                 <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
                   <Input label="Name *" name={`services.${i}.name`} value={it.name} maxLength={80} onChange={(ev) => update({ name: ev.target.value })} error={e(`services.${i}.name`)} />
-                  <Input label="Icon" name={`services.${i}.icon`} value={it.icon} maxLength={40} placeholder="plane" onChange={(ev) => update({ icon: ev.target.value.toLowerCase() })} error={e(`services.${i}.icon`)} />
+                  <Select label="Icon" name={`services.${i}.icon`} value={it.icon} onChange={(ev) => update({ icon: ev.target.value })} error={e(`services.${i}.icon`)}>
+                    {/* An icon saved earlier that isn't in the list stays selectable so editing doesn't change it. */}
+                    {[...SERVICE_ICON_OPTIONS, ...(it.icon && !SERVICE_ICON_OPTIONS.some((o) => o.value === it.icon) ? [{ value: it.icon, label: it.icon }] : [])].map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </Select>
                   <Textarea label="Description" name={`services.${i}.description`} value={it.description} maxLength={500} onChange={(ev) => update({ description: ev.target.value })} error={e(`services.${i}.description`)} wrapperClassName="sm:col-span-2" className="min-h-20" />
                 </div>
               )}
