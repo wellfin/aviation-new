@@ -16,11 +16,11 @@ import { fieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { DeleteAirportButton } from "./DeleteAirportButton";
 import {
+  CONTINENT_OPTIONS,
   shortNameFor,
   AIRPORT_TYPES,
   airportRequestBody,
   airportSchema,
-  CONTINENTS,
   emptyAirportState,
   rawAirportPayload,
   stateFromAirport,
@@ -214,8 +214,12 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               </div>
               <Select label="Continent *" name="continent" value={s.continent} onChange={(ev) => set("continent", ev.target.value)} error={e("continent")}>
                 <option value="">Choose…</option>
-                {CONTINENTS.map((c) => (
-                  <option key={c}>{c}</option>
+                {/* Stored values stay the API's continents ("Oceania" is shown as Australia); one outside this list, e.g. Antarctica, stays selectable. */}
+                {s.continent && !CONTINENT_OPTIONS.some((o) => o.value === s.continent) && <option value={s.continent}>{s.continent}</option>}
+                {CONTINENT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
                 ))}
               </Select>
             </Grid>

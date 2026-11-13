@@ -4,6 +4,16 @@ import type { Airport } from "@/lib/types";
 /** Mirrors backend/src/modules/airports/airports.schemas.ts (create/update). The API re-validates. */
 
 export const CONTINENTS = ["Africa", "Asia", "Europe", "North America", "Oceania", "South America", "Antarctica"] as const;
+
+/** Continent dropdown, in the order the team wants. "Oceania" is labelled Australia. */
+export const CONTINENT_OPTIONS = [
+  { value: "Asia", label: "Asia" },
+  { value: "Africa", label: "Africa" },
+  { value: "Oceania", label: "Australia" },
+  { value: "Europe", label: "Europe" },
+  { value: "North America", label: "North America" },
+  { value: "South America", label: "South America" },
+] as const;
 export const AIRPORT_TYPES = [
   { value: "large_airport", label: "Large airport" },
   { value: "medium_airport", label: "Medium airport" },
