@@ -299,15 +299,45 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
             </Grid>
           </FormSection>
 
+          {/* Same rows and order as the airport page's "Fire/RFFS" tab; blank fields show as "—". */}
+          <FormSection title="Fire/RFFS">
+            <Grid>
+              <Input
+                label="Category for Fire"
+                name="fireCategoryRffs"
+                value={s.fireCategory}
+                maxLength={20}
+                placeholder="CAT 9"
+                onChange={(ev) => set("fireCategory", ev.target.value)}
+                error={e("fireCategory")}
+                hint="Same as Fire Category in Airport Information: changing one changes the other."
+              />
+              <Input
+                label="Rescue Equipment"
+                name="rescueEquipment"
+                value={s.rescueEquipment}
+                maxLength={120}
+                placeholder="Min. 3 RFFS vehicles"
+                onChange={(ev) => set("rescueEquipment", ev.target.value)}
+                error={e("rescueEquipment")}
+                hint="Left blank, the site shows the minimum vehicles for the fire category."
+              />
+              <Input
+                label="Capability for Removal of Disabled Aircraft"
+                name="disabledAircraftRemoval"
+                value={s.disabledAircraftRemoval}
+                maxLength={120}
+                placeholder="Up to B747 (recovery kit on site)"
+                onChange={(ev) => set("disabledAircraftRemoval", ev.target.value)}
+                error={e("disabledAircraftRemoval")}
+              />
+            </Grid>
+          </FormSection>
+
           <FormSection title="Other Details">
             <Grid>
               <Input label="Operating hours" name="operatingHours" value={s.operatingHours} maxLength={120} placeholder="24/7" onChange={(ev) => set("operatingHours", ev.target.value)} error={e("operatingHours")} />
               <Input label="Region" name="region" value={s.region} maxLength={120} onChange={(ev) => set("region", ev.target.value)} error={e("region")} />
-            </Grid>
-            {/* Shown on the airport page's Fire/RFFS tab. */}
-            <Grid>
-              <Input label="Rescue equipment" name="rescueEquipment" value={s.rescueEquipment} maxLength={120} placeholder="3 RFFS vehicles" onChange={(ev) => set("rescueEquipment", ev.target.value)} error={e("rescueEquipment")} />
-              <Input label="Removal of disabled aircraft" name="disabledAircraftRemoval" value={s.disabledAircraftRemoval} maxLength={120} placeholder="Up to B747 (recovery kit on site)" onChange={(ev) => set("disabledAircraftRemoval", ev.target.value)} error={e("disabledAircraftRemoval")} />
             </Grid>
             {/* Shown on the airport page under "More Airport Information"; blank fields show as "—". */}
             <Grid>
