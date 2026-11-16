@@ -21,7 +21,6 @@ import {
   CONTINENT_OPTIONS,
   commText,
   commTextError,
-  isCommFrequency,
   withCommText,
   approachesText,
   timeZones,
@@ -416,32 +415,6 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               ))}
             </Grid>
             <p className="text-xs text-subtle">For more than one frequency, separate them with commas: 118.505, 118.700.</p>
-          </FormSection>
-
-          <FormSection title="Other Frequencies">
-            <p className="text-xs text-subtle">Anything else, such as UNICOM. Each shows on the Communication tab under its own description.</p>
-            <Repeater
-              items={s.frequencies.filter((f) => !isCommFrequency(f))}
-              onChange={(v) => setS((prev) => ({ ...prev, frequencies: [...prev.frequencies.filter(isCommFrequency), ...v] }))}
-              create={() => ({ type: "", description: "", mhz: "" })}
-              max={40}
-              addLabel="Add frequency"
-              itemLabel={(f, i) => (f.type ? `${f.type} ${f.mhz}`.trim() : `Frequency ${i + 1}`)}
-              errorId="frequencies-error"
-              error={e("frequencies")}
-            >
-              {(f, i, update) => {
-                // Error keys use the position in the full list.
-                const p = `frequencies.${s.frequencies.indexOf(f)}`;
-                return (
-                  <Grid cols={3}>
-                    <Input label="Type *" name={`${p}.type`} value={f.type} maxLength={20} placeholder="UNICOM" onChange={(ev) => update({ type: ev.target.value })} error={e(`${p}.type`)} />
-                    <Input label="Description *" name={`${p}.description`} value={f.description} maxLength={80} placeholder="Mumbai Unicom" onChange={(ev) => update({ description: ev.target.value })} error={e(`${p}.description`)} />
-                    <Input label="MHz *" name={`${p}.mhz`} value={f.mhz} maxLength={8} inputMode="decimal" placeholder="118.100" onChange={(ev) => update({ mhz: ev.target.value })} error={e(`${p}.mhz`)} />
-                  </Grid>
-                );
-              }}
-            </Repeater>
           </FormSection>
         </div>
 
