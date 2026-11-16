@@ -363,3 +363,45 @@ export function timeZones(): Array<{ zone: string; offset: string }> {
   }
   return zoneCache;
 }
+
+/**
+ * The Airport Communication tab's rows (website airports/[code]/page.tsx FREQUENCY_ROWS), with the
+ * frequency types that feed each. The first type is used for new entries.
+ */
+export const COMM_ROWS = [
+  { key: "approach", label: "Approach Frequency", short: "Approach", types: ["APP", "APCH"] },
+  { key: "arrival", label: "Arrival Frequency", short: "Arrival", types: ["ARR"] },
+  { key: "departure", label: "Departure Frequency", short: "Departure", types: ["DEP"] },
+  { key: "clearance", label: "Clearance Delivery Frequency", short: "Clearance Delivery", types: ["DEL", "CLD", "CLR", "CLNC"] },
+  { key: "ground", label: "Ground Frequency", short: "Ground", types: ["GND"] },
+  { key: "tower", label: "Tower Frequency", short: "Tower", types: ["TWR"] },
+  { key: "atis", label: "ATIS", short: "ATIS", types: ["ATIS"] },
+] as const;
+export type CommRow = (typeof COMM_ROWS)[number];
+
+const inRow = (row: CommRow, f: FrequencyRow) => (row.types as readonly string[]).includes(f.type.trim().toUpperCase());
+
+/** True for a frequency shown in one of the fixed Communication rows. */
+export const isCommFrequency = (f: FrequencyRow) => COMM_ROWS.some((row) => inRow(row, f));
+
+/** A row's frequencies as typed text: "118.505, 118.700". */
+export function commText(frequencies: FrequencyRow[], row: CommRow): string {
+  return frequencies
+    .filter((f) => inRow(row, f))
+    .map((f) => f.mhz)
+    .join(", ");
+}
+
+const tokens = (text: string) => text.split(/[,\s]+/).filter(Boolean);
+
+/** Replaces a row's frequencies with the ones typed (comma-separated); keeps existing types and descriptions. */
+export function withCommText(frequencies: FrequencyRow[], row: CommRow, text: string): FrequencyRow[] {
+  const current = frequencies.filter((f) => inRow(row, f));
+  const typed = tokens(text).map((mhz, i) => ({ type: current[i]?.type ?? row.types[0], description: current[i]?.description ?? row.short, mhz }));
+  return [...frequencies.filter((f) => !inRow(row, f)), ...typed];
+}
+
+/** Error for a Communication box, or undefined when every frequency typed looks like 118.505. */
+export function commTextError(text: string): string | undefined {
+  return tokens(text).every((t) => /^\d{2,4}(\.\d{1,3})?$/.test(t)) ? undefined : "Enter frequencies like 118.505, separated by commas";
+}

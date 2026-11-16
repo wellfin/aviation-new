@@ -16,7 +16,12 @@ import { fieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { DeleteAirportButton } from "./DeleteAirportButton";
 import {
+  COMM_ROWS,
   CONTINENT_OPTIONS,
+  commText,
+  commTextError,
+  isCommFrequency,
+  withCommText,
   approachesText,
   timeZones,
   utcOffsetFor,
@@ -67,6 +72,8 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
   const mode = initial ? "edit" : "create";
   const [airport, setAirport] = useState(initial);
   const [s, setS] = useState<AirportFormState>(() => (initial ? stateFromAirport(initial) : emptyAirportState()));
+  // Text typed in the Communication boxes (kept separately so "118.5, " can be typed); frequencies follow it.
+  const [comm, setComm] = useState<Record<string, string>>(() => Object.fromEntries(COMM_ROWS.map((row) => [row.key, commText(initial?.frequencies ?? [], row)])));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<Feedback>(params.get("created") ? { status: "success", message: "Airport created." } : null);
@@ -358,10 +365,34 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
             </Repeater>
           </FormSection>
 
-          <FormSection title="Frequencies">
+          {/* Same rows and order as the airport page's "Airport Communication" tab; blank rows show as "—". */}
+          <FormSection title="Airport Communication">
+            <Grid>
+              {COMM_ROWS.map((row) => (
+                <Input
+                  key={row.key}
+                  label={`${row.label} (MHz)`}
+                  name={`comm-${row.key}`}
+                  value={comm[row.key] ?? ""}
+                  inputMode="decimal"
+                  placeholder="118.505"
+                  onChange={(ev) => {
+                    const text = ev.target.value;
+                    setComm((c) => ({ ...c, [row.key]: text }));
+                    setS((prev) => ({ ...prev, frequencies: withCommText(prev.frequencies, row, text) }));
+                  }}
+                  error={commTextError(comm[row.key] ?? "")}
+                />
+              ))}
+            </Grid>
+            <p className="text-xs text-subtle">For more than one frequency, separate them with commas: 118.505, 118.700.</p>
+          </FormSection>
+
+          <FormSection title="Other Frequencies">
+            <p className="text-xs text-subtle">Anything else, such as UNICOM. Each shows on the Communication tab under its own description.</p>
             <Repeater
-              items={s.frequencies}
-              onChange={(v) => set("frequencies", v)}
+              items={s.frequencies.filter((f) => !isCommFrequency(f))}
+              onChange={(v) => setS((prev) => ({ ...prev, frequencies: [...prev.frequencies.filter(isCommFrequency), ...v] }))}
               create={() => ({ type: "", description: "", mhz: "" })}
               max={40}
               addLabel="Add frequency"
@@ -370,11 +401,12 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               error={e("frequencies")}
             >
               {(f, i, update) => {
-                const p = `frequencies.${i}`;
+                // Error keys use the position in the full list.
+                const p = `frequencies.${s.frequencies.indexOf(f)}`;
                 return (
                   <Grid cols={3}>
-                    <Input label="Type *" name={`${p}.type`} value={f.type} maxLength={20} placeholder="TWR" onChange={(ev) => update({ type: ev.target.value })} error={e(`${p}.type`)} />
-                    <Input label="Description *" name={`${p}.description`} value={f.description} maxLength={80} placeholder="Mumbai Tower" onChange={(ev) => update({ description: ev.target.value })} error={e(`${p}.description`)} />
+                    <Input label="Type *" name={`${p}.type`} value={f.type} maxLength={20} placeholder="UNICOM" onChange={(ev) => update({ type: ev.target.value })} error={e(`${p}.type`)} />
+                    <Input label="Description *" name={`${p}.description`} value={f.description} maxLength={80} placeholder="Mumbai Unicom" onChange={(ev) => update({ description: ev.target.value })} error={e(`${p}.description`)} />
                     <Input label="MHz *" name={`${p}.mhz`} value={f.mhz} maxLength={8} inputMode="decimal" placeholder="118.100" onChange={(ev) => update({ mhz: ev.target.value })} error={e(`${p}.mhz`)} />
                   </Grid>
                 );
