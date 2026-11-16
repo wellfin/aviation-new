@@ -343,7 +343,6 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               <Input label="Operating hours" name="operatingHours" value={s.operatingHours} maxLength={120} placeholder="24/7" onChange={(ev) => set("operatingHours", ev.target.value)} error={e("operatingHours")} />
               <Input label="Region" name="region" value={s.region} maxLength={120} onChange={(ev) => set("region", ev.target.value)} error={e("region")} />
             </Grid>
-            {/* Shown on the airport page under "More Airport Information"; blank fields show as "—". */}
             <ChipInput id="serviceTags" label="Service tags" values={s.serviceTags} onChange={(v) => set("serviceTags", v)} max={20} maxLength={30} placeholder="FBO, Fuel, Customs…" error={e("serviceTags")} />
             <UploadField id="image" label="Image" kind="image" value={s.image} onChange={(v) => set("image", v)} error={e("image")} />
           </FormSection>
