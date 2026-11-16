@@ -230,7 +230,7 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                 ))}
               </Select>
               <Input label="Type of Traffic Permitted" name="trafficPermitted" value={s.trafficPermitted} maxLength={80} placeholder="IFR / VFR" onChange={(ev) => set("trafficPermitted", ev.target.value)} error={e("trafficPermitted")} />
-              <Input label="Approaches" name="approaches" value={approachesText(s.runways.map((r) => r.ils))} disabled readOnly hint="Filled automatically from the ILS of the runways below." />
+              <Input label="Approaches" name="approaches" value={approachesText(s.runways.map((r) => r.ils))} disabled readOnly hint="Filled automatically from the runways' saved ILS data." />
               <Input label="Elevation (ft)" name="elevationFt" type="number" step={1} value={s.elevationFt} onChange={(ev) => set("elevationFt", ev.target.value)} error={e("elevationFt")} />
               <Select
                 label="UTC (Timezone)"
@@ -334,10 +334,9 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                 const p = `runways.${i}`;
                 return (
                   <div className="flex flex-col gap-3">
-                    <Grid cols={3}>
+                    <Grid>
                       <Input label="Designator *" name={`${p}.designator`} value={r.designator} maxLength={20} placeholder="09/27" onChange={(ev) => update({ designator: ev.target.value })} error={e(`${p}.designator`)} />
                       <Input label="Surface *" name={`${p}.surface`} value={r.surface} maxLength={40} onChange={(ev) => update({ surface: ev.target.value })} error={e(`${p}.surface`)} />
-                      <Input label="ILS" name={`${p}.ils`} value={r.ils} maxLength={20} placeholder="CAT II" onChange={(ev) => update({ ils: ev.target.value })} error={e(`${p}.ils`)} />
                     </Grid>
                     <Grid cols={3}>
                       <Input label="Length (ft) *" name={`${p}.lengthFt`} type="number" min={0} max={30000} value={r.lengthFt} onChange={(ev) => update({ lengthFt: ev.target.value })} error={e(`${p}.lengthFt`)} />
