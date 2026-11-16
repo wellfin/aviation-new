@@ -264,6 +264,15 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               <Input label="FBO/ GAT" name="fboAuto" value="Automatic: FBO listings at this airport" disabled readOnly hint="Add an FBO listing with this airport to show it here." />
               <Input label="Fuel" name="fuelAuto" value="Automatic: fuel listings at this airport" disabled readOnly hint="Add a fuel listing with this airport to show it here." />
               <Input label="Fire Category" name="fireCategory" value={s.fireCategory} maxLength={20} placeholder="CAT 9" onChange={(ev) => set("fireCategory", ev.target.value)} error={e("fireCategory")} />
+              <div>
+                <Select label="Customs and Immigration" name="customsImmigration" value={s.customs ? "yes" : "no"} onChange={(ev) => set("customs", ev.target.value === "yes")}>
+                  <option value="yes">Available</option>
+                  <option value="no">Not available</option>
+                </Select>
+                <p className="mt-1.5 text-xs text-subtle">Same setting as Airport of Entry: changing one changes the other.</p>
+              </div>
+              <Input label="Airport Category" name="airportCategory" value={s.airportCategory} maxLength={80} placeholder="International" onChange={(ev) => set("airportCategory", ev.target.value)} error={e("airportCategory")} />
+              <Input label="Slots Required" name="slotsRequired" value={s.slotsRequired} maxLength={80} placeholder="Yes — coordinated (Level 3)" onChange={(ev) => set("slotsRequired", ev.target.value)} error={e("slotsRequired")} />
             </Grid>
           </FormSection>
 
@@ -278,10 +287,6 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               <Input label="Removal of disabled aircraft" name="disabledAircraftRemoval" value={s.disabledAircraftRemoval} maxLength={120} placeholder="Up to B747 (recovery kit on site)" onChange={(ev) => set("disabledAircraftRemoval", ev.target.value)} error={e("disabledAircraftRemoval")} />
             </Grid>
             {/* Shown on the airport page under "More Airport Information"; blank fields show as "—". */}
-            <Grid>
-              <Input label="Airport category" name="airportCategory" value={s.airportCategory} maxLength={80} placeholder="International" onChange={(ev) => set("airportCategory", ev.target.value)} error={e("airportCategory")} />
-              <Input label="Slots required" name="slotsRequired" value={s.slotsRequired} maxLength={80} placeholder="Yes — coordinated (Level 3)" onChange={(ev) => set("slotsRequired", ev.target.value)} error={e("slotsRequired")} />
-            </Grid>
             <Grid>
               <Input label="Airport website" name="website" type="url" value={s.website} maxLength={200} placeholder="https://www.heathrow.com" onChange={(ev) => set("website", ev.target.value)} error={e("website")} />
             </Grid>
