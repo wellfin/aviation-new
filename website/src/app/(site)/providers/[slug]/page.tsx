@@ -15,7 +15,7 @@ import { FleetTab } from "@/components/provider-profile/tabs/FleetTab";
 import { GalleryTab } from "@/components/provider-profile/tabs/GalleryTab";
 import { ReviewsTab } from "@/components/provider-profile/tabs/ReviewsTab";
 import { ServicesTab } from "@/components/provider-profile/tabs/ServicesTab";
-import { TIER_RULES, isCharter, profileTabs, relatedHeading, resolveTab, telHref, type ProfileTab } from "@/components/provider-profile/profile-config";
+import { TIER_RULES, isCharter, profileTabs, relatedHeading, resolveTab, telHref, type ProfileTab, CHARTER_ENQUIRY_SERVICES } from "@/components/provider-profile/profile-config";
 import { getAdvertisement } from "@/lib/data/content";
 import { getProvider, getRelatedProviders, getSameCategoryProviders } from "@/lib/data/providers";
 import { getCategoryBySlug } from "@/lib/data/categories";
@@ -185,7 +185,7 @@ export default async function ProviderProfilePage({ params, searchParams }: Page
             {basic && (charter ? ["gallery", "brochure", "certification", "reviews"] : SERVICE_TALL_AD_TABS).includes(active) && <SidebarAd ad={sidebarAd} className="min-h-[526px]" />}
             {rules.upgradeCard && !enquiryFirst && <UpgradeCard />}
             {rules.enquiryForm && (
-              <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />
+              <EnquiryForm providerSlug={provider.slug} providerName={provider.name} services={charter ? CHARTER_ENQUIRY_SERVICES : provider.services.map((s) => s.name)} phoneHref={telHref(provider.contact.phone)} />
             )}
             {rules.upgradeCard && enquiryFirst && <UpgradeCard />}
             {sponsoredRelated ? (

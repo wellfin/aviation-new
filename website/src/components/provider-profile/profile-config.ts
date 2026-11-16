@@ -39,6 +39,9 @@ export interface TabDef {
 
 const CHARTER_CATEGORIES: ServiceCategorySlug[] = ["charter-operator", "charter-broker"];
 
+/** "Select Service" options on charter operator / broker enquiries: always this list ("Other" is added by the form). */
+export const CHARTER_ENQUIRY_SERVICES = ["On-Demand Charter", "Helicopter", "Air Ambulance", "Cargo Charter", "Empty Leg"];
+
 export function isCharter(provider: Provider): boolean {
   return CHARTER_CATEGORIES.includes(provider.category);
 }
