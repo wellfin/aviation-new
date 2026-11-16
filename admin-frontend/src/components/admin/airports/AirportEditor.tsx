@@ -352,7 +352,6 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                       <Input label="Elevation" name={`${p}.elevation`} value={r.elevation} maxLength={40} placeholder="79 ft" onChange={(ev) => update({ elevation: ev.target.value })} error={e(`${p}.elevation`)} />
                       <Input label="Displaced threshold" name={`${p}.displacedThreshold`} value={r.displacedThreshold} maxLength={40} placeholder="1,007 ft" onChange={(ev) => update({ displacedThreshold: ev.target.value })} error={e(`${p}.displacedThreshold`)} />
                     </Grid>
-                    <Toggle id={`${p}.lighting`} label="Runway lighting" checked={r.lighting} onChange={(lighting) => update({ lighting })} />
                   </div>
                 );
               }}
