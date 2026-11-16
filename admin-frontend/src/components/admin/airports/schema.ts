@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PLACE_NAME, PLACE_NAME_MESSAGE } from "@/lib/text";
 import type { Airport } from "@/lib/types";
 
 /** Mirrors backend/src/modules/airports/airports.schemas.ts (create/update). The API re-validates. */
@@ -37,7 +38,7 @@ export const airportSchema = z.object({
   iata: z.union([z.string().trim().regex(/^[A-Za-z0-9]{3}$/, "Enter a 3-character IATA code"), z.literal("")]),
   name: text(150).min(2, "Enter at least 2 characters"),
   shortName: text(80).min(2, "Enter at least 2 characters"),
-  city: text(80).min(1, "Enter the city"),
+  city: text(80).min(1, "Enter the city").regex(PLACE_NAME, PLACE_NAME_MESSAGE),
   region: text(120),
   country: text(80).min(2, "Enter the country"),
   countryCode: z.string().trim().regex(/^[A-Za-z]{2}$/, "Choose the country flag"),

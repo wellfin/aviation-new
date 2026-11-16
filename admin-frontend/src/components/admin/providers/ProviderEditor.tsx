@@ -30,6 +30,8 @@ import {
 } from "./schema";
 import { StatusActions } from "./StatusActions";
 import { formatBytes } from "./upload";
+import { countries, countryName } from "@/lib/countries";
+import { titleCase } from "@/lib/text";
 
 /** Icons the website draws for a service (website ServicesTab ICONS); anything else shows a generic icon. */
 const SERVICE_ICON_OPTIONS = [
@@ -315,17 +317,28 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
               />
             </Grid>
             <Grid cols={3}>
-              <Input label="City *" name="city" value={s.city} maxLength={80} onChange={(ev) => set("city", ev.target.value)} error={e("city")} />
-              <Input label="Country *" name="country" value={s.country} maxLength={80} onChange={(ev) => set("country", ev.target.value)} error={e("country")} />
-              <Input
-                label="Country code *"
-                name="countryCode"
-                value={s.countryCode}
-                maxLength={2}
-                placeholder="IN"
-                onChange={(ev) => set("countryCode", ev.target.value.toUpperCase())}
-                error={e("countryCode")}
-              />
+              {/* Written as "New Delhi" when the field is left. */}
+              <Input label="City *" name="city" value={s.city} maxLength={80} onChange={(ev) => set("city", ev.target.value)} onBlur={() => set("city", titleCase(s.city))} error={e("city")} />
+              <Select
+                label="Country *"
+                name="country"
+                value={s.countryCode.toUpperCase()}
+                onChange={(ev) => {
+                  const code = ev.target.value;
+                  setS((prev) => ({ ...prev, countryCode: code, country: code ? countryName(code) : "" }));
+                }}
+                error={e("country") ?? e("countryCode")}
+              >
+                <option value="">Choose a country</option>
+                {/* A saved code missing from the list stays selectable. */}
+                {s.countryCode && !countries().some((c) => c.code === s.countryCode.toUpperCase()) && <option value={s.countryCode.toUpperCase()}>{s.country || s.countryCode}</option>}
+                {countries().map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+              <Input label="Country code" name="countryCode" value={s.countryCode.toUpperCase()} disabled readOnly hint="Filled from the country." />
             </Grid>
             <Textarea label="Summary *" name="summary" value={s.summary} maxLength={300} onChange={(ev) => set("summary", ev.target.value)} error={e("summary")} className="min-h-20" />
             <Grid cols={3}>

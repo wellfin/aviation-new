@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2 } from "lucide-react";
+import { titleCase } from "@/lib/text";
 import { useState, type FormEvent } from "react";
 import { Card } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
@@ -75,7 +76,7 @@ export function CreateListingForm({ onCreated }: { onCreated: (l: Listing) => vo
             </option>
           ))}
         </Select>
-        <Input name="city" label="City" value={v.city} onChange={set("city")} error={errors.city} maxLength={80} required />
+        <Input name="city" label="City" value={v.city} onChange={set("city")} onBlur={() => setV((s) => ({ ...s, city: titleCase(s.city) }))} error={errors.city} maxLength={80} required />
         <div className="sm:col-span-2">
           <Textarea
             name="summary"

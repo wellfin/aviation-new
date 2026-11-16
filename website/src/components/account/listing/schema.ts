@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PLACE_NAME, PLACE_NAME_MESSAGE } from "@/lib/text";
 import type { ServiceCategorySlug } from "@/lib/types";
 
 /**
@@ -47,7 +48,7 @@ export const basicsSchema = z.object({
   category: z.string().trim().min(1, "Choose a category").max(60),
   countryCode,
   country: text(80).min(2, "Choose a country"),
-  city: text(80).min(1, "City is required"),
+  city: text(80).min(1, "City is required").regex(PLACE_NAME, PLACE_NAME_MESSAGE),
   summary: text(300).min(10, "Please write at least 10 characters"),
   locationsLabel: text(60),
   foundedYear: z.number().int("Enter a year").min(1900, "Enter a year from 1900").max(2100, "Enter a valid year").nullable(),

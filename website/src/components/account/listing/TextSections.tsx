@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import { titleCase } from "@/lib/text";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
@@ -65,7 +66,7 @@ export function BasicsSection({ listing, onSaved }: SectionProps) {
             </option>
           ))}
         </Select>
-        <Input name="city" label="City" value={v.city} onChange={set("city")} error={errors.city} maxLength={80} required />
+        <Input name="city" label="City" value={v.city} onChange={set("city")} onBlur={() => setV((s) => ({ ...s, city: titleCase(s.city) }))} error={errors.city} maxLength={80} required />
         <Input
           name="locationsLabel"
           label="Locations label"

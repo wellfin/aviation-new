@@ -14,6 +14,11 @@ const item = "flex min-w-0 items-center gap-2 text-sm font-medium text-muted tra
 /** White strip under the cover band with contact details and social links. */
 export function ContactStrip({ provider }: { provider: Provider }) {
   const { contact } = provider;
+  // "Terminal 2, New Delhi, India": the Location detail (when set), then the listing's city and country, without repeats.
+  const place = [contact.location, provider.city, provider.country]
+    .map((p) => p?.trim() ?? "")
+    .filter((p, i, all) => p && all.findIndex((q) => q.toLowerCase() === p.toLowerCase()) === i)
+    .join(", ");
   const socials = TIER_RULES[provider.tier].socials ? SOCIALS.filter((s) => provider.socials[s.key]) : [];
 
   return (
@@ -48,11 +53,11 @@ export function ContactStrip({ provider }: { provider: Provider }) {
           </li>
         )}
         {/* Figma: phone, email, website and location only (no fax). */}
-        {contact.location && (
+        {place && (
           <li className="flex items-center gap-2 text-sm font-medium text-muted">
             <span aria-hidden>📍</span>
             <span className="sr-only">Location: </span>
-            {contact.location}
+            {place}
           </li>
         )}
       </ul>

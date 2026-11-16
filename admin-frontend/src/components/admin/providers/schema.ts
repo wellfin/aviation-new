@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PLACE_NAME, PLACE_NAME_MESSAGE } from "@/lib/text";
 import type { Provider } from "@/lib/types";
 
 /** Mirrors backend/src/modules/providers/providers.schemas.ts (admin create/update). The API re-validates. */
@@ -65,9 +66,9 @@ export const providerSchema = z.object({
     .regex(/^([a-z0-9]+(?:-[a-z0-9]+)*)?$/, "Use lowercase letters, numbers and hyphens")
     .optional(),
   category: z.string().trim().min(1, "Choose a category").max(60).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Choose a category"),
-  countryCode: z.string().trim().regex(/^[A-Za-z]{2}$/, "Enter a 2-letter country code"),
-  country: text(80).min(2, "Enter the country"),
-  city: text(80).min(1, "Enter the city"),
+  countryCode: z.string().trim().regex(/^[A-Za-z]{2}$/, "Choose the country"),
+  country: text(80).min(2, "Choose the country"),
+  city: text(80).min(1, "Enter the city").regex(PLACE_NAME, PLACE_NAME_MESSAGE),
   summary: text(300).min(10, "Write at least 10 characters"),
   about: z.array(text(2000).min(1, "Remove empty paragraphs")).max(10),
   coverImage: assetUrl,

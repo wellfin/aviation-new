@@ -15,6 +15,7 @@ import { ApiError, apiRequest } from "@/lib/api/client";
 import { fieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { DeleteAirportButton } from "./DeleteAirportButton";
+import { titleCase } from "@/lib/text";
 import { NearbyAirportsInput } from "./NearbyAirportsInput";
 import {
   COMM_ROWS,
@@ -176,8 +177,8 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                 className="font-mono"
               />
               <Input label="IATA Code" name="iata" value={s.iata} maxLength={3} onChange={(ev) => set("iata", ev.target.value.toUpperCase())} error={e("iata")} className="font-mono" />
-              <Input label="City Name *" name="city" value={s.city} maxLength={80} onChange={(ev) => set("city", ev.target.value)} error={e("city")} />
-              <Input label="Country Name *" name="country" value={s.country} maxLength={80} onChange={(ev) => set("country", ev.target.value)} error={e("country")} />
+              <Input label="City Name *" name="city" value={s.city} maxLength={80} onChange={(ev) => set("city", ev.target.value)} onBlur={() => set("city", titleCase(s.city))} error={e("city")} />
+              <Input label="Country Name *" name="country" value={s.country} maxLength={80} onChange={(ev) => set("country", ev.target.value)} onBlur={() => set("country", titleCase(s.country))} error={e("country")} />
               <div>
                 <Select
                   label="Country Flag *"
@@ -411,7 +412,7 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
           <FormSection title="Other Details">
             <Grid>
               <Input label="Operating hours" name="operatingHours" value={s.operatingHours} maxLength={120} placeholder="24/7" onChange={(ev) => set("operatingHours", ev.target.value)} error={e("operatingHours")} />
-              <Input label="Region" name="region" value={s.region} maxLength={120} onChange={(ev) => set("region", ev.target.value)} error={e("region")} />
+              <Input label="Region" name="region" value={s.region} maxLength={120} onChange={(ev) => set("region", ev.target.value)} onBlur={() => set("region", titleCase(s.region))} error={e("region")} />
             </Grid>
             <ChipInput id="serviceTags" label="Service tags" values={s.serviceTags} onChange={(v) => set("serviceTags", v)} max={20} maxLength={30} placeholder="FBO, Fuel, Customs…" error={e("serviceTags")} />
             <UploadField id="image" label="Image" kind="image" value={s.image} onChange={(v) => set("image", v)} error={e("image")} />
