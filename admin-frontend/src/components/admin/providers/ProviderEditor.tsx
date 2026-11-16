@@ -17,6 +17,8 @@ import { AirportsInput } from "./AirportsInput";
 import { RelatedInput } from "./RelatedInput";
 import { FormSection, GalleryEditor, Grid, IconButton, Repeater, Toggle, UploadField } from "./form-kit";
 import {
+  ABOUT_MAX_WORDS,
+  wordCount,
   emptyProviderState,
   FLEET_CATEGORIES,
   PROVIDER_TIERS,
@@ -428,7 +430,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             </Grid>
           </FormSection>
 
-          <FormSection id="about" title="About" description="Up to 10 paragraphs, shown on the profile page.">
+          <FormSection id="about" title="About" description={`Up to 10 paragraphs and ${ABOUT_MAX_WORDS} words in total, shown on the profile page.`}>
             {s.about.map((para, i) => (
               <div key={i} className="flex items-start gap-2">
                 <Textarea
@@ -456,6 +458,16 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             >
               <Plus className="size-4" /> Add paragraph
             </button>
+            {(() => {
+              const words = wordCount(s.about);
+              const over = words > ABOUT_MAX_WORDS;
+              return (
+                <p id="about-words" role={over ? "alert" : undefined} className={cn("text-xs font-medium", over ? "text-danger" : "text-subtle")}>
+                  {words} / {ABOUT_MAX_WORDS} words{over ? ` — remove ${words - ABOUT_MAX_WORDS} to save.` : ""}
+                </p>
+              );
+            })()}
+            {e("about") && <p className="text-xs font-medium text-danger">{e("about")}</p>}
           </FormSection>
 
           <FormSection id="services" title="Services">

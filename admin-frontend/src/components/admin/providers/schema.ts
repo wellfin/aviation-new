@@ -2,6 +2,14 @@ import { z } from "zod";
 import { PLACE_NAME, PLACE_NAME_MESSAGE } from "@/lib/text";
 import type { Provider } from "@/lib/types";
 
+/** About: all paragraphs together may have at most this many words. */
+export const ABOUT_MAX_WORDS = 500;
+
+/** Words across paragraphs (anything between spaces counts as one word). */
+export function wordCount(paras: string[]): number {
+  return paras.reduce((n, p) => n + (p.trim() ? p.trim().split(/\s+/).length : 0), 0);
+}
+
 /** Mirrors backend/src/modules/providers/providers.schemas.ts (admin create/update). The API re-validates. */
 
 export const PROVIDER_TIERS = ["basic", "pro", "ultra_pro"] as const;
@@ -70,7 +78,10 @@ export const providerSchema = z.object({
   country: text(80).min(2, "Choose the country"),
   city: text(80).min(1, "Enter the city").regex(PLACE_NAME, PLACE_NAME_MESSAGE),
   summary: text(300).min(10, "Write at least 10 characters"),
-  about: z.array(text(2000).min(1, "Remove empty paragraphs")).max(10),
+  about: z
+    .array(text(2000).min(1, "Remove empty paragraphs"))
+    .max(10)
+    .refine((paras) => wordCount(paras) <= ABOUT_MAX_WORDS, `About can have at most ${ABOUT_MAX_WORDS} words in total`),
   coverImage: assetUrl,
   logo: assetUrl,
   gallery: z.array(assetUrl.refine((v) => v !== "", "Required")).max(30, "At most 30 images"),
