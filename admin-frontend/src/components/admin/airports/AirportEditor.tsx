@@ -17,6 +17,9 @@ import { useApi } from "@/lib/hooks/useApi";
 import { DeleteAirportButton } from "./DeleteAirportButton";
 import {
   CONTINENT_OPTIONS,
+  approachesText,
+  timeZones,
+  utcOffsetFor,
   shortNameFor,
   AIRPORT_TYPES,
   airportRequestBody,
@@ -142,8 +145,18 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
 
       <form onSubmit={submit} noValidate className="grid items-start gap-4 xl:grid-cols-[1fr_320px]">
         <div className="flex min-w-0 flex-col gap-4">
-          <FormSection title="Identity">
-            <Grid cols={4}>
+          {/* Same fields and order as "Airport Information" on the airport page (main rows, then "More Airport Information"). */}
+          <FormSection title="Airport Information">
+            <Grid>
+              {/* The short name used on cards is derived from this (minus a trailing "Airport"). */}
+              <Input
+                label="Airport Name *"
+                name="name"
+                value={s.name}
+                maxLength={150}
+                onChange={(ev) => setS((prev) => ({ ...prev, name: ev.target.value, shortName: shortNameFor(ev.target.value) }))}
+                error={e("name") ?? e("shortName")}
+              />
               <Input
                 label="ICAO Code *"
                 name="icao"
@@ -156,34 +169,7 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                 className="font-mono"
               />
               <Input label="IATA Code" name="iata" value={s.iata} maxLength={3} onChange={(ev) => set("iata", ev.target.value.toUpperCase())} error={e("iata")} className="font-mono" />
-              <Select label="Type *" name="type" value={s.type} onChange={(ev) => set("type", ev.target.value as AirportFormState["type"])} error={e("type")} wrapperClassName="sm:col-span-2">
-                {AIRPORT_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </Select>
-            </Grid>
-            <Grid>
-              {/* The short name used on cards is derived from this (minus a trailing "Airport"). */}
-              <Input
-                label="Airport Name *"
-                name="name"
-                value={s.name}
-                maxLength={150}
-                onChange={(ev) => setS((prev) => ({ ...prev, name: ev.target.value, shortName: shortNameFor(ev.target.value) }))}
-                error={e("name") ?? e("shortName")}
-                wrapperClassName="sm:col-span-2"
-              />
-            </Grid>
-          </FormSection>
-
-          <FormSection title="Location">
-            <Grid>
               <Input label="City Name *" name="city" value={s.city} maxLength={80} onChange={(ev) => set("city", ev.target.value)} error={e("city")} />
-              <Input label="Region" name="region" value={s.region} maxLength={120} onChange={(ev) => set("region", ev.target.value)} error={e("region")} />
-            </Grid>
-            <Grid cols={3}>
               <Input label="Country Name *" name="country" value={s.country} maxLength={80} onChange={(ev) => set("country", ev.target.value)} error={e("country")} />
               <div>
                 <Select
@@ -212,6 +198,27 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                   </p>
                 )}
               </div>
+              <Select label="Airport Type *" name="type" value={s.type} onChange={(ev) => set("type", ev.target.value as AirportFormState["type"])} error={e("type")}>
+                {AIRPORT_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </Select>
+              <Input label="Latitude *" name="lat" type="number" step="any" min={-90} max={90} value={s.lat} onChange={(ev) => set("lat", ev.target.value)} error={e("lat")} hint="Decimal degrees, N positive" />
+              <div>
+                <Input label="Longitude *" name="lon" type="number" step="any" min={-180} max={180} value={s.lon} onChange={(ev) => set("lon", ev.target.value)} error={e("lon")} hint="Decimal degrees, E positive" />
+                {s.lat && s.lon && !e("lat") && !e("lon") && (
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${encodeURIComponent(s.lat)}&mlon=${encodeURIComponent(s.lon)}#map=13/${encodeURIComponent(s.lat)}/${encodeURIComponent(s.lon)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-1 inline-flex w-fit items-center gap-1 text-xs font-semibold text-brand hover:underline"
+                  >
+                    Check position on OpenStreetMap <ExternalLink className="size-3" />
+                  </a>
+                )}
+              </div>
               <Select label="Continent *" name="continent" value={s.continent} onChange={(ev) => set("continent", ev.target.value)} error={e("continent")}>
                 <option value="">Choose…</option>
                 {/* Stored values stay the API's continents ("Oceania" is shown as Australia); one outside this list, e.g. Antarctica, stays selectable. */}
@@ -222,32 +229,48 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                   </option>
                 ))}
               </Select>
-            </Grid>
-            <Grid cols={3}>
-              <Input label="Latitude *" name="lat" type="number" step="any" min={-90} max={90} value={s.lat} onChange={(ev) => set("lat", ev.target.value)} error={e("lat")} hint="Decimal degrees, N positive" />
-              <Input label="Longitude *" name="lon" type="number" step="any" min={-180} max={180} value={s.lon} onChange={(ev) => set("lon", ev.target.value)} error={e("lon")} hint="Decimal degrees, E positive" />
+              <Input label="Type of Traffic Permitted" name="trafficPermitted" value={s.trafficPermitted} maxLength={80} placeholder="IFR / VFR" onChange={(ev) => set("trafficPermitted", ev.target.value)} error={e("trafficPermitted")} />
+              <Input label="Approaches" name="approaches" value={approachesText(s.runways.map((r) => r.ils))} disabled readOnly hint="Filled automatically from the ILS of the runways below." />
               <Input label="Elevation (ft)" name="elevationFt" type="number" step={1} value={s.elevationFt} onChange={(ev) => set("elevationFt", ev.target.value)} error={e("elevationFt")} />
-            </Grid>
-            {s.lat && s.lon && !e("lat") && !e("lon") && (
-              <a
-                href={`https://www.openstreetmap.org/?mlat=${encodeURIComponent(s.lat)}&mlon=${encodeURIComponent(s.lon)}#map=13/${encodeURIComponent(s.lat)}/${encodeURIComponent(s.lon)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex w-fit items-center gap-1 text-sm font-semibold text-brand hover:underline"
+              <Select
+                label="UTC (Timezone)"
+                name="timezone"
+                value={s.timezone}
+                onChange={(ev) => setS((prev) => ({ ...prev, timezone: ev.target.value, utcOffset: utcOffsetFor(ev.target.value) }))}
+                error={e("timezone") ?? e("utcOffset")}
               >
-                Check position on OpenStreetMap <ExternalLink className="size-3.5" />
-              </a>
-            )}
-            <Grid>
-              <Input label="Timezone" name="timezone" value={s.timezone} maxLength={60} placeholder="Asia/Kolkata" onChange={(ev) => set("timezone", ev.target.value)} error={e("timezone")} />
-              <Input label="UTC offset" name="utcOffset" value={s.utcOffset} maxLength={12} placeholder="UTC+5:30" onChange={(ev) => set("utcOffset", ev.target.value)} error={e("utcOffset")} />
+                {/* A saved zone missing from this browser's list stays selectable. */}
+                {s.timezone && !timeZones().some((z) => z.zone === s.timezone) && <option value={s.timezone}>{`${s.timezone} (${s.utcOffset || "UTC"})`}</option>}
+                {timeZones().map((z) => (
+                  <option key={z.zone} value={z.zone}>
+                    {`${z.zone} (${z.offset})`}
+                  </option>
+                ))}
+              </Select>
+              <Input
+                label="Airport Light Intensity"
+                name="lightIntensity"
+                value={s.lightIntensity}
+                maxLength={80}
+                placeholder="High (HIRL)"
+                onChange={(ev) => set("lightIntensity", ev.target.value)}
+                error={e("lightIntensity")}
+                hint="Left blank, the site shows how many runways are lit."
+              />
+              <Select label="Airport of Entry" name="customs" value={s.customs ? "yes" : "no"} onChange={(ev) => set("customs", ev.target.value === "yes")}>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </Select>
+              <Input label="FBO/ GAT" name="fboAuto" value="Automatic: FBO listings at this airport" disabled readOnly hint="Add an FBO listing with this airport to show it here." />
+              <Input label="Fuel" name="fuelAuto" value="Automatic: fuel listings at this airport" disabled readOnly hint="Add a fuel listing with this airport to show it here." />
+              <Input label="Fire Category" name="fireCategory" value={s.fireCategory} maxLength={20} placeholder="CAT 9" onChange={(ev) => set("fireCategory", ev.target.value)} error={e("fireCategory")} />
             </Grid>
           </FormSection>
 
-          <FormSection title="Operations">
+          <FormSection title="Other Details">
             <Grid>
               <Input label="Operating hours" name="operatingHours" value={s.operatingHours} maxLength={120} placeholder="24/7" onChange={(ev) => set("operatingHours", ev.target.value)} error={e("operatingHours")} />
-              <Input label="Fire category" name="fireCategory" value={s.fireCategory} maxLength={20} placeholder="CAT 9" onChange={(ev) => set("fireCategory", ev.target.value)} error={e("fireCategory")} />
+              <Input label="Region" name="region" value={s.region} maxLength={120} onChange={(ev) => set("region", ev.target.value)} error={e("region")} />
             </Grid>
             {/* Shown on the airport page's Fire/RFFS tab. */}
             <Grid>
@@ -255,10 +278,6 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               <Input label="Removal of disabled aircraft" name="disabledAircraftRemoval" value={s.disabledAircraftRemoval} maxLength={120} placeholder="Up to B747 (recovery kit on site)" onChange={(ev) => set("disabledAircraftRemoval", ev.target.value)} error={e("disabledAircraftRemoval")} />
             </Grid>
             {/* Shown on the airport page under "More Airport Information"; blank fields show as "—". */}
-            <Grid>
-              <Input label="Type of traffic permitted" name="trafficPermitted" value={s.trafficPermitted} maxLength={80} placeholder="IFR / VFR" onChange={(ev) => set("trafficPermitted", ev.target.value)} error={e("trafficPermitted")} />
-              <Input label="Airport light intensity" name="lightIntensity" value={s.lightIntensity} maxLength={80} placeholder="High (HIRL)" onChange={(ev) => set("lightIntensity", ev.target.value)} error={e("lightIntensity")} />
-            </Grid>
             <Grid>
               <Input label="Airport category" name="airportCategory" value={s.airportCategory} maxLength={80} placeholder="International" onChange={(ev) => set("airportCategory", ev.target.value)} error={e("airportCategory")} />
               <Input label="Slots required" name="slotsRequired" value={s.slotsRequired} maxLength={80} placeholder="Yes — coordinated (Level 3)" onChange={(ev) => set("slotsRequired", ev.target.value)} error={e("slotsRequired")} />
@@ -358,7 +377,6 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
           <Card title="Visibility">
             <div className="flex flex-col gap-3">
               <Toggle id="featured" label="Featured" description="Shown in featured airport lists on the site." checked={s.featured} onChange={(v) => set("featured", v)} />
-              <Toggle id="customs" label="Customs available" checked={s.customs} onChange={(v) => set("customs", v)} />
             </div>
           </Card>
           <div className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 shadow-soft">

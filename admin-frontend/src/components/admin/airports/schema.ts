@@ -15,9 +15,9 @@ export const CONTINENT_OPTIONS = [
   { value: "South America", label: "South America" },
 ] as const;
 export const AIRPORT_TYPES = [
-  { value: "large_airport", label: "Large airport" },
-  { value: "medium_airport", label: "Medium airport" },
-  { value: "small_airport", label: "Small airport" },
+  { value: "large_airport", label: "Large" },
+  { value: "medium_airport", label: "Medium" },
+  { value: "small_airport", label: "Small" },
 ] as const;
 
 export interface AdminAirport extends Airport {
@@ -320,4 +320,46 @@ export function shortNameFor(name: string): string {
   const full = name.trim().replace(/\s+/g, " ");
   const short = full.replace(/\s+airport$/i, "").trim();
   return (short.length >= 2 ? short : full).slice(0, 80);
+}
+
+/** What the airport page shows under "Approaches", from the runways' ILS. */
+export function approachesText(ils: string[]): string {
+  const list = [...new Set(ils.map((i) => i.trim()).filter(Boolean))];
+  return list.length ? `ILS ${list.join(", ")}` : "Visual / non-precision";
+}
+
+function offsetMinutes(zone: string, at: Date): number {
+  const part = new Intl.DateTimeFormat("en-US", { timeZone: zone, timeZoneName: "longOffset" }).formatToParts(at).find((p) => p.type === "timeZoneName")?.value ?? "GMT";
+  const m = /GMT([+-])(\d{1,2}):?(\d{2})?/.exec(part);
+  if (!m) return 0;
+  return (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] ?? 0));
+}
+
+/** Standard (non-summer-time) UTC offset of a zone, as the site shows it: "UTC+5:30", "UTC-5", "UTC+0". */
+export function utcOffsetFor(zone: string): string {
+  try {
+    const mins = Math.min(offsetMinutes(zone, new Date(Date.UTC(2025, 0, 15))), offsetMinutes(zone, new Date(Date.UTC(2025, 6, 15))));
+    const abs = Math.abs(mins);
+    const hm = `${Math.floor(abs / 60)}${abs % 60 ? `:${String(abs % 60).padStart(2, "0")}` : ""}`;
+    return `UTC${mins < 0 ? "-" : "+"}${hm}`;
+  } catch {
+    return "UTC+0";
+  }
+}
+
+let zoneCache: Array<{ zone: string; offset: string }> | null = null;
+
+/** Every IANA time zone this browser knows, with its standard UTC offset, A–Z. */
+export function timeZones(): Array<{ zone: string; offset: string }> {
+  if (!zoneCache) {
+    let zones: string[] = [];
+    try {
+      zones = Intl.supportedValuesOf("timeZone");
+    } catch {
+      zones = [];
+    }
+    if (!zones.includes("UTC")) zones = ["UTC", ...zones];
+    zoneCache = zones.map((zone) => ({ zone, offset: utcOffsetFor(zone) }));
+  }
+  return zoneCache;
 }
