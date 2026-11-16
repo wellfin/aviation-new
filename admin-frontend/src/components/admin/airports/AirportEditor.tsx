@@ -260,11 +260,10 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               <Input label="Airport light intensity" name="lightIntensity" value={s.lightIntensity} maxLength={80} placeholder="High (HIRL)" onChange={(ev) => set("lightIntensity", ev.target.value)} error={e("lightIntensity")} />
             </Grid>
             <Grid>
-              <Input label="Deicing" name="deicing" value={s.deicing} maxLength={80} placeholder="Available" onChange={(ev) => set("deicing", ev.target.value)} error={e("deicing")} />
               <Input label="Airport category" name="airportCategory" value={s.airportCategory} maxLength={80} placeholder="International" onChange={(ev) => set("airportCategory", ev.target.value)} error={e("airportCategory")} />
+              <Input label="Slots required" name="slotsRequired" value={s.slotsRequired} maxLength={80} placeholder="Yes — coordinated (Level 3)" onChange={(ev) => set("slotsRequired", ev.target.value)} error={e("slotsRequired")} />
             </Grid>
             <Grid>
-              <Input label="Slots required" name="slotsRequired" value={s.slotsRequired} maxLength={80} placeholder="Yes — coordinated (Level 3)" onChange={(ev) => set("slotsRequired", ev.target.value)} error={e("slotsRequired")} />
               <Input label="Airport website" name="website" type="url" value={s.website} maxLength={200} placeholder="https://www.heathrow.com" onChange={(ev) => set("website", ev.target.value)} error={e("website")} />
             </Grid>
             {/* Shown on the airport page's "Airport Services" tab; blank fields show as "—". */}
