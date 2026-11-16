@@ -48,7 +48,7 @@ function providerLinks(providers: Provider[], ...categories: ServiceCategorySlug
   return list.length === 0 ? "No listed providers" : list.map((p) => p.name).join(", ");
 }
 
-function infoFields(a: Airport, providers: Provider[]): { fields: InfoField[]; more: InfoField[] } {
+function infoFields(a: Airport): { fields: InfoField[]; more: InfoField[] } {
   const ils = [...new Set(a.runways.map((r) => r.ils).filter(Boolean))];
   const lit = a.runways.filter((r) => r.lighting).length;
   return {
@@ -70,8 +70,6 @@ function infoFields(a: Airport, providers: Provider[]): { fields: InfoField[]; m
       { label: "UTC", value: `${a.utcOffset} (${a.timezone})` },
       { label: "Airport Light Intensity", value: a.lightIntensity || (a.runways.length ? `${lit} of ${a.runways.length} runways lit` : "—") },
       { label: "Airport of Entry", value: a.customs ? "Yes" : "No" },
-      { label: "FBO/ GAT", value: providerLinks(providers, "fbo") },
-      { label: "Fuel", value: providerLinks(providers, "fuel") },
       { label: "Fire Category", value: a.fireCategory || "—" },
       { label: "Customs and Immigration", value: a.customs ? "Available" : "Not available" },
       { label: "Airport Category", value: a.airportCategory || "—" },
@@ -281,7 +279,7 @@ export default async function AirportPage({ params, searchParams }: PageProps<"/
       </section>
     );
   } else if (tab === "info") {
-    const info = infoFields(airport, providers);
+    const info = infoFields(airport);
     // Figma 696:1642: the row cards sit inside one white card; every other tab uses the same layout.
     content = (
       <InfoCard>

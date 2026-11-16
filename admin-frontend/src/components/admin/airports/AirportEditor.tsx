@@ -269,8 +269,6 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
               </Select>
-              <Input label="FBO/ GAT" name="fboAuto" value="Automatic: FBO listings at this airport" disabled readOnly hint="Add an FBO listing with this airport to show it here." />
-              <Input label="Fuel" name="fuelAuto" value="Automatic: fuel listings at this airport" disabled readOnly hint="Add a fuel listing with this airport to show it here." />
               <Input label="Fire Category" name="fireCategory" value={s.fireCategory} maxLength={20} placeholder="CAT 9" onChange={(ev) => set("fireCategory", ev.target.value)} error={e("fireCategory")} />
               <div>
                 <Select label="Customs and Immigration" name="customsImmigration" value={s.customs ? "yes" : "no"} onChange={(ev) => set("customs", ev.target.value === "yes")}>
