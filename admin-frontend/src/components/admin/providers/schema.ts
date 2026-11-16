@@ -342,7 +342,7 @@ export function rawPayload(s: ProviderFormState, mode: "create" | "edit"): Recor
     countryCode: s.countryCode,
     country: s.country,
     city: s.city,
-    summary: s.summary,
+    summary: s.summary.trim() || defaultSummary(s),
     about: s.about,
     coverImage: s.coverImage,
     logo: s.logo,
@@ -390,4 +390,11 @@ export function requestBody(p: ProviderPayload, mode: "create" | "edit"): Record
   const edit: Partial<typeof rest> = { ...rest };
   delete edit.status;
   return { ...edit, ownerEmail: ownerEmail || null };
+}
+
+/** Summary for a listing that has none (the field isn't in the form): "Skyport Executive FBO in New Delhi, India." */
+export function defaultSummary(s: { name: string; city: string; country: string }): string {
+  const place = [s.city.trim(), s.country.trim()].filter(Boolean).join(", ");
+  const text = `${s.name.trim()}${place ? ` in ${place}` : ""}.`;
+  return (text.length >= 10 ? text : `${text} Aviation services.`).slice(0, 300);
 }

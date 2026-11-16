@@ -340,12 +340,6 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
               </Select>
               <Input label="Country code" name="countryCode" value={s.countryCode.toUpperCase()} disabled readOnly hint="Filled from the country." />
             </Grid>
-            <Textarea label="Summary *" name="summary" value={s.summary} maxLength={300} onChange={(ev) => set("summary", ev.target.value)} error={e("summary")} className="min-h-20" />
-            <Grid cols={3}>
-              <Input label="Founded" name="foundedYear" type="number" inputMode="numeric" min={1900} max={2100} value={s.foundedYear} onChange={(ev) => set("foundedYear", ev.target.value)} error={e("foundedYear")} />
-              <Input label="Employees" name="employees" value={s.employees} maxLength={20} placeholder="50–100" onChange={(ev) => set("employees", ev.target.value)} error={e("employees")} />
-              <Input label="Locations label" name="locationsLabel" value={s.locationsLabel} maxLength={60} placeholder="12 locations worldwide" onChange={(ev) => set("locationsLabel", ev.target.value)} error={e("locationsLabel")} />
-            </Grid>
           </FormSection>
 
           <FormSection id="media" title="Media" description="Upload PNG, JPG or WebP images, or paste a URL.">
@@ -381,7 +375,6 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
                 <p className="mt-1.5 text-xs text-[#a16207]">The {TIER_LABEL[s.tier]} plan normally shows up to {limits.galleryImages} images; staff can exceed it.</p>
               )}
             </div>
-            <Input label="Video URL" name="videoUrl" value={s.videoUrl} maxLength={500} placeholder="https://…" onChange={(ev) => set("videoUrl", ev.target.value)} error={e("videoUrl")} hint={limits.video ? undefined : "Videos are an Ultra Pro feature."} />
           </FormSection>
 
           <FormSection id="listing-button" title="Airport listing & button" description="Where this listing appears in airport service lists, and the blue button on Ultra Pro listings. The button is optional — Pro and Basic listings never show it.">
@@ -398,17 +391,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
               Show the button
             </label>
             <Grid>
-              <Input label="Button text" name="ctaLabel" value={s.ctaLabel} maxLength={40} placeholder="See More Details" onChange={(ev) => set("ctaLabel", ev.target.value)} error={e("ctaLabel")} />
-              <Input
-                label="Button link"
-                name="ctaUrl"
-                value={s.ctaUrl}
-                maxLength={500}
-                placeholder="Profile page"
-                onChange={(ev) => set("ctaUrl", ev.target.value)}
-                error={e("ctaUrl")}
-                hint="Blank opens the provider's profile. Use https://… or a path such as /contact."
-              />
+              <Input label="Button text" name="ctaLabel" value={s.ctaLabel} maxLength={40} placeholder="See More Details" onChange={(ev) => set("ctaLabel", ev.target.value)} error={e("ctaLabel")} hint="The button opens the provider's profile." />
             </Grid>
             {s.tier !== "ultra_pro" && <p className="text-xs text-[#a16207]">Only Ultra Pro listings show this button.</p>}
           </FormSection>
