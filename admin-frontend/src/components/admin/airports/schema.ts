@@ -21,6 +21,8 @@ export const AIRPORT_TYPES = [
 ] as const;
 
 export interface AdminAirport extends Airport {
+  /** ICAO codes chosen for the "Nearby Airport" tab, in display order. */
+  nearbyAirports?: string[];
   id: string;
   createdAt: string;
   updatedAt: string;
@@ -106,6 +108,7 @@ export const airportSchema = z.object({
   medicalFacilities: text(120),
   customs: z.boolean(),
   featured: z.boolean(),
+  nearbyAirports: z.array(z.string().regex(/^[A-Z0-9]{4}$/)).max(4, "Choose at most 4 nearby airports"),
 });
 
 export interface RunwayRow {
@@ -164,6 +167,7 @@ export interface AirportFormState {
   medicalFacilities: string;
   customs: boolean;
   featured: boolean;
+  nearbyAirports: string[];
 }
 
 export function emptyAirportState(): AirportFormState {
@@ -204,6 +208,7 @@ export function emptyAirportState(): AirportFormState {
     medicalFacilities: "",
     customs: false,
     featured: false,
+    nearbyAirports: [],
   };
 }
 
@@ -258,6 +263,7 @@ export function stateFromAirport(a: AdminAirport): AirportFormState {
     medicalFacilities: a.medicalFacilities ?? "",
     customs: a.customs,
     featured: a.featured,
+    nearbyAirports: [...(a.nearbyAirports ?? [])],
   };
 }
 
@@ -301,6 +307,7 @@ export function rawAirportPayload(s: AirportFormState, mode: "create" | "edit"):
     medicalFacilities: s.medicalFacilities,
     customs: s.customs,
     featured: s.featured,
+    nearbyAirports: s.nearbyAirports,
   };
 }
 

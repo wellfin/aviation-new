@@ -130,6 +130,27 @@ describe("public airports", () => {
     expect((await request(app).get(pub("/ZZZZ/nearby"))).status).toBe(404);
   });
 
+  it("uses the nearby airports chosen in the admin panel, in their order", async () => {
+    const { agent } = await signedInAgent("ADMIN", app);
+    const u = await agent.patch(adm("/EGLL")).send({ nearbyAirports: ["eggw", "EGKK"] });
+    expect(u.status).toBe(200);
+    expect(u.body.data.nearbyAirports).toEqual(["EGGW", "EGKK"]);
+    const r = await request(app).get(pub("/EGLL/nearby?radiusKm=100"));
+    expect(r.body.data.map((x: { airport: { icao: string } }) => x.airport.icao)).toEqual(["EGGW", "EGKK"]);
+    expect(r.body.data[0].distanceKm).toBeGreaterThan(0);
+
+    expect((await agent.patch(adm("/EGLL")).send({ nearbyAirports: ["ZZZZ"] })).status).toBe(422);
+    expect((await agent.patch(adm("/EGLL")).send({ nearbyAirports: ["EGLL"] })).status).toBe(422);
+    expect((await agent.patch(adm("/EGLL")).send({ nearbyAirports: ["EGKK", "EGKK"] })).status).toBe(422);
+    expect((await agent.patch(adm("/EGLL")).send({ nearbyAirports: ["EGKK", "EGGW", "EGLF", "KJFK", "OMDB"] })).status).toBe(422);
+
+    // Cleared: back to nearest by distance.
+    await agent.patch(adm("/EGLL")).send({ nearbyAirports: [] });
+    const near = await request(app).get(pub("/EGLL/nearby?radiusKm=100"));
+    const distances = near.body.data.map((x: { distanceKm: number }) => x.distanceKm);
+    expect(distances).toEqual([...distances].sort((a, b) => a - b));
+  });
+
   it("computes distance and bearing between two airports", async () => {
     const r = await request(app).get(pub("/distance?from=LHR&to=kjfk"));
     expect(r.status).toBe(200);

@@ -80,6 +80,8 @@ const airportSchema = new Schema(
     medicalFacilities: { type: String, trim: true, maxlength: 120, default: "" },
     customs: { type: Boolean, default: false },
     featured: { type: Boolean, default: false },
+    /** Up to 4 ICAO codes chosen in the admin panel for the "Nearby Airport" tab, in display order. Empty: nearest by distance. */
+    nearbyAirports: { type: [{ type: String, uppercase: true, trim: true, match: /^[A-Z0-9]{4}$/ }], default: [] },
     /** Number of published providers at this airport (denormalised; see recountAirportServices). */
     servicesCount: { type: Number, default: 0, min: 0 },
   },

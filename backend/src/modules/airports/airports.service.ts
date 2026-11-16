@@ -1,6 +1,6 @@
 import type { ClientSession, PipelineStage } from "mongoose";
 import { isDuplicateKeyError, withTransaction } from "../../lib/db.js";
-import { conflict, notFound } from "../../lib/errors.js";
+import { conflict, notFound, validationError } from "../../lib/errors.js";
 import { containsRegex, paginated, skipFor, type Paginated } from "../../lib/pagination.js";
 import { Provider } from "../providers/provider.model.js";
 import { Airport, type AirportAttrs, type AirportDoc, type AirportDTO, toAirportDTO } from "./airport.model.js";
@@ -94,9 +94,22 @@ export async function getAirport(code: string): Promise<AirportDTO> {
   return toAirportDTO(await requireAirport(code));
 }
 
-/** Airports within `radiusKm` of the origin, nearest first (uses the 2dsphere index). */
+/**
+ * The "Nearby Airport" list: the airports chosen in the admin panel, in their order, when there are any;
+ * otherwise airports within `radiusKm` of the origin, nearest first (uses the 2dsphere index).
+ */
 export async function nearbyAirports(code: string, radiusKm: number, limit: number) {
   const origin = await requireAirport(code);
+  const chosen = origin.nearbyAirports ?? [];
+  if (chosen.length) {
+    const docs = await Airport.find({ icao: { $in: chosen } });
+    const byIcao = new Map(docs.map((d) => [d.icao, d]));
+    return chosen
+      .map((icao) => byIcao.get(icao))
+      .filter((a): a is AirportDoc => Boolean(a))
+      .slice(0, limit)
+      .map((a) => ({ airport: toAirportDTO(a), ...legBetween(origin, a) }));
+  }
   const originAt = coords(origin);
   const rows = await Airport.aggregate<AirportRecord>([
     {
@@ -159,7 +172,16 @@ export async function recountAirportServices(icaos: string[], session?: ClientSe
 /* ----------------------------------------------------------------- admin -- */
 
 export function toAdminAirportDTO(a: AirportDoc) {
-  return { ...toAirportDTO(a), id: a.id, createdAt: a.createdAt.toISOString(), updatedAt: a.updatedAt.toISOString() };
+  return { ...toAirportDTO(a), nearbyAirports: [...(a.nearbyAirports ?? [])], id: a.id, createdAt: a.createdAt.toISOString(), updatedAt: a.updatedAt.toISOString() };
+}
+
+/** Nearby airports must exist and can't be the airport itself. */
+async function checkNearby(icao: string, codes: string[] | undefined): Promise<void> {
+  if (!codes?.length) return;
+  if (codes.includes(icao)) throw validationError({ nearbyAirports: "An airport can't be its own nearby airport" });
+  const found = new Set((await Airport.find({ icao: { $in: codes } }).select("icao").lean()).map((a) => a.icao));
+  const missing = codes.filter((c) => !found.has(c));
+  if (missing.length) throw validationError({ nearbyAirports: `No airport with code ${missing.join(", ")}` });
 }
 
 const ADMIN_SORTS = {
@@ -207,6 +229,7 @@ function duplicateCode(err: unknown): never {
 }
 
 export async function createAirport(input: CreateAirportInput) {
+  await checkNearby(input.icao, input.nearbyAirports);
   const doc = new Airport({ icao: input.icao, location: { type: "Point", coordinates: [input.lon, input.lat] } });
   applyFields(doc, input);
   try {
@@ -219,6 +242,7 @@ export async function createAirport(input: CreateAirportInput) {
 
 /** Updates an airport; an IATA change is propagated to providers' denormalised airport codes. */
 export async function updateAirport(icao: string, input: UpdateAirportInput) {
+  await checkNearby(icao, input.nearbyAirports);
   try {
     return await withTransaction(async (session) => {
       const doc = await Airport.findOne({ icao }).session(session);

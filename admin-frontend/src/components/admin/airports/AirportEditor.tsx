@@ -15,6 +15,7 @@ import { ApiError, apiRequest } from "@/lib/api/client";
 import { fieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { DeleteAirportButton } from "./DeleteAirportButton";
+import { NearbyAirportsInput } from "./NearbyAirportsInput";
 import {
   COMM_ROWS,
   CONTINENT_OPTIONS,
@@ -332,6 +333,11 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
                 error={e("disabledAircraftRemoval")}
               />
             </Grid>
+          </FormSection>
+
+          {/* The airport page's "Nearby Airport" tab. */}
+          <FormSection title="Nearby Airports">
+            <NearbyAirportsInput icao={s.icao} value={s.nearbyAirports} onChange={(v) => set("nearbyAirports", v)} error={e("nearbyAirports")} />
           </FormSection>
 
           <FormSection title="Other Details">

@@ -9,6 +9,7 @@ import type { CreateAirportInput } from "./airports.schemas.js";
  */
 /** Optional operational details ("More Airport Information") are filled in by staff, not seeded. */
 type OptionalDetail =
+  | "nearbyAirports"
   | "trafficPermitted"
   | "lightIntensity"
   | "deicing"

@@ -136,6 +136,12 @@ const airportFields = {
   medicalFacilities: text(120).optional(),
   customs: z.boolean().optional(),
   featured: z.boolean().optional(),
+  /** ICAO codes for the "Nearby Airport" tab, in display order. */
+  nearbyAirports: z
+    .array(icaoCode)
+    .max(4, "Choose at most 4 nearby airports")
+    .refine((codes) => new Set(codes).size === codes.length, "Each nearby airport can be added once")
+    .optional(),
 };
 
 export const createAirportBody = z.object({ icao: icaoCode, ...airportFields });
