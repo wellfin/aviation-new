@@ -276,6 +276,22 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
             </Grid>
           </FormSection>
 
+          {/* Same rows and order as the airport page's "Airport Services" tab; blank fields show as "—". */}
+          <FormSection title="Airport Services">
+            <Grid>
+              <Input label="Handling" name="handlingAuto" value="Automatic: ground handler listings at this airport" disabled readOnly hint="Add a ground handler listing with this airport to show it here." />
+              <Input label="Cargo-Handling Facilities" name="cargoHandling" value={s.cargoHandling} maxLength={120} placeholder="Cargo terminal with customs clearance" onChange={(ev) => set("cargoHandling", ev.target.value)} error={e("cargoHandling")} />
+              <Input label="Catering" name="cateringAuto" value="Automatic: catering listings at this airport" disabled readOnly hint="Add a catering listing with this airport to show it here." />
+              <Input label="De-icing Facilities" name="deicing" value={s.deicing} maxLength={80} placeholder="Available" onChange={(ev) => set("deicing", ev.target.value)} error={e("deicing")} />
+              <Input label="Hangar Space for Visiting Aircraft" name="hangarSpace" value={s.hangarSpace} maxLength={120} placeholder="Available on request" onChange={(ev) => set("hangarSpace", ev.target.value)} error={e("hangarSpace")} />
+              <Input label="MRO or Repair Facilities for Visiting Aircraft" name="mroAuto" value="Automatic: MRO listings at this airport" disabled readOnly hint="Add a MRO listing with this airport to show it here." />
+              <Input label="Transit Hotel at the Airport" name="hotelAuto" value="Automatic: hotel listings at this airport" disabled readOnly hint="Add a hotel listing with this airport to show it here." />
+              <Input label="Restaurants" name="restaurants" value={s.restaurants} maxLength={120} placeholder="Landside and airside" onChange={(ev) => set("restaurants", ev.target.value)} error={e("restaurants")} />
+              <Input label="Transportation" name="transportAuto" value="Automatic: ground transportation listings at this airport" disabled readOnly hint="Add a ground transportation listing with this airport to show it here." />
+              <Input label="Medical Facilities" name="medicalFacilities" value={s.medicalFacilities} maxLength={120} placeholder="Airport medical centre" onChange={(ev) => set("medicalFacilities", ev.target.value)} error={e("medicalFacilities")} />
+            </Grid>
+          </FormSection>
+
           <FormSection title="Other Details">
             <Grid>
               <Input label="Operating hours" name="operatingHours" value={s.operatingHours} maxLength={120} placeholder="24/7" onChange={(ev) => set("operatingHours", ev.target.value)} error={e("operatingHours")} />
@@ -289,15 +305,6 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
             {/* Shown on the airport page under "More Airport Information"; blank fields show as "—". */}
             <Grid>
               <Input label="Airport website" name="website" type="url" value={s.website} maxLength={200} placeholder="https://www.heathrow.com" onChange={(ev) => set("website", ev.target.value)} error={e("website")} />
-            </Grid>
-            {/* Shown on the airport page's "Airport Services" tab; blank fields show as "—". */}
-            <Grid>
-              <Input label="Cargo-handling facilities" name="cargoHandling" value={s.cargoHandling} maxLength={120} placeholder="Cargo terminal with customs clearance" onChange={(ev) => set("cargoHandling", ev.target.value)} error={e("cargoHandling")} />
-              <Input label="Hangar space for visiting aircraft" name="hangarSpace" value={s.hangarSpace} maxLength={120} placeholder="Available on request" onChange={(ev) => set("hangarSpace", ev.target.value)} error={e("hangarSpace")} />
-            </Grid>
-            <Grid>
-              <Input label="Restaurants" name="restaurants" value={s.restaurants} maxLength={120} placeholder="Landside and airside" onChange={(ev) => set("restaurants", ev.target.value)} error={e("restaurants")} />
-              <Input label="Medical facilities" name="medicalFacilities" value={s.medicalFacilities} maxLength={120} placeholder="Airport medical centre" onChange={(ev) => set("medicalFacilities", ev.target.value)} error={e("medicalFacilities")} />
             </Grid>
             <ChipInput id="serviceTags" label="Service tags" values={s.serviceTags} onChange={(v) => set("serviceTags", v)} max={20} maxLength={30} placeholder="FBO, Fuel, Customs…" error={e("serviceTags")} />
             <UploadField id="image" label="Image" kind="image" value={s.image} onChange={(v) => set("image", v)} error={e("image")} />

@@ -88,11 +88,10 @@ function infoFields(a: Airport, providers: Provider[]): { fields: InfoField[]; m
 function serviceFields(a: Airport, providers: Provider[]): { fields: InfoField[]; more: InfoField[] } {
   return {
     fields: [
-      { label: "FBO/GAT", value: providerLinks(providers, "fbo") },
       { label: "Handling", value: providerLinks(providers, "ground-handler") },
       { label: "Cargo-Handling Facilities", value: a.cargoHandling || "—" },
-      { label: "Fuel", value: providerLinks(providers, "fuel") },
       { label: "Catering", value: providerLinks(providers, "catering") },
+      { label: "De-icing Facilities", value: a.deicing || "—" },
       { label: "Hangar Space for Visiting Aircraft", value: a.hangarSpace || "—" },
       { label: "MRO or Repair Facilities for Visiting Aircraft", value: providerLinks(providers, "mro") },
     ],
