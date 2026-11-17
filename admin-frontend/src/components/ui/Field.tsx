@@ -1,5 +1,8 @@
+"use client";
+
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { applyAutoCase, autoCaseFor, sentenceCase, setFieldValue } from "@/lib/text";
 
 const control =
   "w-full rounded-xl border border-line bg-white px-4 text-[15px] text-ink placeholder:text-subtle outline-none transition focus:border-brand focus:ring-3 focus:ring-brand/15 aria-invalid:border-danger aria-invalid:ring-danger/10 disabled:bg-surface";
@@ -30,8 +33,10 @@ interface FieldProps {
   wrapperClassName?: string;
 }
 
-export function Input({ label, error, hint, icon, trailing, wrapperClassName, className, id, name, ...rest }: FieldProps & ComponentProps<"input">) {
+export function Input({ label, error, hint, icon, trailing, wrapperClassName, className, id, name, onBlur, ...rest }: FieldProps & ComponentProps<"input">) {
   const fieldId = id ?? name ?? "field";
+  // Leaving a name, place, email or slug box tidies it: "cargo charter" → "Cargo Charter", "LUTON" → "Luton", emails in small letters.
+  const autoCase = rest.readOnly || rest.disabled ? null : autoCaseFor(name, rest.type);
   const errId = `${fieldId}-error`;
   return (
     <div className={wrapperClassName}>
@@ -45,6 +50,10 @@ export function Input({ label, error, hint, icon, trailing, wrapperClassName, cl
           aria-describedby={error ? errId : undefined}
           className={cn(control, "h-12", icon ? "pl-11" : undefined, trailing ? "pr-11" : undefined, className)}
           {...rest}
+          onBlur={(e) => {
+            if (autoCase) setFieldValue(e.currentTarget, applyAutoCase(e.currentTarget.value, autoCase));
+            onBlur?.(e);
+          }}
         />
         {trailing && <span className="absolute top-1/2 right-3 -translate-y-1/2">{trailing}</span>}
       </div>
@@ -54,7 +63,7 @@ export function Input({ label, error, hint, icon, trailing, wrapperClassName, cl
   );
 }
 
-export function Textarea({ label, error, wrapperClassName, className, id, name, ...rest }: FieldProps & ComponentProps<"textarea">) {
+export function Textarea({ label, error, wrapperClassName, className, id, name, onBlur, ...rest }: FieldProps & ComponentProps<"textarea">) {
   const fieldId = id ?? name ?? "field";
   const errId = `${fieldId}-error`;
   return (
@@ -67,6 +76,11 @@ export function Textarea({ label, error, wrapperClassName, className, id, name, 
         aria-describedby={error ? errId : undefined}
         className={cn(control, "min-h-[120px] py-3", className)}
         {...rest}
+        onBlur={(e) => {
+          // Descriptions and messages start with a capital letter.
+          if (!rest.readOnly && !rest.disabled) setFieldValue(e.currentTarget, sentenceCase(e.currentTarget.value));
+          onBlur?.(e);
+        }}
       />
       <FieldError id={errId} message={error} />
     </div>

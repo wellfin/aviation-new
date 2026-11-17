@@ -181,7 +181,7 @@ export function EmailOtp({
             autoComplete="email"
             placeholder={placeholder}
             value={email}
-            onChange={(e) => changeEmail(e.target.value)}
+            onChange={(e) => changeEmail(e.target.value.replace(/\s/g, "").toLowerCase())}
             aria-invalid={shownError ? true : undefined}
             aria-describedby={statusId}
             className={cn(
@@ -282,7 +282,7 @@ export function EmailOtp({
             autoComplete="email"
             placeholder={placeholder}
             value={email}
-            onChange={(e) => changeEmail(e.target.value)}
+            onChange={(e) => changeEmail(e.target.value.replace(/\s/g, "").toLowerCase())}
             aria-invalid={shownError ? true : undefined}
             aria-describedby={statusId}
             className="min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none placeholder:text-subtle"
