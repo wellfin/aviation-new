@@ -15,5 +15,6 @@ export function newsletterWelcomeEmail(to: string, unsubscribeLink: string): Mai
     to,
     subject: "You're subscribed to the Global Aviation newsletter",
     text: `Thanks for confirming — you'll now receive our aviation industry updates.\n\nYou can unsubscribe at any time:\n${unsubscribeLink}${SIGNATURE}`,
+    unsubscribeUrl: unsubscribeLink,
   };
 }
