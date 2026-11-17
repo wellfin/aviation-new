@@ -118,11 +118,14 @@ export async function updateMyListing(owner: UserDoc, input: EditableListingInpu
 }
 
 /** Minimum content a listing needs before staff review it. */
+const isCharterCategory = (category: string) => category === "charter-operator" || category === "charter-broker";
+
 function missingForReview(p: ProviderDoc): Record<string, string> {
   const missing: Record<string, string> = {};
   if (!p.about?.some((para) => para.trim())) missing.about = "Add at least one paragraph about your business";
   if (!p.contact?.email && !p.contact?.phone) missing.contact = "Add a contact email or phone number";
-  if (!p.airports?.length) missing.airports = "Add at least one airport you serve";
+  // Charter operators and brokers aren't tied to airports.
+  if (!isCharterCategory(p.category) && !p.airports?.length) missing.airports = "Add at least one airport you serve";
   if (!p.services?.length) missing.services = "Add at least one service";
   return missing;
 }

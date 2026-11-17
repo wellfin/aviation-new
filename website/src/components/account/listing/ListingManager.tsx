@@ -28,11 +28,14 @@ export function ListingManager() {
   );
 }
 
+const isCharterListing = (l: Listing) => l.category === "charter-operator" || l.category === "charter-broker";
+
 /** Mirrors the backend's minimum content check for review (listing.service missingForReview). */
 const CHECKS: Array<{ key: string; section: string; label: string; done: (l: Listing) => boolean }> = [
   { key: "about", section: "about", label: "Describe your business", done: (l) => l.about.some((p) => p.trim()) },
   { key: "contact", section: "contact", label: "Add a contact email or phone", done: (l) => Boolean(l.contact.email || l.contact.phone) },
-  { key: "airports", section: "airports", label: "Add at least one airport", done: (l) => l.airports.length > 0 },
+  // Charter operators and brokers aren't tied to airports.
+  { key: "airports", section: "airports", label: "Add at least one airport", done: (l) => isCharterListing(l) || l.airports.length > 0 },
   { key: "services", section: "services", label: "Add at least one service", done: (l) => l.services.length > 0 },
 ];
 
@@ -119,7 +122,7 @@ function Manager() {
     ["socials", "Social"],
     ["media", "Photos & video"],
     ["services", "Services"],
-    ["airports", "Airports"],
+    ...(isCharterListing(l) ? [] : [["airports", "Airports"] as const]),
     ["certifications", "Certifications"],
     ["brochures", "Brochures"],
     ...(hasFleet ? [["fleet", "Fleet"]] : []),
@@ -270,7 +273,8 @@ function Manager() {
         <SocialsSection listing={l} onSaved={setLocal} />
         <MediaSection listing={l} onSaved={setLocal} />
         <ServicesSection listing={l} onSaved={setLocal} />
-        <AirportsSection listing={l} onSaved={setLocal} />
+        {/* Airport service providers only; charter operators and brokers aren't tied to airports. */}
+        {!isCharterListing(l) && <AirportsSection listing={l} onSaved={setLocal} />}
         <CertificationsSection listing={l} onSaved={setLocal} />
         <BrochuresSection listing={l} onSaved={setLocal} />
         {hasFleet && <FleetSection listing={l} onSaved={setLocal} />}

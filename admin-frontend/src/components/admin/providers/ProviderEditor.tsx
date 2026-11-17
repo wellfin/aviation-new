@@ -270,7 +270,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
           )}
         </div>
         <nav aria-label="Form sections" className="flex flex-wrap gap-1 text-xs">
-          {SECTIONS.map(([idx, label]) => (
+          {SECTIONS.filter(([idx]) => idx !== "airports" || (s.category !== "charter-operator" && s.category !== "charter-broker")).map(([idx, label]) => (
             <a key={idx} href={`#${idx}`} className="rounded-lg border border-line bg-white px-2 py-1 font-semibold text-muted hover:text-brand">
               {label}
             </a>
@@ -498,9 +498,12 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             </Repeater>
           </FormSection>
 
-          <FormSection id="airports" title="Airports">
-            <AirportsInput value={s.airports} onChange={(v) => set("airports", v)} max={50} error={e("airports") ?? Object.entries(errors).find(([k]) => k.startsWith("airports."))?.[1]} />
-          </FormSection>
+          {/* Airport service providers only; charter operators and brokers aren't tied to airports. Saved airports are kept. */}
+          {s.category !== "charter-operator" && s.category !== "charter-broker" && (
+            <FormSection id="airports" title="Airports">
+              <AirportsInput value={s.airports} onChange={(v) => set("airports", v)} max={50} error={e("airports") ?? Object.entries(errors).find(([k]) => k.startsWith("airports."))?.[1]} />
+            </FormSection>
+          )}
 
           <FormSection id="certifications" title="Certifications">
             <Repeater
