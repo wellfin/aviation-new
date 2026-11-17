@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "../../lib/business-email.js";
 import { isObjectId } from "../../lib/db.js";
 import { paginationQuery } from "../../lib/pagination.js";
 import { REVIEW_STATUSES } from "./review.model.js";
@@ -23,7 +24,14 @@ export const createReviewBody = z.object({
 });
 export type CreateReviewInput = z.infer<typeof createReviewBody>;
 
-const guestEmail = z.string().trim().toLowerCase().min(1, "Email is required").pipe(z.email("Enter a valid email address")).pipe(z.string().max(254));
+const guestEmail = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, "Email is required")
+  .pipe(z.email("Enter a valid email address"))
+  .pipe(z.string().max(254))
+  .refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE);
 
 /** "Share Your Experience" from a visitor (no account): the email is proven with a code first. */
 export const guestReviewBody = z.object({

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "../../lib/business-email.js";
 import { ACCOUNT_SERVICES } from "../users/user.model.js";
 
 export const email = z.string().trim().toLowerCase().min(1, "Email is required").max(254).email("Enter a valid email address");
@@ -19,7 +20,8 @@ const otpCode = z.string().trim().regex(/^\d{4,8}$/, "Enter the code from your e
 export const registerSchema = z.object({
   firstName: name,
   lastName: name,
-  email,
+  // New accounts need a work address; sign-in, verification and password reset accept any existing one.
+  email: email.refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE),
   password,
   accountType: z.enum(["user", "provider"]).default("user"),
   phone: phone.optional(),

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "@/lib/business-email";
 import { PLACE_NAME, PLACE_NAME_MESSAGE } from "@/lib/text";
 import type { Provider } from "@/lib/types";
 
@@ -91,7 +92,7 @@ export const providerSchema = z.object({
       .trim()
       .max(30)
       .regex(/^[+\d\s().A-Za-z-]*$/, "Enter a valid phone number"),
-    email: z.union([z.email("Enter a valid email").max(254), z.literal("")]),
+    email: z.union([z.email("Enter a valid email").max(254).refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE), z.literal("")]),
     website: text(200),
     address: text(300),
     fax: text(30),
@@ -100,7 +101,7 @@ export const providerSchema = z.object({
       .trim()
       .max(30)
       .regex(/^[+\d\s().A-Za-z-]*$/, "Enter a valid phone number"),
-    email2: z.union([z.email("Enter a valid email").max(254), z.literal("")]),
+    email2: z.union([z.email("Enter a valid email").max(254).refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE), z.literal("")]),
     sita: text(30),
     location: text(120),
   }),

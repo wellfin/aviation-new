@@ -53,6 +53,14 @@ describe("registration & email verification", () => {
     expect(r.body.error.fieldErrors).toHaveProperty("password");
   });
 
+  it("accepts only work emails for new accounts", async () => {
+    for (const email of ["sam@gmail.com", "sam@outlook.com", "sam@yahoo.com"]) {
+      const r = await request(app).post(api("/auth/register")).send({ ...reg, email });
+      expect(r.status).toBe(422);
+      expect(r.body.error.fieldErrors.email).toMatch(/work email/i);
+    }
+  });
+
   it("rejects a duplicate verified email", async () => {
     await createUser({ email: reg.email });
     const r = await request(app).post(api("/auth/register")).send(reg);

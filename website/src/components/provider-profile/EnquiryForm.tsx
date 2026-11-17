@@ -41,7 +41,6 @@ export function EnquiryForm({ providerSlug, providerName, services, phoneHref }:
           fieldClassName="h-11 pl-3.5"
           placeholder="Email Address"
           codeLength={ENQUIRY_OTP_LENGTH}
-          allowPersonal
         />
         <div>
           <div className="flex gap-3">

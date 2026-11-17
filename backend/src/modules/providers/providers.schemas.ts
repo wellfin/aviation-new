@@ -1,10 +1,14 @@
 import { z } from "zod";
+import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "../../lib/business-email.js";
 import { isObjectId } from "../../lib/db.js";
 import { paginationQuery } from "../../lib/pagination.js";
 import { airportCode, countryCode, icaoCode } from "../airports/airports.schemas.js";
 import { PROVIDER_TIERS } from "../catalog/categories.js";
 import { categorySlug } from "../categories/category.schemas.js";
 import { FLEET_CATEGORIES, PROVIDER_STATUSES } from "./provider.model.js";
+
+/** Listing contact emails must be work addresses (no Gmail, Yahoo, Outlook…). */
+const workContactEmail = z.email("Enter a valid email").max(254).refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE);
 
 const text = (max: number) => z.string().trim().max(max);
 const objectIdString = z.string().refine(isObjectId, "Invalid id");
@@ -102,7 +106,7 @@ const contact = z
       .trim()
       .max(30)
       .regex(/^[+\d\s().A-Za-z-]*$/, "Enter a valid phone number"),
-    email: z.union([z.email("Enter a valid email").max(254), z.literal("")]),
+    email: z.union([workContactEmail, z.literal("")]),
     website: text(200),
     address: text(300),
     fax: text(30),
@@ -111,7 +115,7 @@ const contact = z
       .trim()
       .max(30)
       .regex(/^[+\d\s().A-Za-z-]*$/, "Enter a valid phone number"),
-    email2: z.union([z.email("Enter a valid email").max(254), z.literal("")]),
+    email2: z.union([workContactEmail, z.literal("")]),
     sita: text(30),
     location: text(120),
   })

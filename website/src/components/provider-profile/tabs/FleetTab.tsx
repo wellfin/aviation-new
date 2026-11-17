@@ -281,7 +281,6 @@ function FleetEnquiryForm({ providerSlug, aircraft, onDone }: { providerSlug: st
           placeholder="your@email.com"
           layout="panel"
           codeLength={ENQUIRY_OTP_LENGTH}
-          allowPersonal
         />
       </div>
       <div>

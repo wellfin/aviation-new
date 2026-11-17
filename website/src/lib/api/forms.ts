@@ -22,12 +22,12 @@ const phone = z
   .or(z.literal(""));
 const message = z.string().trim().min(10, "Please enter at least 10 characters").max(5000);
 
-export const newsletterSchema = z.object({ email });
+export const newsletterSchema = z.object({ email: workEmail });
 
 export const enquirySchema = z.object({
   providerSlug: z.string().min(1),
   name,
-  email: anyEmail,
+  email: workEmail,
   dialCode: z.string().max(6).optional(),
   phone,
   service: z.string().trim().min(1, "Please select a service"),
@@ -95,7 +95,7 @@ export const loginSchema = z.object({
 export const signupSchema = z.object({
   firstName: name,
   lastName: name,
-  email,
+  email: workEmail,
   password: passwordSchema,
 });
 

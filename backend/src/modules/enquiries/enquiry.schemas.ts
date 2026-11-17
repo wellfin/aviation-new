@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "../../lib/business-email.js";
 import { isNotPastDate } from "../../lib/dates.js";
 import { isObjectId } from "../../lib/db.js";
 import { parse } from "../../lib/http.js";
@@ -22,7 +23,14 @@ export const idParams = z.object({ id: z.string().refine(isObjectId, "Invalid id
 const singleLine = /^[^\p{Cc}]*$/u;
 const name = z.string().trim().min(2, "Please enter at least 2 characters").max(100).regex(singleLine, "Please enter a valid name");
 /** Any valid address: provider enquiries accept personal mailboxes (Gmail, Outlook…) too. */
-export const email = z.string().trim().toLowerCase().min(1, "Email is required").pipe(z.email("Enter a valid email address")).pipe(z.string().max(254));
+export const email = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, "Email is required")
+  .pipe(z.email("Enter a valid email address"))
+  .pipe(z.string().max(254))
+  .refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE);
 
 export const enquiryOtpRequestBody = z.object({ email });
 export const enquiryOtpVerifyBody = z.object({ email, code: z.string().trim().regex(/^\d{6}$/, "Enter the 6-digit code") });

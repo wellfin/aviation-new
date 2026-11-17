@@ -337,15 +337,15 @@ describe("enquiry email rules", () => {
     expect((await agent.post(path).send({ ...general, email: "colleague@example.com" })).body.error.code).toBe("EMAIL_NOT_VERIFIED");
   });
 
-  it("accepts personal email addresses (Gmail, Outlook…) once verified with a 6-digit code", async () => {
+  it("rejects personal email addresses (Gmail, Outlook…): work emails only", async () => {
     const provider = await makeProvider();
-    const email = "ann@gmail.com";
-    expect((await rawPost("/enquiries/email-otp").send({ email })).status).toBe(200);
-    const code = lastCodeFor(email);
-    expect(code).toMatch(/^\d{6}$/);
-    expect((await rawPost("/enquiries/email-otp/verify").send({ email, code })).status).toBe(200);
-    expect((await rawPost(`/providers/${provider.slug}/enquiries`).send({ ...general, email })).status).toBe(201);
-    expect(await Enquiry.countDocuments({ email })).toBe(1);
+    for (const email of ["ann@gmail.com", "ann@outlook.com", "ann@yahoo.co.in"]) {
+      const otp = await rawPost("/enquiries/email-otp").send({ email });
+      expect(otp.status).toBe(422);
+      expect(otp.body.error.fieldErrors.email).toMatch(/work email/i);
+      expect((await rawPost(`/providers/${provider.slug}/enquiries`).send({ ...general, email })).status).toBe(422);
+    }
+    expect(await Enquiry.countDocuments({ provider: provider._id })).toBe(0);
   });
 });
 

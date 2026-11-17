@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "@/lib/business-email";
 import { PLACE_NAME, PLACE_NAME_MESSAGE } from "@/lib/text";
 import type { ServiceCategorySlug } from "@/lib/types";
 
@@ -66,7 +67,7 @@ export const contactSchema = z.object({
       .trim()
       .max(30, "Use at most 30 characters")
       .regex(/^[+\d\s().A-Za-z-]*$/, "Enter a valid phone number"),
-    email: z.union([z.email("Enter a valid email").max(254), z.literal("")]),
+    email: z.union([z.email("Enter a valid email").max(254).refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE), z.literal("")]),
     website: text(200),
     address: text(300),
     fax: text(30),
