@@ -29,6 +29,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
     if (!loading && !user) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
   }, [loading, user, router, pathname]);
 
+  // Staff whose role has no Dashboard start on the first page they can open.
+  const firstAllowed = user ? ADMIN_NAV.flatMap((g) => g.items).find((i) => can(user, i.permission))?.href : undefined;
+  useEffect(() => {
+    if (user && pathname === "/admin" && !can(user, "reports:read") && firstAllowed && firstAllowed !== "/admin") router.replace(firstAllowed);
+  }, [user, pathname, firstAllowed, router]);
+
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface" role="status" aria-live="polite">

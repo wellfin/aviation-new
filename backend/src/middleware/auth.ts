@@ -2,6 +2,7 @@ import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { AppError, forbidden, unauthorized } from "../lib/errors.js";
 import { SCOPES, type SessionScope, verifyAccessToken } from "../modules/auth/tokens.js";
 import { hasPermission, isStaffRole, type Permission } from "../modules/rbac/permissions.js";
+import { permissionsOf } from "../modules/rbac/staff-roles.service.js";
 import { User, type UserDoc } from "../modules/users/user.model.js";
 
 /** Routes under /api/v1/admin use the staff-console session; everything else uses the website session. */
@@ -41,6 +42,7 @@ export const authenticate: RequestHandler = async (req, _res, next) => {
     return next();
   }
   req.user = user;
+  req.permissions = new Set(await permissionsOf(user));
   next();
 };
 
@@ -61,7 +63,8 @@ export function requirePermission(...permissions: Permission[]): RequestHandler[
     requireAuth,
     (req: Request, _res: Response, next: NextFunction) => {
       const role = req.user!.role;
-      if (permissions.every((p) => hasPermission(role, p))) return next();
+      const granted = req.permissions;
+      if (permissions.every((p) => (granted ? granted.has(p) : hasPermission(role, p)))) return next();
       next(forbidden());
     },
   ];

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, UserPlus } from "lucide-react";
+import { ButtonLink } from "@/components/ui/Button";
+import { can, useAuth } from "@/lib/auth/auth-context";
 import { DataTable, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
@@ -11,6 +13,7 @@ import { ROLE_OPTIONS, RoleBadge, SORT_OPTIONS, type AdminUser } from "./shared"
 
 export function UsersClient() {
   const router = useRouter();
+  const { user: me } = useAuth();
   const { get, set, page } = useUrlParams();
   const path = withQuery("/admin/users", { q: get("q"), role: get("role"), status: get("status"), sort: get("sort"), page, pageSize: 20 });
   const { data, error, loading, reload } = useApi<Paginated<AdminUser>>(path);
@@ -32,7 +35,7 @@ export function UsersClient() {
       ),
     },
     { key: "company", header: "Company", render: (u) => u.company ?? <span className="text-subtle">—</span> },
-    { key: "role", header: "Role", render: (u) => <RoleBadge role={u.role} /> },
+    { key: "role", header: "Role", render: (u) => <RoleBadge role={u.role} staffRole={u.staffRole} /> },
     { key: "status", header: "Status", render: (u) => <StatusPill status={u.status} /> },
     { key: "created", header: "Joined", render: (u) => <span className="whitespace-nowrap text-muted">{formatDateTime(u.createdAt)}</span> },
     { key: "login", header: "Last sign-in", render: (u) => <span className="whitespace-nowrap text-muted">{formatDateTime(u.lastLoginAt)}</span> },
@@ -40,7 +43,17 @@ export function UsersClient() {
 
   return (
     <>
-      <PageHeader title="Users" description="Search accounts, change roles and suspend or remove access." />
+      <PageHeader
+        title="Users"
+        description="Search accounts, add people, change roles and suspend or remove access."
+        actions={
+          can(me, "users:manage") && (
+            <ButtonLink href="/admin/users/new" size="sm">
+              <UserPlus className="size-4" aria-hidden /> Add user
+            </ButtonLink>
+          )
+        }
+      />
       <FilterBar>
         <SearchFilter placeholder="Name, email or company…" label="Search users" />
         <SelectFilter param="role" label="Role" options={ROLE_OPTIONS} />

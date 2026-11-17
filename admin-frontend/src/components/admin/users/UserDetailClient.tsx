@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Card, ConfirmButton, EmptyState, ErrorPanel, PageHeader, StatusPill, formatDateTime } from "@/components/admin/ui";
 import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
-import { can, useAuth, type UserRole } from "@/lib/auth/auth-context";
+import { can, useAuth } from "@/lib/auth/auth-context";
 import { useApi } from "@/lib/hooks/useApi";
-import { ROLE_DESCRIPTION, ROLE_LABEL, ROLES, RoleBadge, type AdminUser } from "./shared";
+import { RolePicker } from "./RolePicker";
+import { choiceOf, requestFor, type RoleChoice } from "./roles";
+import { RoleBadge, type AdminUser } from "./shared";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
 
@@ -18,15 +20,16 @@ export function UserDetailClient({ id }: { id: string }) {
   const { user: me } = useAuth();
   const { data, error, loading, reload } = useApi<AdminUser>(`/admin/users/${id}`);
   const [override, setOverride] = useState<AdminUser | null>(null);
-  const [role, setRole] = useState<UserRole | "">("");
+  const [role, setRole] = useState<RoleChoice | "">("");
   const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback>(null);
+  const params = useSearchParams();
+  const [feedback, setFeedback] = useState<Feedback>(params.get("created") ? { status: "success", message: "User added. They can sign in with the email and password you set." } : null);
 
   const user = override ?? data;
   const isSelf = me?.id === id;
   const canManage = can(me, "users:manage") && !isSelf;
 
-  async function update(body: { role?: UserRole; status?: "active" | "suspended" }, success: string) {
+  async function update(body: { role?: string; staffRole?: string | null; status?: "active" | "suspended" }, success: string) {
     setFeedback(null);
     try {
       const updated = await apiRequest<AdminUser>("PATCH", `/admin/users/${id}`, body);
@@ -76,12 +79,13 @@ export function UserDetailClient({ id }: { id: string }) {
     );
   }
 
-  const selectedRole = role || user.role;
+  const current = choiceOf(user);
+  const selectedRole = role || current;
 
   return (
     <>
       {back}
-      <PageHeader title={`${user.firstName} ${user.lastName}`} description={user.email} actions={<RoleBadge role={user.role} />} />
+      <PageHeader title={`${user.firstName} ${user.lastName}`} description={user.email} actions={<RoleBadge role={user.role} staffRole={user.staffRole} />} />
 
       {feedback && (
         <div className="mb-4">
@@ -116,31 +120,23 @@ export function UserDetailClient({ id }: { id: string }) {
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  if (selectedRole === user.role) return;
+                  if (selectedRole === current) return;
                   setSaving(true);
-                  await update({ role: selectedRole }, `Role changed to ${ROLE_LABEL[selectedRole]}. Their existing sessions were signed out.`);
+                  const body = requestFor(selectedRole);
+                  await update(body, body.role === user.role ? "Role changed. The new permissions apply straight away." : "Role changed. Their existing sessions were signed out.");
                   setSaving(false);
                 }}
               >
-                <fieldset disabled={!canManage || saving} className="flex flex-col gap-2">
-                  <legend className="sr-only">Choose a role</legend>
-                  {ROLES.map((r) => (
-                    <label key={r} className="flex cursor-pointer gap-3 rounded-xl border border-line p-3 text-sm has-checked:border-brand has-checked:bg-brand/5">
-                      <input type="radio" name="role" value={r} checked={selectedRole === r} onChange={() => setRole(r)} className="mt-0.5 accent-brand" />
-                      <span>
-                        <span className="block font-semibold text-ink">{ROLE_LABEL[r]}</span>
-                        <span className="block text-xs text-muted">{ROLE_DESCRIPTION[r]}</span>
-                      </span>
-                    </label>
-                  ))}
+                <div className="flex flex-col gap-2">
+                  <RolePicker value={selectedRole} onChange={setRole} disabled={!canManage || saving} />
                   <button
                     type="submit"
-                    disabled={selectedRole === user.role}
+                    disabled={!canManage || saving || selectedRole === current}
                     className="mt-1 h-10 rounded-xl bg-brand px-4 text-sm font-semibold text-white hover:brightness-110 disabled:opacity-50"
                   >
                     {saving ? "Saving…" : "Save role"}
                   </button>
-                </fieldset>
+                </div>
               </form>
             </Card>
 

@@ -5,7 +5,8 @@ import { currentUser } from "../../middleware/auth.js";
 import { changePasswordSchema, loginSchema } from "../auth/auth.schemas.js";
 import * as auth from "../auth/auth.service.js";
 import { clearAuthCookies, revokeRefreshToken, rotateRefreshToken, SCOPES, setAuthCookies, signAccessToken, startSession } from "../auth/tokens.js";
-import { isStaffRole, permissionsFor } from "../rbac/permissions.js";
+import { isStaffRole } from "../rbac/permissions.js";
+import { permissionsOf } from "../rbac/staff-roles.service.js";
 import { toPublicUser, User, type UserDoc } from "../users/user.model.js";
 
 /**
@@ -14,7 +15,7 @@ import { toPublicUser, User, type UserDoc } from "../users/user.model.js";
  * JWT audience, so signing in here never signs anyone in on the website.
  */
 
-const sessionPayload = (user: UserDoc) => ({ ...toPublicUser(user), permissions: permissionsFor(user.role) });
+const sessionPayload = async (user: UserDoc) => ({ ...toPublicUser(user), permissions: await permissionsOf(user) });
 
 function refreshCookie(req: Request): string | undefined {
   return (req.cookies as Record<string, string | undefined>)[SCOPES.admin.refreshCookie];
@@ -26,7 +27,7 @@ export const login = handler({ body: loginSchema }, async ({ body }, req, res) =
   // Same message as a wrong password so the console doesn't reveal which emails are customer accounts.
   if (!isStaffRole(user.role)) throw unauthorized("Incorrect email or password.", "INVALID_CREDENTIALS");
   await startSession(res, user, body.remember, req.headers["user-agent"], "admin");
-  ok(res, sessionPayload(user));
+  ok(res, await sessionPayload(user));
 });
 
 /** POST /admin/auth/refresh — rotates the admin refresh token. */
@@ -38,7 +39,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
     const user = await User.findById(userId);
     if (!user || user.status !== "active" || !isStaffRole(user.role)) throw unauthorized("Please sign in again.", "INVALID_REFRESH");
     setAuthCookies(res, signAccessToken(user, "admin"), next, "admin");
-    ok(res, sessionPayload(user));
+    ok(res, await sessionPayload(user));
   } catch (err) {
     clearAuthCookies(res, "admin");
     throw err;
@@ -54,8 +55,8 @@ export async function logout(req: Request, res: Response): Promise<void> {
 }
 
 /** GET /admin/auth/me */
-export function me(req: Request, res: Response): void {
-  ok(res, sessionPayload(currentUser(req)));
+export async function me(req: Request, res: Response): Promise<void> {
+  ok(res, await sessionPayload(currentUser(req)));
 }
 
 /** POST /admin/auth/change-password — revokes every session, keeps this console signed in. */

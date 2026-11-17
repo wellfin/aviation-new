@@ -54,6 +54,26 @@ const MANAGER_PERMS: Permission[] = [
   "users:read",
 ];
 
+/**
+ * What a custom staff role (made in the admin panel) can be given. "users:manage" is not on the
+ * list: adding users and editing roles stay with ADMIN, so no one can raise their own access.
+ */
+export const GRANTABLE_PERMISSIONS = [
+  "providers:manage",
+  "airports:manage",
+  "reviews:moderate",
+  "enquiries:read:any",
+  "content:manage",
+  "leads:read",
+  "leads:manage",
+  "reports:read",
+  "ads:manage",
+  "pricing:manage",
+  "users:read",
+  "billing:read:any",
+] as const satisfies readonly Permission[];
+export type GrantablePermission = (typeof GRANTABLE_PERMISSIONS)[number];
+
 export const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
   USER: new Set(USER_PERMS),
   PROVIDER: new Set(PROVIDER_PERMS),

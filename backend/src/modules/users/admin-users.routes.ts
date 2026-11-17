@@ -1,14 +1,18 @@
 import { Router } from "express";
 import { z } from "zod";
 import { currentUser, requirePermission } from "../../middleware/auth.js";
-import { isObjectId, withTransaction } from "../../lib/db.js";
-import { badRequest, notFound } from "../../lib/errors.js";
-import { handler, noContent, ok } from "../../lib/http.js";
+import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "../../lib/business-email.js";
+import { hashPassword } from "../../lib/crypto.js";
+import { isDuplicateKeyError, isObjectId, withTransaction } from "../../lib/db.js";
+import { badRequest, conflict, notFound, validationError } from "../../lib/errors.js";
+import { created, handler, noContent, ok } from "../../lib/http.js";
 import { containsRegex, paginated, paginationQuery, skipFor } from "../../lib/pagination.js";
 import { RefreshToken } from "../auth/refresh-token.model.js";
 import { revokeAllForUser } from "../auth/tokens.js";
+import { email, password } from "../auth/auth.schemas.js";
 import { ROLES } from "../rbac/permissions.js";
-import { toPublicUser, User } from "./user.model.js";
+import { StaffRole } from "../rbac/staff-role.model.js";
+import { toPublicUser, User, type UserDoc } from "./user.model.js";
 
 export const adminUsersRouter = Router();
 
@@ -28,9 +32,32 @@ const SORTS = {
   lastLogin: { lastLoginAt: -1 },
 } as const;
 
-function adminView(u: Parameters<typeof toPublicUser>[0]) {
-  return { ...toPublicUser(u), status: u.status, lastLoginAt: u.lastLoginAt?.toISOString() ?? null, updatedAt: u.updatedAt.toISOString() };
+/** Custom staff role names by id, for the given users. */
+async function roleNames(users: UserDoc[]): Promise<Map<string, string>> {
+  const ids = [...new Set(users.map((u) => u.staffRole).filter(Boolean).map(String))];
+  if (!ids.length) return new Map();
+  const roles = await StaffRole.find({ _id: { $in: ids } }).select("name").lean();
+  return new Map(roles.map((r) => [String(r._id), r.name]));
 }
+
+function adminView(u: UserDoc, names: Map<string, string> = new Map()) {
+  const staffRoleId = u.role === "MANAGER" && u.staffRole ? String(u.staffRole) : null;
+  return {
+    ...toPublicUser(u),
+    status: u.status,
+    /** Custom staff role (MANAGER only); null means the standard Manager permissions. */
+    staffRole: staffRoleId ? { id: staffRoleId, name: names.get(staffRoleId) ?? "(removed role)" } : null,
+    lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
+    updatedAt: u.updatedAt.toISOString(),
+  };
+}
+
+/** A custom role id must exist; null clears it. */
+async function checkStaffRole(id: string | null | undefined): Promise<void> {
+  if (id && !(await StaffRole.exists({ _id: id }))) throw validationError({ staffRole: "Choose an existing role" });
+}
+
+const staffRoleId = z.string().refine(isObjectId, "Invalid role").nullable();
 
 adminUsersRouter.get(
   "/",
@@ -47,7 +74,8 @@ adminUsersRouter.get(
       User.find(filter).sort(SORTS[query.sort]).skip(skipFor(query.page, query.pageSize)).limit(query.pageSize),
       User.countDocuments(filter),
     ]);
-    ok(res, paginated(items.map(adminView), total, query.page, query.pageSize));
+    const names = await roleNames(items);
+    ok(res, paginated(items.map((u) => adminView(u, names)), total, query.page, query.pageSize));
   }),
 );
 
@@ -58,14 +86,52 @@ adminUsersRouter.get(
     const user = await User.findById(params.id);
     if (!user) throw notFound("User");
     const activeSessions = await RefreshToken.countDocuments({ user: user._id, revokedAt: { $exists: false }, expiresAt: { $gt: new Date() } });
-    ok(res, { ...adminView(user), activeSessions });
+    ok(res, { ...adminView(user, await roleNames([user])), activeSessions });
   }),
 );
 
 const updateBody = z
-  .object({ role: z.enum(ROLES), status: z.enum(["active", "suspended"]) })
+  .object({ role: z.enum(ROLES), status: z.enum(["active", "suspended"]), staffRole: staffRoleId })
   .partial()
-  .refine((v) => v.role !== undefined || v.status !== undefined, "Nothing to update");
+  .refine((v) => v.role !== undefined || v.status !== undefined || v.staffRole !== undefined, "Nothing to update");
+
+/** Adding a person from the console: the admin sets the password and the email counts as confirmed. */
+const createBody = z.object({
+  firstName: z.string().trim().min(2, "Please enter at least 2 characters").max(100),
+  lastName: z.string().trim().min(2, "Please enter at least 2 characters").max(100),
+  email: email.refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE),
+  password,
+  role: z.enum(ROLES),
+  staffRole: staffRoleId.optional(),
+  phone: z.string().trim().max(30).regex(/^[+()\d\s-]*$/, "Enter a valid phone number").optional(),
+  company: z.string().trim().max(120).optional(),
+});
+
+adminUsersRouter.post(
+  "/",
+  requirePermission("users:manage"),
+  handler({ body: createBody }, async ({ body }, _req, res) => {
+    const custom = body.role === "MANAGER" ? (body.staffRole ?? null) : null;
+    await checkStaffRole(custom);
+    try {
+      const user = await User.create({
+        firstName: body.firstName,
+        lastName: body.lastName,
+        email: body.email,
+        passwordHash: await hashPassword(body.password),
+        role: body.role,
+        ...(custom ? { staffRole: custom } : {}),
+        ...(body.phone ? { phone: body.phone } : {}),
+        ...(body.company ? { company: body.company } : {}),
+        emailVerifiedAt: new Date(),
+      });
+      created(res, adminView(user, await roleNames([user])));
+    } catch (err) {
+      if (isDuplicateKeyError(err)) throw conflict("An account with this email already exists.", { email: "Already registered" });
+      throw err;
+    }
+  }),
+);
 
 adminUsersRouter.patch(
   "/:id",
@@ -74,12 +140,16 @@ adminUsersRouter.patch(
     const actor = currentUser(req);
     if (actor.id === params.id) throw badRequest("You can't change your own role or status.");
 
+    await checkStaffRole(body.staffRole);
     const updated = await withTransaction(async (session) => {
       const user = await User.findById(params.id).session(session);
       if (!user) throw notFound("User");
       const privilegeChanged = (body.role && body.role !== user.role) || (body.status && body.status !== user.status);
       if (body.role) user.role = body.role;
       if (body.status) user.status = body.status;
+      // A custom role only applies to staff (MANAGER); any other role clears it.
+      if (user.role !== "MANAGER") user.set("staffRole", undefined);
+      else if (body.staffRole !== undefined) user.set("staffRole", body.staffRole ?? undefined);
       if (privilegeChanged) {
         // Force existing sessions to pick up the new role / suspension immediately.
         user.tokenVersion = (user.tokenVersion ?? 0) + 1;
@@ -88,7 +158,7 @@ adminUsersRouter.patch(
       await user.save({ session });
       return user;
     });
-    ok(res, adminView(updated));
+    ok(res, adminView(updated, await roleNames([updated])));
   }),
 );
 

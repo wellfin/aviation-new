@@ -18,6 +18,7 @@ import { reportsRouter } from "./modules/reports/reports.routes.js";
 import { adminReviewsRouter, myReviewsRouter, providerReviewsRouter } from "./modules/reviews/review.routes.js";
 import { filesRouter, myUploadsRouter, uploadsRouter } from "./modules/uploads/uploads.routes.js";
 import { adminUsersRouter } from "./modules/users/admin-users.routes.js";
+import { adminRolesRouter } from "./modules/rbac/staff-roles.routes.js";
 
 /** Mounts every feature module under /api/v1. */
 export function apiRoutes(): Router {
@@ -51,6 +52,7 @@ export function apiRoutes(): Router {
   // Staff upload through their own (admin-scoped) session.
   router.use("/admin/uploads", uploadsRouter);
   router.use("/admin/users", adminUsersRouter);
+  router.use("/admin/roles", adminRolesRouter);
   router.use("/admin/airports", adminAirportsRouter);
   router.use("/admin/providers", adminProvidersRouter);
   router.use("/admin/categories", adminCategoriesRouter);

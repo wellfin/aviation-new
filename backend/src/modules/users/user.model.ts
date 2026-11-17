@@ -16,6 +16,8 @@ const userSchema = new Schema(
     /** Plan the user picked on the pricing page before registering. */
     intendedPlan: { type: String, maxlength: 40 },
     role: { type: String, enum: ROLES, required: true, default: "USER" },
+    /** Staff (MANAGER) only: a custom role from the admin panel; its permissions replace the MANAGER defaults. */
+    staffRole: { type: Schema.Types.ObjectId, ref: "StaffRole" },
     status: { type: String, enum: ["active", "suspended"], required: true, default: "active" },
     emailVerifiedAt: { type: Date },
     failedLoginAttempts: { type: Number, default: 0, select: false },

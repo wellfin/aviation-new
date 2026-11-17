@@ -12,6 +12,7 @@ import {
   MonitorPlay,
   MessageSquareText,
   Newspaper,
+  ShieldCheck,
   PlaneLanding,
   Tags,
   Users,
@@ -62,6 +63,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
       { href: "/admin/newsletter", label: "Newsletter", icon: Mail, permission: "leads:read" },
       { href: "/admin/billing", label: "Billing", icon: CreditCard, permission: "billing:read:any" },
       { href: "/admin/users", label: "Users", icon: Users, permission: "users:read" },
+      { href: "/admin/roles", label: "Roles & permissions", icon: ShieldCheck, permission: "users:read" },
     ],
   },
 ];

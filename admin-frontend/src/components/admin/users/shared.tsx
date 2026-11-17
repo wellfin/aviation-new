@@ -15,6 +15,8 @@ export interface AdminUser {
   status: "active" | "suspended";
   lastLoginAt: string | null;
   updatedAt: string;
+  /** Custom staff role (Managers only); null means the standard Manager permissions. */
+  staffRole: { id: string; name: string } | null;
   /** Only on the detail endpoint. */
   activeSessions?: number;
 }
@@ -41,6 +43,7 @@ export const SORT_OPTIONS = [
 
 const ROLE_TONE = { USER: "slate", PROVIDER: "blue", MANAGER: "purple", ADMIN: "amber" } as const;
 
-export function RoleBadge({ role }: { role: UserRole }) {
-  return <StatusPill status={ROLE_LABEL[role]} tone={ROLE_TONE[role]} />;
+/** The role's name: a custom staff role's own name, else the built-in label. */
+export function RoleBadge({ role, staffRole }: { role: UserRole; staffRole?: { name: string } | null }) {
+  return <StatusPill status={role === "MANAGER" && staffRole ? staffRole.name : ROLE_LABEL[role]} tone={ROLE_TONE[role]} />;
 }
