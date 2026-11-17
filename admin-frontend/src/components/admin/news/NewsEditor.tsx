@@ -295,6 +295,9 @@ function NewsForm({ article: initial }: { article?: AdminNews }) {
                   </Button>
                 </>
               )}
+              {!published && (
+                <p className="text-xs text-muted">The first time an article is published, newsletter subscribers get an email with its link. A scheduled article is emailed when its publish time arrives.</p>
+              )}
             </div>
           </Card>
         </div>

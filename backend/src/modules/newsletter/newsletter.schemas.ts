@@ -19,7 +19,8 @@ export const subscribeBody = z.object({
 });
 
 /** Tokens are 32 random bytes, base64url encoded (43 chars). */
-export const tokenQuery = z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{32,128}$/) });
+// Random tokens are base64url; signed unsubscribe tokens are "<id>.<hex signature>".
+export const tokenQuery = z.object({ token: z.string().regex(/^[A-Za-z0-9_.-]{32,128}$/) });
 
 export const listSubscribersQuery = paginationQuery.extend({
   status: z.enum(SUBSCRIBER_STATUSES).optional(),

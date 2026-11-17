@@ -1,7 +1,7 @@
 import type { Response } from "express";
 import type { QueryFilter } from "mongoose";
 import { env } from "../../config/env.js";
-import { randomToken, sha256 } from "../../lib/crypto.js";
+import { hmacSha256Hex, randomToken, safeEqual, sha256 } from "../../lib/crypto.js";
 import { isDuplicateKeyError } from "../../lib/db.js";
 import { notFound } from "../../lib/errors.js";
 import { logger } from "../../lib/logger.js";
@@ -69,8 +69,22 @@ export async function confirmSubscription(token: string): Promise<boolean> {
   return true;
 }
 
+/**
+ * Unsubscribe link for mail sent to the whole list (new articles). Only a hash of the welcome-email
+ * token is stored, so these links are signed with the subscriber id instead: "<id>.<signature>".
+ */
+const unsubscribeSignature = (id: string) => hmacSha256Hex(env.JWT_ACCESS_SECRET, `newsletter-unsubscribe:${id}`);
+export const signedUnsubscribeUrl = (id: string) => unsubscribeUrl(`${id}.${unsubscribeSignature(id)}`);
+
 /** Idempotent: repeating a valid unsubscribe link keeps succeeding. */
 export async function unsubscribe(token: string): Promise<boolean> {
+  const signed = /^([a-f\d]{24})\.([a-f\d]{64})$/.exec(token);
+  if (signed) {
+    const [, id, signature] = signed;
+    if (!safeEqual(signature!, unsubscribeSignature(id!))) return false;
+    await Subscriber.updateOne({ _id: id, status: { $ne: "unsubscribed" } }, { $set: { status: "unsubscribed", unsubscribedAt: new Date() } });
+    return Boolean(await Subscriber.exists({ _id: id }));
+  }
   const hash = sha256(token);
   const sub = await Subscriber.findOneAndUpdate(
     { unsubscribeTokenHash: hash, status: { $ne: "unsubscribed" } },

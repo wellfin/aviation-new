@@ -18,3 +18,12 @@ export function newsletterWelcomeEmail(to: string, unsubscribeLink: string): Mai
     unsubscribeUrl: unsubscribeLink,
   };
 }
+
+export function newArticleEmail(to: string, article: { title: string; excerpt: string; link: string }, unsubscribeLink: string): MailMessage {
+  return {
+    to,
+    subject: `New on Global Aviation: ${article.title}`,
+    text: `${article.title}\n\n${article.excerpt}\n\nRead the full article:\n${article.link}\n\nYou're receiving this because you subscribed to the Global Aviation newsletter. Unsubscribe:\n${unsubscribeLink}${SIGNATURE}`,
+    unsubscribeUrl: unsubscribeLink,
+  };
+}

@@ -27,6 +27,10 @@ const newsSchema = new Schema(
     featured: { type: Boolean, default: false },
     status: { type: String, enum: NEWS_STATUSES, required: true, default: "draft" },
     publishedAt: { type: Date },
+    /** Set when an editor publishes; the subscriber email goes out once publishedAt has passed. */
+    notifyPending: { type: Boolean, default: false },
+    /** When subscribers were emailed about this article (never twice). */
+    notifiedAt: { type: Date },
   },
   { timestamps: true },
 );
@@ -41,6 +45,7 @@ newsSchema.index({ status: 1, publishedAt: -1 });
 newsSchema.index({ status: 1, category: 1, publishedAt: -1 });
 // Admin listing sorts by last update.
 newsSchema.index({ updatedAt: -1 });
+newsSchema.index({ notifyPending: 1, publishedAt: 1 }, { partialFilterExpression: { notifyPending: true } });
 
 export type NewsAttrs = InferSchemaType<typeof newsSchema>;
 export type NewsDoc = HydratedDocument<NewsAttrs>;

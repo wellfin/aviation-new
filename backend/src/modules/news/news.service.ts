@@ -4,6 +4,7 @@ import { containsRegex, escapeRegex, paginated, skipFor, type Paginated } from "
 import { News, type NewsDoc, toAdminNewsDTO, toNewsDTO, type AdminNewsDTO, type NewsArticleDTO } from "./news.model.js";
 import { assertNewsCategory } from "./news-category.service.js";
 import type { AdminNewsQuery, CreateNewsInput, PublicNewsQuery, UpdateNewsInput } from "./news.schemas.js";
+import { notifySubscribersInBackground } from "../newsletter/news-notify.js";
 
 /** URL slug from free text: ASCII-folded, lowercase, hyphen separated. */
 export function slugify(text: string): string {
@@ -94,7 +95,9 @@ export async function createNews(input: CreateNewsInput): Promise<AdminNewsDTO> 
       featured: input.featured,
       status: input.status,
       publishedAt,
+      notifyPending: input.status === "published",
     });
+    if (doc.notifyPending) notifySubscribersInBackground();
     return toAdminNewsDTO(doc);
   } catch (err) {
     if (isDuplicateKeyError(err)) throw slugTaken();
@@ -128,7 +131,10 @@ export async function setNewsStatus(id: string, status: "draft" | "published"): 
   const doc = await findById(id);
   doc.status = status;
   if (status === "published" && !doc.publishedAt) doc.publishedAt = new Date();
+  // Email subscribers the first time an article goes live; unpublishing first cancels a pending send.
+  doc.notifyPending = status === "published" && !doc.notifiedAt;
   await doc.save();
+  if (doc.notifyPending) notifySubscribersInBackground();
   return toAdminNewsDTO(doc);
 }
 
