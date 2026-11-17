@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { CheckCircle2, UserPlus } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { can, useAuth } from "@/lib/auth/auth-context";
-import { DataTable, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { ConfirmButton, DataTable, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { FormStatus } from "@/components/ui/Field";
+import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import type { Paginated } from "@/lib/types";
@@ -17,6 +20,19 @@ export function UsersClient() {
   const { get, set, page } = useUrlParams();
   const path = withQuery("/admin/users", { q: get("q"), role: get("role"), status: get("status"), sort: get("sort"), page, pageSize: 20 });
   const { data, error, loading, reload } = useApi<Paginated<AdminUser>>(path);
+  const [feedback, setFeedback] = useState<{ status: "success" | "error"; message: string } | null>(null);
+  const canManage = can(me, "users:manage");
+
+  async function remove(u: AdminUser) {
+    setFeedback(null);
+    try {
+      await apiRequest("DELETE", `/admin/users/${u.id}`);
+      setFeedback({ status: "success", message: `${u.firstName} ${u.lastName} was deleted.` });
+      reload();
+    } catch (err) {
+      setFeedback({ status: "error", message: err instanceof ApiError ? err.body.message : "Couldn't delete this user." });
+    }
+  }
 
   const columns: Column<AdminUser>[] = [
     {
@@ -39,6 +55,23 @@ export function UsersClient() {
     { key: "status", header: "Status", render: (u) => <StatusPill status={u.status} /> },
     { key: "created", header: "Joined", render: (u) => <span className="whitespace-nowrap text-muted">{formatDateTime(u.createdAt)}</span> },
     { key: "login", header: "Last sign-in", render: (u) => <span className="whitespace-nowrap text-muted">{formatDateTime(u.lastLoginAt)}</span> },
+    ...(canManage
+      ? [
+          {
+            key: "actions",
+            header: "",
+            render: (u: AdminUser) =>
+              u.id === me?.id ? null : (
+                // Keep the click from opening the row.
+                <span onClick={(e) => e.stopPropagation()} className="inline-flex">
+                  <ConfirmButton confirmLabel="Delete" onConfirm={() => remove(u)}>
+                    Delete
+                  </ConfirmButton>
+                </span>
+              ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -47,7 +80,7 @@ export function UsersClient() {
         title="Users"
         description="Search accounts, add people, change roles and suspend or remove access."
         actions={
-          can(me, "users:manage") && (
+          canManage && (
             <ButtonLink href="/admin/users/new" size="sm">
               <UserPlus className="size-4" aria-hidden /> Add user
             </ButtonLink>
@@ -69,6 +102,11 @@ export function UsersClient() {
           </select>
         </label>
       </FilterBar>
+      {feedback && (
+        <div className="mb-4">
+          <FormStatus status={feedback.status} message={feedback.message} />
+        </div>
+      )}
       {error && !data ? (
         <ErrorPanel error={error} onRetry={reload} />
       ) : (

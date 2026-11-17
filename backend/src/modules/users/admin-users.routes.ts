@@ -101,7 +101,8 @@ const createBody = z.object({
   lastName: z.string().trim().min(2, "Please enter at least 2 characters").max(100),
   email: email.refine(isBusinessEmail, BUSINESS_EMAIL_MESSAGE),
   password,
-  role: z.enum(ROLES),
+  // Added people are staff; site users and providers sign up on the website.
+  role: z.enum(["ADMIN", "MANAGER"], { message: "Choose Admin, Manager or a custom role" }),
   staffRole: staffRoleId.optional(),
   phone: z.string().trim().max(30).regex(/^[+()\d\s-]*$/, "Enter a valid phone number").optional(),
   company: z.string().trim().max(120).optional(),

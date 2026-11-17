@@ -128,7 +128,7 @@ export function UserDetailClient({ id }: { id: string }) {
                 }}
               >
                 <div className="flex flex-col gap-2">
-                  <RolePicker value={selectedRole} onChange={setRole} disabled={!canManage || saving} />
+                  <RolePicker value={selectedRole} onChange={setRole} current={current} disabled={!canManage || saving} />
                   <button
                     type="submit"
                     disabled={!canManage || saving || selectedRole === current}

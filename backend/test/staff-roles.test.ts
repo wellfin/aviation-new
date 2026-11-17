@@ -65,6 +65,8 @@ describe("custom staff roles", () => {
     expect((await admin.post(users()).send({ ...base, email: "ben@gmail.com" })).status).toBe(422);
     expect((await admin.post(users()).send({ ...base, password: "short" })).status).toBe(422);
     expect((await admin.post(users()).send({ ...base, role: "MANAGER", staffRole: "64b7f0f0f0f0f0f0f0f0f0f0" })).status).toBe(422);
+    expect((await admin.post(users()).send({ ...base, role: "USER" })).status).toBe(422);
+    expect((await admin.post(users()).send({ ...base, role: "PROVIDER" })).status).toBe(422);
     const ok = await admin.post(users()).send(base);
     expect(ok.status).toBe(201);
     expect(ok.body.data.staffRole).toBeNull();
