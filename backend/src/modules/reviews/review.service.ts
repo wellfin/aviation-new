@@ -195,7 +195,9 @@ export async function adminListReviews(query: AdminListQuery) {
   if (query.provider) filter.provider = { $in: await providerIdsFor(query.provider) };
   if (query.q) {
     const rx = containsRegex(query.q);
-    filter.$or = [{ title: rx }, { body: rx }, { authorName: rx }];
+    // Also matches the listing's name ("Elite Jet Brokers").
+    const providers = await Provider.find({ name: rx }).select("_id").limit(500).lean();
+    filter.$or = [{ title: rx }, { body: rx }, { authorName: rx }, ...(providers.length ? [{ provider: { $in: providers.map((p) => p._id) } }] : [])];
   }
   const [items, total] = await Promise.all([
     Review.find(filter)

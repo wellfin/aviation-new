@@ -208,6 +208,10 @@ describe("admin review moderation", () => {
     const q = await agent.get("/api/v1/admin/reviews?q=(was)");
     expect(q.body.data.total).toBe(1);
     expect(q.body.data.items[0].provider.slug).toBe(b.slug);
+    // Searching the listing's name finds its reviews.
+    const byName = await agent.get(`/api/v1/admin/reviews?q=${encodeURIComponent(b.name.toLowerCase())}`);
+    expect(byName.body.data.total).toBe(1);
+    expect(byName.body.data.items[0].provider.slug).toBe(b.slug);
     expect((await agent.get("/api/v1/admin/reviews?pageSize=1")).body.data).toMatchObject({ total: 3, totalPages: 3 });
     expect((await agent.get("/api/v1/admin/reviews?status=bogus")).status).toBe(422);
   });
