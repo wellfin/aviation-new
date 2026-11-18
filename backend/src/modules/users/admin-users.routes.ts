@@ -46,6 +46,7 @@ function adminView(u: UserDoc, names: Map<string, string> = new Map()) {
     ...toPublicUser(u),
     status: u.status,
     superAdmin: Boolean(u.superAdmin),
+    leadEmails: u.leadEmails !== false,
     /** Custom staff role (MANAGER only); null means the standard Manager permissions. */
     staffRole: staffRoleId ? { id: staffRoleId, name: names.get(staffRoleId) ?? "(removed role)" } : null,
     lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
@@ -164,6 +165,25 @@ adminUsersRouter.patch(
       return user;
     });
     ok(res, adminView(updated, await roleNames([updated])));
+  }),
+);
+
+/**
+ * Turns new-lead emails on or off for a staff account. Anyone with Leads access can change their own;
+ * Admins can change other staff's, except the Super Admin's (only the Super Admin can).
+ */
+adminUsersRouter.put(
+  "/:id/lead-emails",
+  requirePermission("leads:read"),
+  handler({ params: idParams, body: z.object({ enabled: z.boolean() }) }, async ({ params, body }, req, res) => {
+    const self = currentUser(req).id === params.id;
+    const user = await User.findById(params.id);
+    if (!user) throw notFound("User");
+    if (!self && (!req.permissions?.has("users:manage") || user.superAdmin)) throw forbidden(user.superAdmin ? "Only the Super Admin can change this." : undefined);
+    if (user.role !== "ADMIN" && user.role !== "MANAGER") throw badRequest("Lead emails are for staff accounts.");
+    user.leadEmails = body.enabled;
+    await user.save();
+    ok(res, adminView(user, await roleNames([user])));
   }),
 );
 

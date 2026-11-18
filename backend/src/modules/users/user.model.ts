@@ -21,6 +21,8 @@ const userSchema = new Schema(
     status: { type: String, enum: ["active", "suspended"], required: true, default: "active" },
     /** The owner account (an ADMIN). Nobody can change its role or status, or delete it, from the console. */
     superAdmin: { type: Boolean, default: false },
+    /** Staff only: email me every new lead (contact, demo, data licence, advertising). */
+    leadEmails: { type: Boolean, default: true },
     emailVerifiedAt: { type: Date },
     failedLoginAttempts: { type: Number, default: 0, select: false },
     lockedUntil: { type: Date, select: false },

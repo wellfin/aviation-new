@@ -56,6 +56,9 @@ describe("contact form", () => {
     const editorRole = await StaffRole.create({ name: "Editor", nameKey: "editor", permissions: ["content:manage"] });
     const editor = await createUser({ role: "MANAGER" });
     await User.updateOne({ _id: editor._id }, { $set: { staffRole: editorRole._id } });
+    // Staff who turned lead emails off aren't emailed.
+    const quiet = await createUser({ role: "ADMIN" });
+    await User.updateOne({ _id: quiet._id }, { $set: { leadEmails: false } });
     const email = "amelia@example.com";
 
     const blocked = await post("/contact", contactPayload(email));
@@ -79,6 +82,7 @@ describe("contact form", () => {
     expect(mailsTo(adminUser.email)[0]!.text).toContain("We'd like to list our FBO network.");
     expect(mailsTo(plainUser.email)).toHaveLength(0);
     expect(mailsTo(editor.email)).toHaveLength(0);
+    expect(mailsTo(quiet.email)).toHaveLength(0);
     expect(mailsTo(email).some((m) => m.subject === "We've received your message")).toBe(true);
 
     // The verification proof is single-use.

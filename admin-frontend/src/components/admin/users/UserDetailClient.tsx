@@ -41,6 +41,20 @@ export function UserDetailClient({ id }: { id: string }) {
     }
   }
 
+  const [savingLeadEmails, setSavingLeadEmails] = useState(false);
+  async function setLeadEmails(enabled: boolean) {
+    setFeedback(null);
+    setSavingLeadEmails(true);
+    try {
+      const updated = await apiRequest<AdminUser>("PUT", `/admin/users/${id}/lead-emails`, { enabled });
+      setOverride({ ...updated, activeSessions: (override ?? data)?.activeSessions });
+      setFeedback({ status: "success", message: enabled ? "Lead emails turned on: new enquiries will be emailed to this address." : "Lead emails turned off: no more enquiry emails to this address." });
+    } catch (err) {
+      setFeedback({ status: "error", message: err instanceof ApiError ? err.body.message : "Something went wrong. Please try again." });
+    }
+    setSavingLeadEmails(false);
+  }
+
   async function remove() {
     setFeedback(null);
     try {
@@ -117,6 +131,24 @@ export function UserDetailClient({ id }: { id: string }) {
             <Item label="Last updated" value={formatDateTime(user.updatedAt)} />
             <Item label="User ID" value={<code className="font-mono text-xs">{user.id}</code>} />
           </dl>
+          {(user.role === "ADMIN" || user.role === "MANAGER") && (
+            <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-line p-4 text-sm has-checked:border-brand has-checked:bg-brand/5 has-disabled:cursor-not-allowed has-disabled:opacity-60">
+              <input
+                type="checkbox"
+                checked={user.leadEmails}
+                disabled={savingLeadEmails || !(isSelf || (can(me, "users:manage") && !user.superAdmin))}
+                onChange={(e) => setLeadEmails(e.target.checked)}
+                className="mt-0.5 size-4 accent-brand"
+              />
+              <span>
+                <span className="block font-semibold text-ink">Lead emails</span>
+                <span className="block text-xs text-muted">
+                  Email {user.email} every new lead from the website (contact, demo, data licence and advertising forms). Untick to stop them; leads still appear under Leads.
+                  {user.superAdmin && !isSelf && " Only the Super Admin can change this."}
+                </span>
+              </span>
+            </label>
+          )}
         </Card>
 
         {can(me, "users:manage") && (

@@ -13,7 +13,7 @@ describe("Super Admin", () => {
     await ensureSuperAdmin();
     expect((await User.find({ superAdmin: true }).lean()).map((u) => String(u._id))).toEqual([owner.id]);
 
-    const { agent } = await signedInAgent("ADMIN");
+    const { agent, user: me } = await signedInAgent("ADMIN");
     expect((await agent.get(users(`/${owner.id}`))).body.data).toMatchObject({ superAdmin: true, role: "ADMIN" });
     expect((await agent.get(users(`/${later.id}`))).body.data.superAdmin).toBe(false);
 
@@ -29,6 +29,16 @@ describe("Super Admin", () => {
       ["ADMIN", 2],
       ["MANAGER", 0],
     ]);
+
+    // Lead emails: only the Super Admin can switch its own; Admins can switch other staff's.
+    expect((await agent.put(users(`/${owner.id}/lead-emails`)).send({ enabled: false })).status).toBe(403);
+    const other = await agent.put(users(`/${later.id}/lead-emails`)).send({ enabled: false });
+    expect(other.status).toBe(200);
+    expect(other.body.data.leadEmails).toBe(false);
+    // Anyone can switch their own (here: the signed-in Admin).
+    expect((await agent.put(users(`/${me.id}/lead-emails`)).send({ enabled: false })).body.data.leadEmails).toBe(false);
+    expect((await agent.put(users(`/${me.id}/lead-emails`)).send({ enabled: true })).body.data.leadEmails).toBe(true);
+    expect((await User.findById(owner.id).lean())?.leadEmails).toBe(true);
 
     // Other Admins can still be managed.
     expect((await agent.patch(users(`/${later.id}`)).send({ status: "suspended" })).status).toBe(200);

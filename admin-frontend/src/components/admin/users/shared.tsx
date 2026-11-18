@@ -19,6 +19,8 @@ export interface AdminUser {
   staffRole: { id: string; name: string } | null;
   /** The owner account: can't be changed, suspended or deleted. */
   superAdmin: boolean;
+  /** Staff: receives an email for every new lead. */
+  leadEmails: boolean;
   /** Only on the detail endpoint. */
   activeSessions?: number;
 }
