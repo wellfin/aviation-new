@@ -7,6 +7,7 @@ import { sendMail, sendMailInBackground } from "../notifications/mailer.js";
 import { emailCheckCode } from "../notifications/templates.js";
 import type { OtpPurpose } from "../otp/otp.model.js";
 import { consumeVerifiedEmail, issueOtp, verifyOtp } from "../otp/otp.service.js";
+import { permissionsOf } from "../rbac/staff-roles.service.js";
 import { User } from "../users/user.model.js";
 import { startCsvDownload, writeCsvRow } from "./csv.js";
 import { Lead, type LeadAttrs, type LeadDetails, type LeadDoc, type LeadStatus, type LeadType, type LeadUserRef } from "./lead.model.js";
@@ -64,9 +65,11 @@ const blankToUndefined = (v: string | undefined) => (v ? v : undefined);
 const isBot = (honeypot: string | undefined) => Boolean(honeypot?.trim());
 
 /** Staff inbox = every active admin and manager. */
+/** Active staff whose role can open Leads (a custom role without Leads access isn't emailed). */
 async function staffRecipients(): Promise<string[]> {
-  const staff = await User.find({ role: { $in: ["ADMIN", "MANAGER"] }, status: "active" }, { email: 1 }).lean();
-  return staff.map((u) => u.email);
+  const staff = await User.find({ role: { $in: ["ADMIN", "MANAGER"] }, status: "active" }, { email: 1, role: 1, staffRole: 1 }).lean();
+  const allowed = await Promise.all(staff.map(async (u) => (await permissionsOf(u)).includes("leads:read")));
+  return staff.filter((_, i) => allowed[i]).map((u) => u.email);
 }
 
 function detailLines(lead: NewLead): Array<[string, string | undefined]> {

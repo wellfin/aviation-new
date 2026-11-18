@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { isBusinessEmail } from "../src/lib/business-email.js";
 import { csvCell } from "../src/modules/leads/csv.js";
 import { Lead } from "../src/modules/leads/lead.model.js";
+import { StaffRole } from "../src/modules/rbac/staff-role.model.js";
+import { User } from "../src/modules/users/user.model.js";
 import { adminLeadsRouter, advertisingRouter, contactRouter, dataLicenceRouter, demoRequestsRouter } from "../src/modules/leads/leads.routes.js";
 import { testOutbox } from "../src/modules/notifications/mailer.js";
 import { appWith, createUser, lastCodeFor, ORIGIN, proveEmail, signedInAgent } from "./helpers.js";
@@ -50,6 +52,10 @@ describe("contact form", () => {
     const adminUser = await createUser({ role: "ADMIN" });
     const manager = await createUser({ role: "MANAGER" });
     const plainUser = await createUser({ role: "USER" });
+    // A custom role without Leads access isn't emailed.
+    const editorRole = await StaffRole.create({ name: "Editor", nameKey: "editor", permissions: ["content:manage"] });
+    const editor = await createUser({ role: "MANAGER" });
+    await User.updateOne({ _id: editor._id }, { $set: { staffRole: editorRole._id } });
     const email = "amelia@example.com";
 
     const blocked = await post("/contact", contactPayload(email));
@@ -72,6 +78,7 @@ describe("contact form", () => {
     expect(mailsTo(adminUser.email)[0]).toMatchObject({ replyTo: email });
     expect(mailsTo(adminUser.email)[0]!.text).toContain("We'd like to list our FBO network.");
     expect(mailsTo(plainUser.email)).toHaveLength(0);
+    expect(mailsTo(editor.email)).toHaveLength(0);
     expect(mailsTo(email).some((m) => m.subject === "We've received your message")).toBe(true);
 
     // The verification proof is single-use.
