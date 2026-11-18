@@ -35,7 +35,7 @@ export type AutoCase = "lower" | "words" | "place" | null;
 const lastPart = (name: string) => name.split(/[.\-[\]]/).filter(Boolean).pop() ?? "";
 
 const WORD_FIELDS = new Set(["name", "firstname", "lastname", "fullname", "company", "advertiser", "issuer", "author", "authorrole", "role", "model", "longname"]);
-const PLACE_FIELDS = new Set(["city", "region", "country"]);
+const PLACE_FIELDS = new Set(["city", "region", "country", "location"]);
 
 /**
  * How a text box tidies its value when the user leaves it:
