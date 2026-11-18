@@ -1,6 +1,7 @@
 "use client";
 
-import { Lock, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
@@ -8,6 +9,7 @@ import { FormStatus, Input } from "@/components/ui/Field";
 import { loginSchema } from "@/lib/api/forms";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useZodForm } from "@/lib/hooks/useZodForm";
+import { PasswordInput } from "./PasswordInput";
 
 /** Only same-site relative paths are allowed as the post-login destination. */
 function safeNext(next: string | null): string {
@@ -37,10 +39,15 @@ export function AdminLoginForm() {
     <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-4">
       {result.status === "error" && <FormStatus status="error" message={result.message} />}
       <Input label="Email" name="email" type="email" autoComplete="username" icon={<Mail className="size-4" />} error={errors.email} required />
-      <Input label="Password" name="password" type="password" autoComplete="current-password" icon={<Lock className="size-4" />} error={errors.password} required />
-      <label className="flex items-center gap-2 text-sm text-muted">
-        <input type="checkbox" name="remember" className="size-4 accent-brand" /> Keep me signed in on this device
-      </label>
+      <PasswordInput label="Password" name="password" autoComplete="current-password" error={errors.password} required />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <input type="checkbox" name="remember" className="size-4 accent-brand" /> Keep me signed in on this device
+        </label>
+        <Link href="/forgot-password" className="text-sm font-semibold text-brand hover:underline">
+          Forgot password?
+        </Link>
+      </div>
       <Button type="submit" loading={submitting} className="mt-2 w-full">
         Sign in
       </Button>

@@ -94,9 +94,11 @@ export async function login(email: string, password: string): Promise<UserDoc> {
   return user;
 }
 
-export async function requestPasswordReset(email: string): Promise<void> {
+export async function requestPasswordReset(email: string, opts: { staffOnly?: boolean } = {}): Promise<void> {
   const user = await User.findOne({ email });
   if (!user || user.status !== "active") return;
+  // The admin console only sends codes to staff accounts (silently, so it doesn't reveal which emails exist).
+  if (opts.staffOnly && user.role !== "ADMIN" && user.role !== "MANAGER") return;
   const code = await issueOtp("password_reset", user.email);
   await sendMail(passwordResetEmail(user.email, code));
 }

@@ -1,11 +1,13 @@
 import { Router } from "express";
 import { requireAuth } from "../../middleware/auth.js";
-import { credentialRateLimit, sessionRateLimit } from "../../middleware/security.js";
+import { credentialRateLimit, otpRateLimit, sessionRateLimit } from "../../middleware/security.js";
 import * as controller from "./admin-auth.controller.js";
 
 /** Mounted at /admin/auth — staff console sign-in, separate from the website's /auth. */
 export const adminAuthRouter = Router();
 adminAuthRouter.post("/login", credentialRateLimit, controller.login);
+adminAuthRouter.post("/forgot-password", otpRateLimit, controller.forgotPassword);
+adminAuthRouter.post("/reset-password", credentialRateLimit, controller.resetPassword);
 adminAuthRouter.post("/refresh", sessionRateLimit, controller.refresh);
 adminAuthRouter.post("/logout", controller.logout);
 adminAuthRouter.get("/me", requireAuth, controller.me);

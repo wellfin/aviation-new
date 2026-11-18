@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { AppError, unauthorized } from "../../lib/errors.js";
 import { handler, noContent, ok } from "../../lib/http.js";
 import { currentUser } from "../../middleware/auth.js";
-import { changePasswordSchema, loginSchema } from "../auth/auth.schemas.js";
+import { changePasswordSchema, emailOnlySchema, loginSchema, resetPasswordSchema } from "../auth/auth.schemas.js";
 import * as auth from "../auth/auth.service.js";
 import { clearAuthCookies, revokeRefreshToken, rotateRefreshToken, SCOPES, setAuthCookies, signAccessToken, startSession } from "../auth/tokens.js";
 import { isStaffRole } from "../rbac/permissions.js";
@@ -20,6 +20,18 @@ const sessionPayload = async (user: UserDoc) => ({ ...toPublicUser(user), permis
 function refreshCookie(req: Request): string | undefined {
   return (req.cookies as Record<string, string | undefined>)[SCOPES.admin.refreshCookie];
 }
+
+/** POST /admin/auth/forgot-password: emails a reset code to a staff account. Always the same answer. */
+export const forgotPassword = handler({ body: emailOnlySchema }, async ({ body }, _req, res) => {
+  await auth.requestPasswordReset(body.email, { staffOnly: true });
+  ok(res, { ok: true });
+});
+
+/** POST /admin/auth/reset-password: code from the email + new password. Signs out every session. */
+export const resetPassword = handler({ body: resetPasswordSchema }, async ({ body }, _req, res) => {
+  await auth.resetPassword(body.email, body.code, body.password);
+  ok(res, { ok: true });
+});
 
 /** POST /admin/auth/login — staff accounts only. */
 export const login = handler({ body: loginSchema }, async ({ body }, req, res) => {
