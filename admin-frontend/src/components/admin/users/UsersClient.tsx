@@ -51,7 +51,7 @@ export function UsersClient() {
       ),
     },
     { key: "company", header: "Company", render: (u) => u.company ?? <span className="text-subtle">—</span> },
-    { key: "role", header: "Role", render: (u) => <RoleBadge role={u.role} staffRole={u.staffRole} /> },
+    { key: "role", header: "Role", render: (u) => <RoleBadge role={u.role} staffRole={u.staffRole} superAdmin={u.superAdmin} /> },
     { key: "status", header: "Status", render: (u) => <StatusPill status={u.status} /> },
     { key: "created", header: "Joined", render: (u) => <span className="whitespace-nowrap text-muted">{formatDateTime(u.createdAt)}</span> },
     { key: "login", header: "Last sign-in", render: (u) => <span className="whitespace-nowrap text-muted">{formatDateTime(u.lastLoginAt)}</span> },
@@ -61,7 +61,7 @@ export function UsersClient() {
             key: "actions",
             header: "",
             render: (u: AdminUser) =>
-              u.id === me?.id ? null : (
+              u.id === me?.id || u.superAdmin ? null : (
                 // Keep the click from opening the row.
                 <span onClick={(e) => e.stopPropagation()} className="inline-flex">
                   <ConfirmButton confirmLabel="Delete" onConfirm={() => remove(u)}>

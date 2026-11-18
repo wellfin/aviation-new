@@ -4,7 +4,7 @@ import { currentUser, requirePermission } from "../../middleware/auth.js";
 import { BUSINESS_EMAIL_MESSAGE, isBusinessEmail } from "../../lib/business-email.js";
 import { hashPassword } from "../../lib/crypto.js";
 import { isDuplicateKeyError, isObjectId, withTransaction } from "../../lib/db.js";
-import { badRequest, conflict, notFound, validationError } from "../../lib/errors.js";
+import { badRequest, conflict, forbidden, notFound, validationError } from "../../lib/errors.js";
 import { created, handler, noContent, ok } from "../../lib/http.js";
 import { containsRegex, paginated, paginationQuery, skipFor } from "../../lib/pagination.js";
 import { RefreshToken } from "../auth/refresh-token.model.js";
@@ -45,12 +45,15 @@ function adminView(u: UserDoc, names: Map<string, string> = new Map()) {
   return {
     ...toPublicUser(u),
     status: u.status,
+    superAdmin: Boolean(u.superAdmin),
     /** Custom staff role (MANAGER only); null means the standard Manager permissions. */
     staffRole: staffRoleId ? { id: staffRoleId, name: names.get(staffRoleId) ?? "(removed role)" } : null,
     lastLoginAt: u.lastLoginAt?.toISOString() ?? null,
     updatedAt: u.updatedAt.toISOString(),
   };
 }
+
+const SUPER_ADMIN_LOCKED = "The Super Admin can't be changed, suspended or deleted.";
 
 /** A custom role id must exist; null clears it. */
 async function checkStaffRole(id: string | null | undefined): Promise<void> {
@@ -145,6 +148,7 @@ adminUsersRouter.patch(
     const updated = await withTransaction(async (session) => {
       const user = await User.findById(params.id).session(session);
       if (!user) throw notFound("User");
+      if (user.superAdmin) throw forbidden(SUPER_ADMIN_LOCKED);
       const privilegeChanged = (body.role && body.role !== user.role) || (body.status && body.status !== user.status);
       if (body.role) user.role = body.role;
       if (body.status) user.status = body.status;
@@ -168,6 +172,7 @@ adminUsersRouter.delete(
   requirePermission("users:manage"),
   handler({ params: idParams }, async ({ params }, req, res) => {
     if (currentUser(req).id === params.id) throw badRequest("You can't delete your own account here.");
+    if (await User.exists({ _id: params.id, superAdmin: true })) throw forbidden(SUPER_ADMIN_LOCKED);
     await withTransaction(async (session) => {
       const user = await User.findByIdAndDelete(params.id, { session });
       if (!user) throw notFound("User");

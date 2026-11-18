@@ -27,7 +27,7 @@ export function UserDetailClient({ id }: { id: string }) {
 
   const user = override ?? data;
   const isSelf = me?.id === id;
-  const canManage = can(me, "users:manage") && !isSelf;
+  const canManage = can(me, "users:manage") && !isSelf && !(override ?? data)?.superAdmin;
 
   async function update(body: { role?: string; staffRole?: string | null; status?: "active" | "suspended" }, success: string) {
     setFeedback(null);
@@ -85,12 +85,17 @@ export function UserDetailClient({ id }: { id: string }) {
   return (
     <>
       {back}
-      <PageHeader title={`${user.firstName} ${user.lastName}`} description={user.email} actions={<RoleBadge role={user.role} staffRole={user.staffRole} />} />
+      <PageHeader title={`${user.firstName} ${user.lastName}`} description={user.email} actions={<RoleBadge role={user.role} staffRole={user.staffRole} superAdmin={user.superAdmin} />} />
 
       {feedback && (
         <div className="mb-4">
           <FormStatus status={feedback.status} message={feedback.message} />
         </div>
+      )}
+      {user.superAdmin && !isSelf && (
+        <p className="mb-4 flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-3 text-sm text-muted">
+          <ShieldAlert className="size-4 shrink-0" aria-hidden /> This is the Super Admin. Its role and status can&apos;t be changed and it can&apos;t be deleted.
+        </p>
       )}
       {isSelf && (
         <p className="mb-4 flex items-center gap-2 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-[#a16207]">
