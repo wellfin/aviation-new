@@ -13,6 +13,8 @@ export interface SessionUser {
   /** Server-computed permissions (API mode). Used only to shape the UI — the API enforces them. */
   permissions?: string[];
   emailVerified?: boolean;
+  /** The owner account: the only one that can change the built-in Admin and Manager roles. */
+  superAdmin?: boolean;
 }
 
 export type UserRole = "USER" | "PROVIDER" | "MANAGER" | "ADMIN";

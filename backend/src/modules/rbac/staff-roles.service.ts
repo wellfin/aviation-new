@@ -2,7 +2,8 @@ import { isDuplicateKeyError } from "../../lib/db.js";
 import { conflict, notFound } from "../../lib/errors.js";
 import type { UserDoc } from "../users/user.model.js";
 import { User } from "../users/user.model.js";
-import { type GrantablePermission, type Permission, permissionsFor } from "./permissions.js";
+import { BuiltInRole } from "./built-in-role.model.js";
+import { BUILT_IN_EDITABLE, type BuiltInKey, type GrantablePermission, type Permission, permissionsFor } from "./permissions.js";
 import { StaffRole, type StaffRoleDoc, toStaffRoleDTO } from "./staff-role.model.js";
 
 /**
@@ -10,12 +11,38 @@ import { StaffRole, type StaffRoleDoc, toStaffRoleDTO } from "./staff-role.model
  * uploads, which every console editor needs); everyone else gets their role's defaults.
  * A custom role that was removed leaves its users with no console permissions until reassigned.
  */
-export async function permissionsOf(user: Pick<UserDoc, "role" | "staffRole">): Promise<Permission[]> {
+export async function permissionsOf(user: Pick<UserDoc, "role" | "staffRole"> & { superAdmin?: boolean | null }): Promise<Permission[]> {
   if (user.role === "MANAGER" && user.staffRole) {
     const role = await StaffRole.findById(user.staffRole).select("permissions").lean();
     return role ? [...new Set<Permission>([...(role.permissions as Permission[]), "uploads:create"])] : [];
   }
+  // The Super Admin always has everything, whatever the Admin role is set to.
+  if (user.superAdmin) return permissionsFor("ADMIN");
+  if (user.role === "ADMIN" || user.role === "MANAGER") {
+    const key: BuiltInKey = user.role;
+    const editable = new Set<Permission>(BUILT_IN_EDITABLE[key]);
+    const fixed = permissionsFor(key).filter((p) => !editable.has(p));
+    return [...new Set([...fixed, ...(await builtInConsolePermissions(key))])];
+  }
   return permissionsFor(user.role);
+}
+
+/** The console permissions a built-in role grants now: the Super Admin's choice, else the defaults. */
+export async function builtInConsolePermissions(key: BuiltInKey): Promise<Permission[]> {
+  const saved = await BuiltInRole.findOne({ key }).select("permissions").lean();
+  if (saved) return saved.permissions as Permission[];
+  const editable = new Set<Permission>(BUILT_IN_EDITABLE[key]);
+  return permissionsFor(key).filter((p) => editable.has(p));
+}
+
+/** Super Admin: set (or with null, reset to default) the console permissions of Admin or Manager (standard). */
+export async function setBuiltInPermissions(key: BuiltInKey, permissions: Permission[] | null): Promise<void> {
+  if (permissions === null) {
+    await BuiltInRole.deleteOne({ key });
+    return;
+  }
+  const allowed = new Set<Permission>(BUILT_IN_EDITABLE[key]);
+  await BuiltInRole.updateOne({ key }, { $set: { permissions: [...new Set(permissions)].filter((p) => allowed.has(p)) } }, { upsert: true });
 }
 
 export interface StaffRoleInput {
@@ -39,10 +66,16 @@ export async function builtInRoles() {
     User.countDocuments({ role: "ADMIN", superAdmin: { $ne: true } }),
     User.countDocuments({ role: "MANAGER", staffRole: { $exists: false } }),
   ]);
+  const [adminPerms, managerPerms, adminSaved, managerSaved] = await Promise.all([
+    builtInConsolePermissions("ADMIN"),
+    builtInConsolePermissions("MANAGER"),
+    BuiltInRole.exists({ key: "ADMIN" }),
+    BuiltInRole.exists({ key: "MANAGER" }),
+  ]);
   return [
-    { key: "SUPER_ADMIN", userCount: superAdmins, permissions: permissionsFor("ADMIN") },
-    { key: "ADMIN", userCount: admins, permissions: permissionsFor("ADMIN") },
-    { key: "MANAGER", userCount: managers, permissions: permissionsFor("MANAGER") },
+    { key: "SUPER_ADMIN", userCount: superAdmins, permissions: [...BUILT_IN_EDITABLE.ADMIN], editable: [], customised: false },
+    { key: "ADMIN", userCount: admins, permissions: adminPerms, editable: [...BUILT_IN_EDITABLE.ADMIN], customised: Boolean(adminSaved) },
+    { key: "MANAGER", userCount: managers, permissions: managerPerms, editable: [...BUILT_IN_EDITABLE.MANAGER], customised: Boolean(managerSaved) },
   ];
 }
 

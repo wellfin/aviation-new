@@ -67,7 +67,7 @@ const isBot = (honeypot: string | undefined) => Boolean(honeypot?.trim());
 /** Staff inbox = every active admin and manager. */
 /** Active staff whose role can open Leads and who haven't turned lead emails off. */
 async function staffRecipients(): Promise<string[]> {
-  const staff = await User.find({ role: { $in: ["ADMIN", "MANAGER"] }, status: "active", leadEmails: { $ne: false } }, { email: 1, role: 1, staffRole: 1 }).lean();
+  const staff = await User.find({ role: { $in: ["ADMIN", "MANAGER"] }, status: "active", leadEmails: { $ne: false } }, { email: 1, role: 1, staffRole: 1, superAdmin: 1 }).lean();
   const allowed = await Promise.all(staff.map(async (u) => (await permissionsOf(u)).includes("leads:read")));
   return staff.filter((_, i) => allowed[i]).map((u) => u.email);
 }

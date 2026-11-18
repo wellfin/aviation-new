@@ -45,7 +45,28 @@ export const PERMISSION_GROUPS: Array<{ label: string; items: Array<{ value: str
   },
 ];
 
-export const PERMISSION_LABEL: Record<string, string> = Object.fromEntries(PERMISSION_GROUPS.flatMap((g) => g.items.map((i) => [i.value, i.label])));
+/** Only the built-in Admin role can have this one (set by the Super Admin). */
+export const USERS_MANAGE_ITEM = { value: "users:manage", label: "Users & roles (manage)", hint: "Add, change, suspend and delete users; create and edit roles" };
+
+export const PERMISSION_LABEL: Record<string, string> = Object.fromEntries([...PERMISSION_GROUPS.flatMap((g) => g.items), USERS_MANAGE_ITEM].map((i) => [i.value, i.label]));
+
+/** GET /admin/roles/built-in */
+export interface BuiltInRole {
+  key: "SUPER_ADMIN" | "ADMIN" | "MANAGER";
+  userCount: number;
+  /** Console permissions it grants now. */
+  permissions: string[];
+  /** What the Super Admin can switch on or off for it (empty = fixed). */
+  editable: string[];
+  /** True when the Super Admin changed it from the defaults. */
+  customised: boolean;
+}
+
+export const BUILT_IN_TEXT: Record<BuiltInRole["key"], { name: string; description: string }> = {
+  SUPER_ADMIN: { name: "Super Admin", description: "The owner account. Full access; can't be changed, suspended or deleted." },
+  ADMIN: { name: "Admin", description: "Full access to everything, including users, roles and billing." },
+  MANAGER: { name: "Manager (standard)", description: "Staff: moderation and content. No user, role or billing administration." },
+};
 
 /**
  * One choice in the role pickers: a built-in role, or a custom staff role (stored as MANAGER + staffRole).

@@ -74,6 +74,13 @@ export const GRANTABLE_PERMISSIONS = [
 ] as const satisfies readonly Permission[];
 export type GrantablePermission = (typeof GRANTABLE_PERMISSIONS)[number];
 
+/** Console permissions the Super Admin can switch on or off for the built-in Admin and Manager roles. */
+export const BUILT_IN_EDITABLE = {
+  ADMIN: [...GRANTABLE_PERMISSIONS, "users:manage"],
+  MANAGER: [...GRANTABLE_PERMISSIONS],
+} as const satisfies Record<"ADMIN" | "MANAGER", readonly Permission[]>;
+export type BuiltInKey = keyof typeof BUILT_IN_EDITABLE;
+
 export const ROLE_PERMISSIONS: Record<Role, ReadonlySet<Permission>> = {
   USER: new Set(USER_PERMS),
   PROVIDER: new Set(PROVIDER_PERMS),

@@ -7,20 +7,7 @@ import { Card, EmptyState, ErrorPanel, PageHeader } from "@/components/admin/ui"
 import { ButtonLink } from "@/components/ui/Button";
 import { can, useAuth } from "@/lib/auth/auth-context";
 import { useApi } from "@/lib/hooks/useApi";
-import { PERMISSION_LABEL, type StaffRole } from "./roles";
-
-/** GET /admin/roles/built-in */
-interface BuiltInRole {
-  key: "SUPER_ADMIN" | "ADMIN" | "MANAGER";
-  userCount: number;
-  permissions: string[];
-}
-
-const BUILT_IN_TEXT: Record<BuiltInRole["key"], { name: string; description: string }> = {
-  SUPER_ADMIN: { name: "Super Admin", description: "The owner account. Full access; can't be changed, suspended or deleted." },
-  ADMIN: { name: "Admin", description: "Full access to everything, including users, roles and billing." },
-  MANAGER: { name: "Manager (standard)", description: "Staff: moderation and content. No user, role or billing administration." },
-};
+import { BUILT_IN_TEXT, PERMISSION_LABEL, type BuiltInRole, type StaffRole } from "./roles";
 
 const users = (n: number) => `${n} user${n === 1 ? "" : "s"}`;
 
@@ -52,21 +39,36 @@ export function RolesClient() {
         <div className="h-32 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading roles" />
       ) : (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {builtIn.data.map((r) => (
-            <li key={r.key}>
+          {builtIn.data.map((r) => {
+            const editable = Boolean(me?.superAdmin) && r.editable.length > 0;
+            const all = r.key === "SUPER_ADMIN" || (r.editable.length > 0 && r.editable.every((p) => r.permissions.includes(p)));
+            const card = (
               <RoleCard
                 name={
-                  <span className="flex items-center gap-2">
-                    {BUILT_IN_TEXT[r.key].name} <Lock className="size-3.5 text-subtle" aria-label="Built-in, can't be changed" />
+                  <span className="flex flex-wrap items-center gap-2">
+                    {BUILT_IN_TEXT[r.key].name}
+                    {!editable && <Lock className="size-3.5 text-subtle" aria-label="Built-in, can't be changed" />}
+                    {r.customised && <span className="rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-bold text-[#a16207]">CHANGED</span>}
                   </span>
                 }
                 count={r.userCount}
                 description={BUILT_IN_TEXT[r.key].description}
-                permissions={r.key === "MANAGER" ? r.permissions.filter((p) => PERMISSION_LABEL[p]) : null}
-                muted
+                permissions={all ? null : r.permissions.filter((p) => PERMISSION_LABEL[p])}
+                muted={!editable}
               />
-            </li>
-          ))}
+            );
+            return (
+              <li key={r.key}>
+                {editable ? (
+                  <Link href={`/admin/roles/built-in/${r.key}`} className="block h-full rounded-2xl transition hover:ring-2 hover:ring-brand">
+                    {card}
+                  </Link>
+                ) : (
+                  card
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
 

@@ -15,7 +15,7 @@ import { toPublicUser, User, type UserDoc } from "../users/user.model.js";
  * JWT audience, so signing in here never signs anyone in on the website.
  */
 
-const sessionPayload = async (user: UserDoc) => ({ ...toPublicUser(user), permissions: await permissionsOf(user) });
+const sessionPayload = async (user: UserDoc) => ({ ...toPublicUser(user), superAdmin: Boolean(user.superAdmin), permissions: await permissionsOf(user) });
 
 function refreshCookie(req: Request): string | undefined {
   return (req.cookies as Record<string, string | undefined>)[SCOPES.admin.refreshCookie];

@@ -2,8 +2,9 @@ import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 import { isObjectId } from "../../lib/db.js";
 import { created, handler, noContent, ok } from "../../lib/http.js";
-import { requirePermission } from "../../middleware/auth.js";
-import { GRANTABLE_PERMISSIONS } from "./permissions.js";
+import { forbidden } from "../../lib/errors.js";
+import { currentUser, requirePermission } from "../../middleware/auth.js";
+import { GRANTABLE_PERMISSIONS, PERMISSIONS } from "./permissions.js";
 import * as roles from "./staff-roles.service.js";
 
 /** Custom staff roles. Mounted at /admin/roles. Reading needs users:read; changes need users:manage (ADMIN only). */
@@ -37,6 +38,19 @@ adminRolesRouter.get("/permissions", requirePermission("users:read"), (_req: Req
 adminRolesRouter.get("/built-in", requirePermission("users:read"), async (_req: Request, res: Response) => {
   ok(res, await roles.builtInRoles());
 });
+
+/** Super Admin only: change (or reset) what the built-in Admin / Manager (standard) roles can do. */
+const builtInParams = z.object({ key: z.enum(["ADMIN", "MANAGER"]) });
+const builtInBody = z.object({ permissions: z.array(z.enum(PERMISSIONS)).nullable() });
+adminRolesRouter.put(
+  "/built-in/:key",
+  requirePermission("users:manage"),
+  handler({ params: builtInParams, body: builtInBody }, async ({ params, body }, req, res) => {
+    if (!currentUser(req).superAdmin) throw forbidden("Only the Super Admin can change the Admin and Manager roles.");
+    await roles.setBuiltInPermissions(params.key, body.permissions);
+    ok(res, await roles.builtInRoles());
+  }),
+);
 
 adminRolesRouter.get("/", requirePermission("users:read"), async (_req: Request, res: Response) => {
   ok(res, await roles.listStaffRoles());
