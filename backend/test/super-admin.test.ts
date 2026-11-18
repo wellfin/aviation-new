@@ -33,6 +33,7 @@ describe("Super Admin", () => {
     // Lead emails: only the Super Admin can switch its own; Admins can switch other staff's.
     expect((await agent.put(users(`/${owner.id}/lead-emails`)).send({ enabled: false })).status).toBe(403);
     const other = await agent.put(users(`/${later.id}/lead-emails`)).send({ enabled: false });
+    // (Lead emails of another Admin can still be switched by an Admin.)
     expect(other.status).toBe(200);
     expect(other.body.data.leadEmails).toBe(false);
     // Anyone can switch their own (here: the signed-in Admin).
@@ -40,7 +41,10 @@ describe("Super Admin", () => {
     expect((await agent.put(users(`/${me.id}/lead-emails`)).send({ enabled: true })).body.data.leadEmails).toBe(true);
     expect((await User.findById(owner.id).lean())?.leadEmails).toBe(true);
 
-    // Other Admins can still be managed.
+    // Only the Super Admin changes or removes other Admins.
+    expect((await agent.patch(users(`/${later.id}`)).send({ status: "suspended" })).status).toBe(403);
+    expect((await agent.delete(users(`/${later.id}`))).status).toBe(403);
+    await User.updateOne({ _id: me._id }, { $set: { superAdmin: true } });
     expect((await agent.patch(users(`/${later.id}`)).send({ status: "suspended" })).status).toBe(200);
   });
 });

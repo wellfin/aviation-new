@@ -21,7 +21,7 @@ export function UserCreateClient() {
   const router = useRouter();
   const { user: me } = useAuth();
   const [v, setV] = useState(EMPTY);
-  const [choice, setChoice] = useState<RoleChoice>("MANAGER");
+  const [choice, setChoice] = useState<RoleChoice>("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
@@ -40,6 +40,7 @@ export function UserCreateClient() {
     if (v.lastName.trim().length < 2) out.lastName = "Please enter at least 2 characters";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email.trim())) out.email = "Enter a valid email address";
     else if (!isBusinessEmail(v.email)) out.email = BUSINESS_EMAIL_MESSAGE;
+    if (!choice) out.staffRole = "Choose a role";
     if (v.password.length < 8) out.password = "Use at least 8 characters";
     else if (!/[A-Za-z]/.test(v.password) || !/\d/.test(v.password)) out.password = "Include at least one letter and one number";
     return out;

@@ -1,5 +1,6 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
+import { User } from "../src/modules/users/user.model.js";
 import { app, ORIGIN, signedInAgent } from "./helpers.js";
 
 const roles = (p = "") => `/api/v1/admin/roles${p}`;
@@ -49,16 +50,19 @@ describe("custom staff roles", () => {
     expect((await asha.get("/api/v1/admin/providers")).status).toBe(200);
     expect((await asha.get("/api/v1/admin/auth/me")).body.data.permissions).toContain("providers:manage");
 
-    // A role in use can't be removed; after moving its user back to the standard Manager role it can.
+    // A role in use can't be removed; after moving its user to another role it can.
     expect((await admin.delete(roles(`/${role.id}`))).status).toBe(409);
     expect((await admin.get(roles(`/${role.id}`))).body.data.userCount).toBe(1);
-    const back = await admin.patch(users(`/${add.body.data.id}`)).send({ staffRole: null });
-    expect(back.body.data.staffRole).toBeNull();
+    // Staff can't be left without a custom role (the plain Manager role isn't offered).
+    expect((await admin.patch(users(`/${add.body.data.id}`)).send({ staffRole: null })).status).toBe(422);
+    const other = (await admin.post(roles()).send({ name: "Reviews Team", permissions: ["reviews:moderate"] })).body.data;
+    const moved = await admin.patch(users(`/${add.body.data.id}`)).send({ staffRole: other.id });
+    expect(moved.body.data.staffRole).toMatchObject({ id: other.id });
     expect((await admin.delete(roles(`/${role.id}`))).status).toBe(204);
   });
 
   it("validates new users: work email, unique email, existing role, admin only", async () => {
-    const { agent: admin } = await signedInAgent("ADMIN");
+    const { agent: admin, user: adminUser } = await signedInAgent("ADMIN");
     const { agent: manager } = await signedInAgent("MANAGER");
     const base = { firstName: "Ben", lastName: "Hall", email: "ben@flyops.com", password: "Runway2026", role: "ADMIN" };
     expect((await manager.post(users()).send(base)).status).toBe(403);
@@ -67,6 +71,10 @@ describe("custom staff roles", () => {
     expect((await admin.post(users()).send({ ...base, role: "MANAGER", staffRole: "64b7f0f0f0f0f0f0f0f0f0f0" })).status).toBe(422);
     expect((await admin.post(users()).send({ ...base, role: "USER" })).status).toBe(422);
     expect((await admin.post(users()).send({ ...base, role: "PROVIDER" })).status).toBe(422);
+    // A plain Manager needs a custom role; only the Super Admin adds Admins.
+    expect((await admin.post(users()).send({ ...base, role: "MANAGER" })).status).toBe(422);
+    expect((await admin.post(users()).send(base)).status).toBe(403);
+    await User.updateOne({ _id: adminUser._id }, { $set: { superAdmin: true } });
     const ok = await admin.post(users()).send(base);
     expect(ok.status).toBe(201);
     expect(ok.body.data.staffRole).toBeNull();

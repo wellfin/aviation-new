@@ -6,6 +6,6 @@ export const metadata: Metadata = { title: "Role", description: "What the built-
 
 export default async function AdminBuiltInRolePage({ params }: PageProps<"/admin/roles/built-in/[key]">) {
   const { key } = await params;
-  if (key !== "ADMIN" && key !== "MANAGER") notFound();
+  if (key !== "ADMIN") notFound();
   return <BuiltInRoleEditor roleKey={key} />;
 }

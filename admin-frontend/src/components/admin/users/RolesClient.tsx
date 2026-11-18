@@ -39,7 +39,7 @@ export function RolesClient() {
         <div className="h-32 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading roles" />
       ) : (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {builtIn.data.map((r) => {
+          {builtIn.data.filter((r) => r.key !== "MANAGER").map((r) => {
             const editable = Boolean(me?.superAdmin) && r.editable.length > 0;
             const all = r.key === "SUPER_ADMIN" || (r.editable.length > 0 && r.editable.every((p) => r.permissions.includes(p)));
             const card = (

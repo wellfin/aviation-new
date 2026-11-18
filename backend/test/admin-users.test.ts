@@ -45,7 +45,10 @@ describe("admin user management", () => {
     await targetAgent.post("/api/v1/auth/login").send({ email: target.email, password: PASSWORD });
     expect((await targetAgent.get("/api/v1/auth/me")).status).toBe(200);
 
-    const r = await admin.patch(api(`/${target.id}`)).send({ role: "MANAGER" });
+    // Staff get a custom role; the plain Manager role isn't offered any more.
+    expect((await admin.patch(api(`/${target.id}`)).send({ role: "MANAGER" })).status).toBe(422);
+    const role = await admin.post("/api/v1/admin/roles").send({ name: "Support", permissions: ["reviews:moderate"] });
+    const r = await admin.patch(api(`/${target.id}`)).send({ role: "MANAGER", staffRole: role.body.data.id });
     expect(r.status).toBe(200);
     expect(r.body.data.role).toBe("MANAGER");
     expect((await targetAgent.get("/api/v1/auth/me")).status).toBe(401);

@@ -27,7 +27,9 @@ export function UserDetailClient({ id }: { id: string }) {
 
   const user = override ?? data;
   const isSelf = me?.id === id;
-  const canManage = can(me, "users:manage") && !isSelf && !(override ?? data)?.superAdmin;
+  const target = override ?? data;
+  // Only the Super Admin can change or remove Admins; nobody can change the Super Admin.
+  const canManage = can(me, "users:manage") && !isSelf && !target?.superAdmin && (target?.role !== "ADMIN" || Boolean(me?.superAdmin));
 
   async function update(body: { role?: string; staffRole?: string | null; status?: "active" | "suspended" }, success: string) {
     setFeedback(null);

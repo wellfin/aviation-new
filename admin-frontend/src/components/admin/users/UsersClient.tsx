@@ -61,7 +61,7 @@ export function UsersClient() {
             key: "actions",
             header: "",
             render: (u: AdminUser) =>
-              u.id === me?.id || u.superAdmin ? null : (
+              u.id === me?.id || u.superAdmin || (u.role === "ADMIN" && !me?.superAdmin) ? null : (
                 // Keep the click from opening the row.
                 <span onClick={(e) => e.stopPropagation()} className="inline-flex">
                   <ConfirmButton confirmLabel="Delete" onConfirm={() => remove(u)}>

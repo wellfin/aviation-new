@@ -55,6 +55,9 @@ function adminView(u: UserDoc, names: Map<string, string> = new Map()) {
 }
 
 const SUPER_ADMIN_LOCKED = "The Super Admin can't be changed, suspended or deleted.";
+const ADMINS_ARE_SUPER_ADMINS_JOB = "Only the Super Admin can add, change or remove Admins.";
+/** Staff are added with a custom role; the plain "Manager (standard)" role is no longer offered. */
+const CHOOSE_ROLE = { staffRole: "Choose a role" };
 
 /** A custom role id must exist; null clears it. */
 async function checkStaffRole(id: string | null | undefined): Promise<void> {
@@ -115,7 +118,9 @@ const createBody = z.object({
 adminUsersRouter.post(
   "/",
   requirePermission("users:manage"),
-  handler({ body: createBody }, async ({ body }, _req, res) => {
+  handler({ body: createBody }, async ({ body }, req, res) => {
+    if (body.role === "ADMIN" && !currentUser(req).superAdmin) throw forbidden(ADMINS_ARE_SUPER_ADMINS_JOB);
+    if (body.role === "MANAGER" && !body.staffRole) throw validationError(CHOOSE_ROLE);
     const custom = body.role === "MANAGER" ? (body.staffRole ?? null) : null;
     await checkStaffRole(custom);
     try {
@@ -150,6 +155,10 @@ adminUsersRouter.patch(
       const user = await User.findById(params.id).session(session);
       if (!user) throw notFound("User");
       if (user.superAdmin) throw forbidden(SUPER_ADMIN_LOCKED);
+      if ((user.role === "ADMIN" || body.role === "ADMIN") && !actor.superAdmin) throw forbidden(ADMINS_ARE_SUPER_ADMINS_JOB);
+      // Staff keep a custom role: setting MANAGER, or clearing the custom role, needs one.
+      const nextStaffRole = body.staffRole !== undefined ? body.staffRole : user.role === "MANAGER" ? user.staffRole : null;
+      if ((body.role ?? user.role) === "MANAGER" && (body.role !== undefined || body.staffRole !== undefined) && !nextStaffRole) throw validationError(CHOOSE_ROLE);
       const privilegeChanged = (body.role && body.role !== user.role) || (body.status && body.status !== user.status);
       if (body.role) user.role = body.role;
       if (body.status) user.status = body.status;
@@ -193,6 +202,7 @@ adminUsersRouter.delete(
   handler({ params: idParams }, async ({ params }, req, res) => {
     if (currentUser(req).id === params.id) throw badRequest("You can't delete your own account here.");
     if (await User.exists({ _id: params.id, superAdmin: true })) throw forbidden(SUPER_ADMIN_LOCKED);
+    if (!currentUser(req).superAdmin && (await User.exists({ _id: params.id, role: "ADMIN" }))) throw forbidden(ADMINS_ARE_SUPER_ADMINS_JOB);
     await withTransaction(async (session) => {
       const user = await User.findByIdAndDelete(params.id, { session });
       if (!user) throw notFound("User");
