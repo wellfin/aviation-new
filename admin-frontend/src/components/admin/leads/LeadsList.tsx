@@ -11,16 +11,16 @@ import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import { CsvExportLink } from "./CsvExportLink";
 import { LEAD_STATUSES, LEAD_STATUS_LABEL, LEAD_TYPES, LEAD_TYPE_LABEL, type LeadSummary } from "./types";
 
-const PAGE_SIZE = 20;
 const oneOf = <T extends string>(list: readonly T[], v: string): T | "" => ((list as readonly string[]).includes(v) ? (v as T) : "");
 
 /** Current URL filters for the leads list (validated). Shared by the list and its export link. */
 export function useLeadFilters() {
-  const { get, page } = useUrlParams();
+  const { get, page, pageSize } = useUrlParams();
   const from = dateParam(get("from"));
   const to = dateParam(get("to"));
   return {
     page,
+    pageSize,
     type: oneOf(LEAD_TYPES, get("type")),
     status: oneOf(LEAD_STATUSES, get("status")),
     q: get("q").trim(),
@@ -46,7 +46,7 @@ export function LeadsList() {
   const f = useLeadFilters();
   const path = f.inverted
     ? null
-    : withQuery("/admin/leads", { page: f.page, pageSize: PAGE_SIZE, type: f.type, status: f.status, q: f.q, from: f.from, to: f.to });
+    : withQuery("/admin/leads", { page: f.page, pageSize: f.pageSize, type: f.type, status: f.status, q: f.q, from: f.from, to: f.to });
   const { data, error, loading, reload } = useApi<Paginated<LeadSummary>>(path);
 
   const columns: Column<LeadSummary>[] = [

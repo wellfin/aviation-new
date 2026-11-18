@@ -90,3 +90,26 @@
     display: none;
   }
 }
+
+/* Admin list card: FilterBar + DataTable + Pager next to each other read as one card. */
+.list-toolbar:has(+ .list-table) {
+  margin-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 0;
+  box-shadow: none;
+}
+.list-toolbar + .list-table {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.list-table:has(+ .list-pager) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.list-table + .list-pager {
+  margin-top: 0;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}

@@ -11,16 +11,15 @@ import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import type { AdminNews } from "./schema";
 import { siteUrl } from "./site";
 
-const PAGE_SIZE = 20;
 
 export function NewsList() {
   const router = useRouter();
-  const { get, page } = useUrlParams();
+  const { get, page, pageSize } = useUrlParams();
   const status = ["draft", "published"].includes(get("status")) ? get("status") : "";
   const { data: categories } = useApi<string[]>("/news/categories");
   const category = get("category").trim();
   const q = get("q").trim();
-  const { data, error, loading, reload } = useApi<Paginated<AdminNews>>(withQuery("/admin/news", { page, pageSize: PAGE_SIZE, status, category, q }));
+  const { data, error, loading, reload } = useApi<Paginated<AdminNews>>(withQuery("/admin/news", { page, pageSize, status, category, q }));
   const filtered = Boolean(status || category || q);
 
   const columns: Column<AdminNews>[] = [

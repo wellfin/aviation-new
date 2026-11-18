@@ -3,6 +3,9 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
+/** Choices in the list footer's "Rows per page". */
+export const PAGE_SIZES = [10, 20, 50, 100];
+
 /**
  * Reads/writes list state (filters, search, page) in the URL so views are
  * shareable and survive reloads. Changing any filter resets `page`.
@@ -28,5 +31,13 @@ export function useUrlParams() {
     [params, pathname, router],
   );
 
-  return { params, get, set, page: Math.max(1, Number.parseInt(params.get("page") ?? "1", 10) || 1) };
+  const size = Number.parseInt(params.get("pageSize") ?? "", 10);
+  return {
+    params,
+    get,
+    set,
+    page: Math.max(1, Number.parseInt(params.get("page") ?? "1", 10) || 1),
+    /** Rows per page chosen in the list footer (10, 20, 50 or 100; default 20). */
+    pageSize: PAGE_SIZES.includes(size) ? size : 20,
+  };
 }

@@ -30,7 +30,6 @@ interface Subscriber {
   updatedAt: string;
 }
 
-const PAGE_SIZE = 25;
 
 /** Total for one status (a 1-row page is enough — only `total` is used). */
 function useCount(status: SubscriberStatus) {
@@ -39,10 +38,10 @@ function useCount(status: SubscriberStatus) {
 }
 
 export function SubscribersList() {
-  const { get, set, page } = useUrlParams();
+  const { get, set, page, pageSize } = useUrlParams();
   const statusParam = get("status");
   const status = (STATUSES as readonly string[]).includes(statusParam) ? (statusParam as SubscriberStatus) : "";
-  const { data, error, loading, reload } = useApi<Paginated<Subscriber>>(withQuery("/admin/newsletter/subscribers", { page, pageSize: PAGE_SIZE, status, q: get("q").trim() }));
+  const { data, error, loading, reload } = useApi<Paginated<Subscriber>>(withQuery("/admin/newsletter/subscribers", { page, pageSize, status, q: get("q").trim() }));
   const countOf = { subscribed: useCount("subscribed"), pending: useCount("pending"), unsubscribed: useCount("unsubscribed") };
   const counts: Record<SubscriberStatus, number | null> = { subscribed: countOf.subscribed.total, pending: countOf.pending.total, unsubscribed: countOf.unsubscribed.total };
   const { user } = useAuth();

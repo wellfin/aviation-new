@@ -13,7 +13,6 @@ import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import { AD_PLACEMENTS, PLACEMENT_LABEL, SELECTABLE_PLACEMENTS, adState, type AdminAd, type PlacementStats, type PlacementTraffic } from "./schema";
 import { siteUrl } from "@/components/admin/news/site";
 
-const PAGE_SIZE = 20;
 const STATE_TONE = { active: "green", paused: "slate", scheduled: "blue", ended: "amber" } as const;
 const pct = (n: number) => `${n.toFixed(2)}%`;
 
@@ -61,11 +60,11 @@ function PlacementStatsGrid({ stats, loading, traffic }: { stats: PlacementStats
 
 export function AdsList() {
   const router = useRouter();
-  const { get, page } = useUrlParams();
+  const { get, page, pageSize } = useUrlParams();
   const placement = (AD_PLACEMENTS as readonly string[]).includes(get("placement")) ? get("placement") : "";
   const active = ["true", "false"].includes(get("active")) ? get("active") : "";
   const q = get("q").trim();
-  const list = useApi<Paginated<AdminAd>>(withQuery("/admin/ads", { page, pageSize: PAGE_SIZE, placement, active, q }));
+  const list = useApi<Paginated<AdminAd>>(withQuery("/admin/ads", { page, pageSize, placement, active, q }));
   const stats = useApi<PlacementStats[]>("/admin/ads/stats");
   const traffic = useApi<PlacementTraffic[]>("/admin/ads/traffic");
   const shareById = new Map((traffic.data ?? []).flatMap((t) => t.ads.map((a) => [a.id, { share: a.share, total: t.totalWeight }] as const)));

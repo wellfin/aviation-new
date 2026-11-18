@@ -12,7 +12,6 @@ const SUBSCRIPTION_STATUSES = ["created", "authenticated", "active", "pending", 
 const PAYMENT_STATUSES = ["authorized", "captured", "failed", "refunded"] as const;
 const PAID_PLANS = ["pro", "ultra_pro"] as const;
 const PLAN_LABEL: Record<string, string> = { pro: "Pro", ultra_pro: "Ultra Pro" };
-const PAGE_SIZE = 20;
 
 const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).replace(/_/g, " ");
 const oneOf = (list: readonly string[], v: string) => (list.includes(v) ? v : "");
@@ -93,7 +92,7 @@ export function BillingTabs() {
 
   return (
     <>
-      <nav aria-label="Billing sections" className="mb-6 flex gap-1 border-b border-line">
+      <nav aria-label="Billing sections" className="mb-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-line bg-white p-1.5 shadow-soft">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -102,8 +101,8 @@ export function BillingTabs() {
             // Each tab has its own filters, so switching starts clean.
             onClick={() => set({ tab: t.id === "subscriptions" ? "" : t.id, status: "", plan: "", from: "", to: "" })}
             className={cn(
-              "-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold transition",
-              tab === t.id ? "border-brand text-brand" : "border-transparent text-muted hover:text-ink",
+              "shrink-0 rounded-xl px-3.5 py-2 text-sm font-semibold whitespace-nowrap transition",
+              tab === t.id ? "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--color-line)]" : "text-muted hover:text-ink",
             )}
           >
             {t.label}
@@ -116,10 +115,10 @@ export function BillingTabs() {
 }
 
 function Subscriptions() {
-  const { get, page } = useUrlParams();
+  const { get, page, pageSize } = useUrlParams();
   const status = oneOf(SUBSCRIPTION_STATUSES, get("status"));
   const plan = oneOf(PAID_PLANS, get("plan"));
-  const { data, error, loading, reload } = useApi<Paginated<AdminSubscription>>(withQuery("/admin/billing/subscriptions", { page, pageSize: PAGE_SIZE, status, plan }));
+  const { data, error, loading, reload } = useApi<Paginated<AdminSubscription>>(withQuery("/admin/billing/subscriptions", { page, pageSize, status, plan }));
 
   const columns: Column<AdminSubscription>[] = [
     { key: "who", header: "Listing / account", render: (s) => <Party listing={s.listing} user={s.user} /> },
@@ -189,12 +188,12 @@ function Subscriptions() {
 }
 
 function Payments() {
-  const { get, page } = useUrlParams();
+  const { get, page, pageSize } = useUrlParams();
   const status = oneOf(PAYMENT_STATUSES, get("status"));
   const from = dateParam(get("from"));
   const to = dateParam(get("to"));
   const inverted = isInvertedRange(from, to);
-  const { data, error, loading, reload } = useApi<PaymentsPage>(inverted ? null : withQuery("/admin/billing/payments", { page, pageSize: PAGE_SIZE, status, from, to }));
+  const { data, error, loading, reload } = useApi<PaymentsPage>(inverted ? null : withQuery("/admin/billing/payments", { page, pageSize, status, from, to }));
 
   const columns: Column<AdminPayment>[] = [
     { key: "paid", header: "Date", render: (p) => <span className="whitespace-nowrap text-muted">{formatDateTime(p.paidAt)}</span> },

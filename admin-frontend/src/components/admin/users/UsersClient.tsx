@@ -6,20 +6,21 @@ import { useState } from "react";
 import { CheckCircle2, UserPlus } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { can, useAuth } from "@/lib/auth/auth-context";
-import { ConfirmButton, DataTable, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { Avatar, ConfirmButton, DataTable, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, StatusTabs, formatDateTime, type Column } from "@/components/admin/ui";
 import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import type { Paginated } from "@/lib/types";
-import { ROLE_OPTIONS, RoleBadge, SORT_OPTIONS, type AdminUser } from "./shared";
+import { RoleBadge, SORT_OPTIONS, type AdminUser } from "./shared";
 
 export function UsersClient() {
   const router = useRouter();
   const { user: me } = useAuth();
-  const { get, set, page } = useUrlParams();
-  const path = withQuery("/admin/users", { q: get("q"), role: get("role"), status: get("status"), sort: get("sort"), page, pageSize: 20 });
+  const { get, set, page, pageSize } = useUrlParams();
+  const path = withQuery("/admin/users", { q: get("q"), role: get("role"), status: get("status"), sort: get("sort"), page, pageSize });
   const { data, error, loading, reload } = useApi<Paginated<AdminUser>>(path);
+  const counts = useApi<{ all: number; ADMIN: number; MANAGER: number; USER: number; PROVIDER: number }>("/admin/users/counts");
   const [feedback, setFeedback] = useState<{ status: "success" | "error"; message: string } | null>(null);
   const canManage = can(me, "users:manage");
 
@@ -39,14 +40,17 @@ export function UsersClient() {
       key: "name",
       header: "User",
       render: (u) => (
-        <div className="min-w-0">
-          <Link href={`/admin/users/${u.id}`} onClick={(e) => e.stopPropagation()} className="font-semibold text-ink hover:text-brand">
-            {u.firstName} {u.lastName}
-          </Link>
-          <p className="flex items-center gap-1 truncate text-xs text-muted">
-            {u.email}
-            {u.emailVerified && <CheckCircle2 className="size-3.5 text-success" aria-label="Email verified" />}
-          </p>
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar name={`${u.firstName} ${u.lastName}`} />
+          <div className="min-w-0">
+            <Link href={`/admin/users/${u.id}`} onClick={(e) => e.stopPropagation()} className="font-semibold text-ink hover:text-brand">
+              {u.firstName} {u.lastName}
+            </Link>
+            <p className="flex items-center gap-1 truncate text-xs text-muted">
+              {u.email}
+              {u.emailVerified && <CheckCircle2 className="size-3.5 text-success" aria-label="Email verified" />}
+            </p>
+          </div>
         </div>
       ),
     },
@@ -87,13 +91,28 @@ export function UsersClient() {
           )
         }
       />
+      {feedback && (
+        <div className="mb-4">
+          <FormStatus status={feedback.status} message={feedback.message} />
+        </div>
+      )}
+      <StatusTabs
+        param="role"
+        label="Role"
+        tabs={[
+          { value: "", label: "All", count: counts.data?.all },
+          { value: "ADMIN", label: "Admins", count: counts.data?.ADMIN },
+          { value: "MANAGER", label: "Staff", count: counts.data?.MANAGER },
+          { value: "USER", label: "Website users", count: counts.data?.USER },
+          { value: "PROVIDER", label: "Providers", count: counts.data?.PROVIDER },
+        ]}
+      />
       <FilterBar>
-        <SearchFilter placeholder="Name, email or company…" label="Search users" />
-        <SelectFilter param="role" label="Role" options={ROLE_OPTIONS} />
+        <SearchFilter placeholder="Name, email or company" label="Search users" />
         <SelectFilter param="status" label="Status" options={[{ value: "active", label: "Active" }, { value: "suspended", label: "Suspended" }]} />
-        <label className="flex items-center gap-2 text-sm">
-          <span className="text-muted">Sort</span>
-          <select value={get("sort", "newest")} onChange={(e) => set({ sort: e.target.value === "newest" ? "" : e.target.value })} className="h-10 rounded-xl border border-line bg-white px-3 text-sm outline-none focus:border-brand">
+        <label className="flex items-center text-sm">
+          <span className="sr-only">Sort</span>
+          <select value={get("sort", "newest")} onChange={(e) => set({ sort: e.target.value === "newest" ? "" : e.target.value })} className="h-11 min-w-40 rounded-xl border border-line bg-white px-3.5 text-sm text-ink outline-none focus:border-brand focus:ring-3 focus:ring-brand/15">
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
@@ -101,12 +120,8 @@ export function UsersClient() {
             ))}
           </select>
         </label>
+        {data && <span className="text-sm text-muted sm:ml-auto">{data.total.toLocaleString()} user{data.total === 1 ? "" : "s"}</span>}
       </FilterBar>
-      {feedback && (
-        <div className="mb-4">
-          <FormStatus status={feedback.status} message={feedback.message} />
-        </div>
-      )}
       {error && !data ? (
         <ErrorPanel error={error} onRetry={reload} />
       ) : (

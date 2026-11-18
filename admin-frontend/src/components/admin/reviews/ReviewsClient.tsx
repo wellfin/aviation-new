@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ExternalLink, Star } from "lucide-react";
 import { useState } from "react";
 import { ReasonDialog } from "@/components/admin/providers/form-kit";
-import { ConfirmButton, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, StatusPill, formatDateTime } from "@/components/admin/ui";
+import { ConfirmButton, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, StatusPill, StatusTabs, formatDateTime } from "@/components/admin/ui";
 import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -48,11 +48,11 @@ export function Stars({ rating }: { rating: number }) {
 }
 
 export function ReviewsClient() {
-  const { get, set, page } = useUrlParams();
+  const { get, set, page, pageSize } = useUrlParams();
   const tab = get("status");
   // The queue defaults to pending; "all" drops the filter.
   const status = tab === "" ? "pending" : tab === "all" ? undefined : tab;
-  const path = withQuery("/admin/reviews", { status, provider: get("provider"), q: get("q"), page, pageSize: 20 });
+  const path = withQuery("/admin/reviews", { status, provider: get("provider"), q: get("q"), page, pageSize });
   const { data, error, loading, reload } = useApi<Paginated<AdminReview>>(path);
   const [feedback, setFeedback] = useState<{ status: "success" | "error"; message: string } | null>(null);
   const [rejecting, setRejecting] = useState<AdminReview | null>(null);
@@ -78,19 +78,7 @@ export function ReviewsClient() {
     <>
       <PageHeader title="Reviews" description="Approve or reject reviews before they appear on provider profiles." />
 
-      <nav aria-label="Review status" className="mb-4 flex gap-1 overflow-x-auto border-b border-line">
-        {TABS.map((t) => (
-          <button
-            key={t.value}
-            type="button"
-            aria-current={tab === t.value ? "page" : undefined}
-            onClick={() => set({ status: t.value })}
-            className={cn("-mb-px border-b-2 px-3 py-2 text-sm font-semibold whitespace-nowrap", tab === t.value ? "border-brand text-brand" : "border-transparent text-muted hover:text-ink")}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
+      <StatusTabs param="status" label="Review status" current={tab} tabs={TABS} />
 
       <FilterBar>
         <SearchFilter placeholder="Title, text or author…" label="Search reviews" />

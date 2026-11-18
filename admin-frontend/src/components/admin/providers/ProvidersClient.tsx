@@ -5,13 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock, Plus, Star } from "lucide-react";
 import { useState } from "react";
-import { Card, DataTable, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { Card, DataTable, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, StatusTabs, formatDateTime, type Column } from "@/components/admin/ui";
 import { buttonClasses } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import type { Paginated } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { siteUrl } from "@/components/admin/news/site";
 import { useCategories } from "@/components/admin/services/categories";
 import { PROVIDER_STATUSES, PROVIDER_TIERS, TIER_LABEL, type AdminProvider } from "./schema";
@@ -32,9 +31,9 @@ export function TierPill({ tier }: { tier: AdminProvider["tier"] }) {
 
 export function ProvidersClient() {
   const router = useRouter();
-  const { get, set, page } = useUrlParams();
+  const { get, set, page, pageSize } = useUrlParams();
   const status = get("status");
-  const path = withQuery("/admin/providers", { q: get("q"), status, category: get("category"), tier: get("tier"), sort: get("sort"), page, pageSize: 20 });
+  const path = withQuery("/admin/providers", { q: get("q"), status, category: get("category"), tier: get("tier"), sort: get("sort"), page, pageSize });
   const list = useApi<Paginated<AdminProvider>>(path);
   const [feedback, setFeedback] = useState<{ status: "success" | "error"; message: string } | null>(null);
   const { categories, names } = useCategories();
@@ -115,22 +114,12 @@ export function ProvidersClient() {
         />
       )}
 
-      <nav aria-label="Listing status" className="mb-4 flex gap-1 overflow-x-auto border-b border-line">
-        {[{ value: "", label: "All" }, ...PROVIDER_STATUSES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))].map((t) => (
-          <button
-            key={t.value}
-            type="button"
-            aria-current={status === t.value ? "page" : undefined}
-            onClick={() => set({ status: t.value })}
-            className={cn(
-              "-mb-px border-b-2 px-3 py-2 text-sm font-semibold whitespace-nowrap",
-              status === t.value ? "border-brand text-brand" : "border-transparent text-muted hover:text-ink",
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
+      <StatusTabs
+        param="status"
+        label="Listing status"
+        current={status}
+        tabs={[{ value: "", label: "All" }, ...PROVIDER_STATUSES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))]}
+      />
 
       <FilterBar>
         <SearchFilter placeholder="Name, city, email or ICAO…" label="Search listings" />

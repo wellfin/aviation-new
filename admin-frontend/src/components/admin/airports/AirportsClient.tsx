@@ -18,7 +18,7 @@ const TYPE_LABEL = Object.fromEntries(AIRPORT_TYPES.map((t) => [t.value, t.label
 
 export function AirportsClient() {
   const router = useRouter();
-  const { get, set, page } = useUrlParams();
+  const { get, set, page, pageSize } = useUrlParams();
   const country = get("country");
   const path = withQuery("/admin/airports", {
     q: get("q"),
@@ -27,7 +27,7 @@ export function AirportsClient() {
     featured: get("featured"),
     sort: get("sort"),
     page,
-    pageSize: 20,
+    pageSize,
   });
   const { data, error, loading, reload } = useApi<Paginated<AdminAirport>>(path);
   const [feedback, setFeedback] = useState<{ status: "success" | "error"; message: string; icao?: string } | null>(null);

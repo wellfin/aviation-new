@@ -86,6 +86,17 @@ adminUsersRouter.get(
   }),
 );
 
+/** How many accounts have each role (for the tabs above the users list). */
+adminUsersRouter.get(
+  "/counts",
+  requirePermission("users:read"),
+  handler({}, async (_input, _req, res) => {
+    const rows = await User.aggregate<{ _id: string; n: number }>([{ $group: { _id: "$role", n: { $sum: 1 } } }]);
+    const by = Object.fromEntries(rows.map((r) => [r._id, r.n]));
+    ok(res, { all: rows.reduce((s, r) => s + r.n, 0), ADMIN: by.ADMIN ?? 0, MANAGER: by.MANAGER ?? 0, USER: by.USER ?? 0, PROVIDER: by.PROVIDER ?? 0 });
+  }),
+);
+
 adminUsersRouter.get(
   "/:id",
   requirePermission("users:read"),

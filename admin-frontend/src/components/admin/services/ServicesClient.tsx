@@ -97,14 +97,14 @@ export function ServicesClient() {
         }
       />
 
-      <nav aria-label="Service status" className="mb-4 flex gap-1 overflow-x-auto border-b border-line">
+      <nav aria-label="Service status" className="mb-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-line bg-white p-1.5 shadow-soft">
         {FILTERS.map((f) => (
           <button
             key={f.value}
             type="button"
             aria-current={active === f.value ? "page" : undefined}
             onClick={() => set({ active: f.value })}
-            className={cn("-mb-px border-b-2 px-3 py-2 text-sm font-semibold whitespace-nowrap", active === f.value ? "border-brand text-brand" : "border-transparent text-muted hover:text-ink")}
+            className={cn("shrink-0 rounded-xl px-3.5 py-2 text-sm font-semibold whitespace-nowrap transition", active === f.value ? "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--color-line)]" : "text-muted hover:text-ink")}
           >
             {f.label}
           </button>

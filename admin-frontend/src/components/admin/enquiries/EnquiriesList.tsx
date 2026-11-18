@@ -8,11 +8,10 @@ import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import { DateRangeFilter, dateParam, dayEnd, dayStart, isInvertedRange } from "./DateRangeFilter";
 import { ENQUIRY_STATUSES, STATUS_OPTIONS, type AdminEnquiry, type Paginated } from "./types";
 
-const PAGE_SIZE = 20;
 
 export function EnquiriesList() {
   const router = useRouter();
-  const { get, page } = useUrlParams();
+  const { get, page, pageSize } = useUrlParams();
   const statusParam = get("status");
   const status = (ENQUIRY_STATUSES as readonly string[]).includes(statusParam) ? statusParam : "";
   const from = dateParam(get("from"));
@@ -23,7 +22,7 @@ export function EnquiriesList() {
     ? null
     : withQuery("/admin/enquiries", {
         page,
-        pageSize: PAGE_SIZE,
+        pageSize,
         status,
         provider: get("provider").trim(),
         q: get("q").trim(),
