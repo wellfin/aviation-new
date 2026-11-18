@@ -29,6 +29,23 @@ function nameTaken(err: unknown): never {
   throw err;
 }
 
+/**
+ * The fixed staff roles for the Roles & permissions page: Super Admin, Admin and standard Manager,
+ * each with how many active or suspended accounts have it and its permissions.
+ */
+export async function builtInRoles() {
+  const [superAdmins, admins, managers] = await Promise.all([
+    User.countDocuments({ role: "ADMIN", superAdmin: true }),
+    User.countDocuments({ role: "ADMIN", superAdmin: { $ne: true } }),
+    User.countDocuments({ role: "MANAGER", staffRole: { $exists: false } }),
+  ]);
+  return [
+    { key: "SUPER_ADMIN", userCount: superAdmins, permissions: permissionsFor("ADMIN") },
+    { key: "ADMIN", userCount: admins, permissions: permissionsFor("ADMIN") },
+    { key: "MANAGER", userCount: managers, permissions: permissionsFor("MANAGER") },
+  ];
+}
+
 export async function listStaffRoles() {
   const [roles, counts] = await Promise.all([
     StaffRole.find().sort({ name: 1 }),

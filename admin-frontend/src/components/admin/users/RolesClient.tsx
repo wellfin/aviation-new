@@ -2,24 +2,40 @@
 
 import Link from "next/link";
 import { Lock, Plus } from "lucide-react";
+import type { ReactNode } from "react";
 import { Card, EmptyState, ErrorPanel, PageHeader } from "@/components/admin/ui";
 import { ButtonLink } from "@/components/ui/Button";
 import { can, useAuth } from "@/lib/auth/auth-context";
 import { useApi } from "@/lib/hooks/useApi";
 import { PERMISSION_LABEL, type StaffRole } from "./roles";
-import { ROLE_DESCRIPTION } from "./shared";
 
-/** Roles & permissions: the fixed Admin and Manager roles, plus the custom staff roles. */
+/** GET /admin/roles/built-in */
+interface BuiltInRole {
+  key: "SUPER_ADMIN" | "ADMIN" | "MANAGER";
+  userCount: number;
+  permissions: string[];
+}
+
+const BUILT_IN_TEXT: Record<BuiltInRole["key"], { name: string; description: string }> = {
+  SUPER_ADMIN: { name: "Super Admin", description: "The owner account. Full access; can't be changed, suspended or deleted." },
+  ADMIN: { name: "Admin", description: "Full access to everything, including users, roles and billing." },
+  MANAGER: { name: "Manager (standard)", description: "Staff: moderation and content. No user, role or billing administration." },
+};
+
+const users = (n: number) => `${n} user${n === 1 ? "" : "s"}`;
+
+/** Roles & permissions: every staff role (Super Admin, Admin, Manager and the custom ones) in one list. */
 export function RolesClient() {
   const { user: me } = useAuth();
   const { data, error, loading, reload } = useApi<StaffRole[]>("/admin/roles");
+  const builtIn = useApi<BuiltInRole[]>("/admin/roles/built-in");
   const canManage = can(me, "users:manage");
 
   return (
     <>
       <PageHeader
         title="Roles & permissions"
-        description="Make roles that give staff only the parts of the admin panel they need, then give a role to people under Users."
+        description="Every staff role and what it can do. Make custom roles that give staff only the parts of the admin panel they need, then give a role to people under Users."
         actions={
           canManage && (
             <ButtonLink href="/admin/roles/new" size="sm">
@@ -29,10 +45,30 @@ export function RolesClient() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <BuiltIn name="Admin" description={ROLE_DESCRIPTION.ADMIN} />
-        <BuiltIn name="Manager (standard)" description={ROLE_DESCRIPTION.MANAGER} />
-      </div>
+      <h2 className="mb-3 text-sm font-bold tracking-[0.6px] text-muted uppercase">Built-in roles</h2>
+      {builtIn.error && !builtIn.data ? (
+        <ErrorPanel error={builtIn.error} onRetry={builtIn.reload} />
+      ) : !builtIn.data ? (
+        <div className="h-32 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading roles" />
+      ) : (
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {builtIn.data.map((r) => (
+            <li key={r.key}>
+              <RoleCard
+                name={
+                  <span className="flex items-center gap-2">
+                    {BUILT_IN_TEXT[r.key].name} <Lock className="size-3.5 text-subtle" aria-label="Built-in, can't be changed" />
+                  </span>
+                }
+                count={r.userCount}
+                description={BUILT_IN_TEXT[r.key].description}
+                permissions={r.key === "MANAGER" ? r.permissions.filter((p) => PERMISSION_LABEL[p]) : null}
+                muted
+              />
+            </li>
+          ))}
+        </ul>
+      )}
 
       <h2 className="mt-8 mb-3 text-sm font-bold tracking-[0.6px] text-muted uppercase">Custom roles</h2>
       {error && !data ? (
@@ -54,24 +90,11 @@ export function RolesClient() {
           />
         </Card>
       ) : (
-        <ul className="grid gap-4 md:grid-cols-2">
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {(data ?? []).map((r) => (
             <li key={r.id}>
-              <Link href={`/admin/roles/${r.id}`} className="block h-full rounded-2xl border border-line bg-white p-5 shadow-soft transition hover:border-brand">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="font-bold text-ink">{r.name}</p>
-                  <span className="shrink-0 rounded-full bg-surface px-2.5 py-0.5 text-xs font-semibold text-muted">
-                    {r.userCount} user{r.userCount === 1 ? "" : "s"}
-                  </span>
-                </div>
-                {r.description && <p className="mt-1 text-sm text-muted">{r.description}</p>}
-                <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Permissions">
-                  {r.permissions.map((p) => (
-                    <li key={p} className="rounded-lg bg-brand/8 px-2 py-0.5 text-xs font-medium text-brand">
-                      {PERMISSION_LABEL[p] ?? p}
-                    </li>
-                  ))}
-                </ul>
+              <Link href={`/admin/roles/${r.id}`} className="block h-full rounded-2xl transition hover:ring-2 hover:ring-brand">
+                <RoleCard name={r.name} count={r.userCount} description={r.description} permissions={r.permissions} />
               </Link>
             </li>
           ))}
@@ -81,13 +104,26 @@ export function RolesClient() {
   );
 }
 
-function BuiltIn({ name, description }: { name: string; description: string }) {
+/** `permissions` null = everything (Admin roles). */
+function RoleCard({ name, count, description, permissions, muted }: { name: ReactNode; count: number; description?: string; permissions: string[] | null; muted?: boolean }) {
   return (
-    <div className="rounded-2xl border border-line bg-surface/60 p-5">
-      <p className="flex items-center gap-2 font-bold text-ink">
-        {name} <Lock className="size-3.5 text-subtle" aria-label="Built-in, can't be changed" />
-      </p>
-      <p className="mt-1 text-sm text-muted">{description}</p>
+    <div className={`h-full rounded-2xl border border-line p-5 shadow-soft ${muted ? "bg-surface/60" : "bg-white"}`}>
+      <div className="flex items-start justify-between gap-3">
+        <p className="font-bold text-ink">{name}</p>
+        <span className="shrink-0 rounded-full bg-white px-2.5 py-0.5 text-xs font-semibold text-muted ring-1 ring-line">{users(count)}</span>
+      </div>
+      {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+      <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Permissions">
+        {permissions === null ? (
+          <li className="rounded-lg bg-brand/8 px-2 py-0.5 text-xs font-medium text-brand">All permissions</li>
+        ) : (
+          permissions.map((p) => (
+            <li key={p} className="rounded-lg bg-brand/8 px-2 py-0.5 text-xs font-medium text-brand">
+              {PERMISSION_LABEL[p] ?? p}
+            </li>
+          ))
+        )}
+      </ul>
     </div>
   );
 }

@@ -33,6 +33,11 @@ adminRolesRouter.get("/permissions", requirePermission("users:read"), (_req: Req
   ok(res, GRANTABLE_PERMISSIONS);
 });
 
+/** Super Admin, Admin and standard Manager with user counts and permissions. */
+adminRolesRouter.get("/built-in", requirePermission("users:read"), async (_req: Request, res: Response) => {
+  ok(res, await roles.builtInRoles());
+});
+
 adminRolesRouter.get("/", requirePermission("users:read"), async (_req: Request, res: Response) => {
   ok(res, await roles.listStaffRoles());
 });

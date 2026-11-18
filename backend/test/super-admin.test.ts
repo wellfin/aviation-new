@@ -22,6 +22,14 @@ describe("Super Admin", () => {
     expect((await agent.delete(users(`/${owner.id}`))).status).toBe(403);
     expect(await User.findById(owner.id).lean()).toMatchObject({ role: "ADMIN", status: "active" });
 
+    // Roles page: built-in staff roles with counts (no User/Provider).
+    const built = (await agent.get("/api/v1/admin/roles/built-in")).body.data as Array<{ key: string; userCount: number }>;
+    expect(built.map((r) => [r.key, r.userCount])).toEqual([
+      ["SUPER_ADMIN", 1],
+      ["ADMIN", 2],
+      ["MANAGER", 0],
+    ]);
+
     // Other Admins can still be managed.
     expect((await agent.patch(users(`/${later.id}`)).send({ status: "suspended" })).status).toBe(200);
   });
