@@ -104,6 +104,30 @@ describe("ads — serving", () => {
     expect((await manager.get(admin("/traffic"))).status).toBe(403);
   });
 
+  it("counts impressions since the placement's last weight change, so they follow the current shares", async () => {
+    const [old, other] = await Ad.create([
+      ad({ placement: "header-banner", advertiser: "Old", weight: 50, impressions: 2000, recentImpressions: 2000 }),
+      ad({ placement: "header-banner", advertiser: "Other", weight: 50, impressions: 100, recentImpressions: 100 }),
+    ]);
+    const { agent } = await signedInAgent("ADMIN");
+    const upd = await agent.patch(admin(`/${old!.id}`)).send({ weight: 1 });
+    expect(upd.body.data).toMatchObject({ weight: 1, impressions: 2000, recentImpressions: 0 });
+    for (let i = 0; i < 20; i++) await request(app).get("/api/v1/ads/serve?placement=header-banner");
+
+    const [hb] = (await agent.get(admin("/traffic?placement=header-banner"))).body.data;
+    expect(hb.recentSince).not.toBeNull();
+    const row = (name: string) => hb.ads.find((a: { advertiser: string }) => a.advertiser === name);
+    expect(row("Old").recentImpressions + row("Other").recentImpressions).toBe(20);
+    expect(row("Other").recentImpressions).toBeGreaterThan(row("Old").recentImpressions);
+    expect(row("Old").impressions).toBeGreaterThanOrEqual(2000);
+
+    // Editing only the text doesn't restart the count.
+    const before = row("Other").recentImpressions;
+    await agent.patch(admin(`/${other!.id}`)).send({ headline: "New headline" });
+    const [after] = (await agent.get(admin("/traffic?placement=header-banner"))).body.data;
+    expect(after.ads.find((a: { advertiser: string }) => a.advertiser === "Other").recentImpressions).toBe(before);
+  });
+
   it("validates the placement", async () => {
     expect((await request(app).get("/api/v1/ads/serve?placement=popup")).status).toBe(422);
     expect((await request(app).get("/api/v1/ads/serve")).status).toBe(422);

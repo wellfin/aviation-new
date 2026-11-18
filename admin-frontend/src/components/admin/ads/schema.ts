@@ -41,6 +41,8 @@ export interface AdminAd {
   endsAt: string | null;
   weight: number;
   impressions: number;
+  /** Since the placement's weights/dates/Active switches last changed. */
+  recentImpressions: number;
   clicks: number;
   ctr: number;
   createdAt: string;
@@ -66,6 +68,7 @@ export interface TrafficShareAd {
   /** weight ÷ total live weight, in % */
   share: number;
   impressions: number;
+  recentImpressions: number;
   clicks: number;
   impressionShare: number;
 }
@@ -75,6 +78,7 @@ export interface PlacementTraffic {
   totalWeight: number;
   liveAds: number;
   impressions: number;
+  recentSince: string | null;
   ads: TrafficShareAd[];
 }
 
@@ -84,6 +88,7 @@ export interface ProjectedRow {
   weight: number;
   share: number;
   impressions: number;
+  recentImpressions: number;
   isThis: boolean;
 }
 
@@ -95,12 +100,12 @@ export interface ProjectedRow {
 export function projectTraffic(
   traffic: PlacementTraffic | undefined,
   thisId: string | undefined,
-  candidate: { advertiser: string; weight: number; impressions: number } | null,
+  candidate: { advertiser: string; weight: number; impressions: number; recentImpressions: number } | null,
 ): { rows: ProjectedRow[]; totalWeight: number; thisShare: number; othersShare: number } {
   const others = (traffic?.ads ?? []).filter((a) => a.id !== thisId);
   const entries = [
-    ...others.map((a) => ({ id: a.id, advertiser: a.advertiser, weight: Math.max(1, a.weight), impressions: a.impressions, isThis: false })),
-    ...(candidate ? [{ id: thisId ?? "this-ad", advertiser: candidate.advertiser, weight: Math.max(1, candidate.weight), impressions: candidate.impressions, isThis: true }] : []),
+    ...others.map((a) => ({ id: a.id, advertiser: a.advertiser, weight: Math.max(1, a.weight), impressions: a.impressions, recentImpressions: a.recentImpressions, isThis: false })),
+    ...(candidate ? [{ id: thisId ?? "this-ad", advertiser: candidate.advertiser, weight: Math.max(1, candidate.weight), impressions: candidate.impressions, recentImpressions: candidate.recentImpressions, isThis: true }] : []),
   ];
   const totalWeight = entries.reduce((s, e) => s + e.weight, 0);
   const pct = (w: number) => (totalWeight > 0 ? Math.round((w / totalWeight) * 1000) / 10 : 0);

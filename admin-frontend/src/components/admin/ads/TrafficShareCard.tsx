@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@/components/admin/ui";
+import { Card, formatDateTime } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
 import { PLACEMENT_LABEL, projectTraffic, type AdPlacement, type PlacementTraffic } from "./schema";
 
@@ -19,6 +19,7 @@ export function TrafficShareCard({
   advertiser,
   weight,
   impressions,
+  recentImpressions,
   live,
   notLiveReason,
 }: {
@@ -29,10 +30,11 @@ export function TrafficShareCard({
   advertiser: string;
   weight: number | null;
   impressions: number;
+  recentImpressions: number;
   live: boolean;
   notLiveReason: string;
 }) {
-  const candidate = live && weight !== null ? { advertiser: advertiser || "This ad", weight, impressions } : null;
+  const candidate = live && weight !== null ? { advertiser: advertiser || "This ad", weight, impressions, recentImpressions } : null;
   const { rows, totalWeight, thisShare, othersShare } = projectTraffic(traffic, adId, candidate);
   const colour = new Map(rows.map((r, i) => [r.id, r.isThis ? "bg-brand" : PALETTE[(i % (PALETTE.length - 1)) + 1]]));
 
@@ -77,6 +79,7 @@ export function TrafficShareCard({
                   <th className="pb-2 text-right font-medium">Weight</th>
                   <th className="pb-2 text-right font-medium">Share</th>
                   <th className="pb-2 text-right font-medium">Impressions</th>
+                  <th className="pb-2 text-right font-medium">All time</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,6 +94,7 @@ export function TrafficShareCard({
                     </td>
                     <td className="py-2 text-right tabular-nums">{r.weight}</td>
                     <td className="py-2 text-right tabular-nums">{fmt(r.share)}</td>
+                    <td className="py-2 text-right tabular-nums">{r.recentImpressions.toLocaleString()}</td>
                     <td className="py-2 text-right text-muted tabular-nums">{r.impressions.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -99,6 +103,10 @@ export function TrafficShareCard({
           )}
           <p className="text-xs text-muted">
             Share = weight ÷ total weight of the ads live now in this placement. Updates as you change the weight, dates or Active switch — save to apply.
+          </p>
+          <p className="text-xs text-muted">
+            Impressions count from the last change to this placement&apos;s weights, dates or Active switches
+            {traffic?.recentSince ? ` (${formatDateTime(traffic.recentSince)})` : ""}, so they follow the shares above. All time includes views from before, when the shares were different.
           </p>
         </div>
       )}

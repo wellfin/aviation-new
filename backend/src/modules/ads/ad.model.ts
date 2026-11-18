@@ -31,6 +31,12 @@ const adSchema = new Schema(
     endsAt: { type: Date },
     weight: { type: Number, default: 50, min: 1, max: 100 },
     impressions: { type: Number, default: 0, min: 0 },
+    /**
+     * Impressions since the placement's mix last changed (a weight, dates, Active switch, placement,
+     * or an ad added/removed), so they can be compared with the current traffic shares.
+     */
+    recentImpressions: { type: Number, default: 0, min: 0 },
+    recentSince: { type: Date },
     clicks: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true },
@@ -82,6 +88,8 @@ export interface AdminAdDTO extends Omit<AdvertisementDTO, "headline" | "body" |
   endsAt: string | null;
   weight: number;
   impressions: number;
+  /** Impressions since the placement's weights/dates/Active switches last changed. */
+  recentImpressions: number;
   clicks: number;
   /** Click-through rate as a percentage with two decimals. */
   ctr: number;
@@ -104,6 +112,7 @@ export function toAdminAdDTO(a: AdDoc): AdminAdDTO {
     endsAt: a.endsAt?.toISOString() ?? null,
     weight: a.weight,
     impressions: a.impressions,
+    recentImpressions: a.recentImpressions ?? 0,
     clicks: a.clicks,
     ctr: ctrOf(a.impressions, a.clicks),
     createdAt: a.createdAt.toISOString(),

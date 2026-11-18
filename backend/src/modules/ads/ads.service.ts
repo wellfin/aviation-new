@@ -36,7 +36,7 @@ export async function serveAd(placement: AdPlacement): Promise<AdvertisementDTO 
   const candidates = await Ad.find(inWindowFilter(placement, new Date())).limit(MAX_CANDIDATES);
   const chosen = pickWeighted(candidates);
   if (!chosen) return null;
-  await Ad.updateOne({ _id: chosen._id }, { $inc: { impressions: 1 } });
+  await Ad.updateOne({ _id: chosen._id }, { $inc: { impressions: 1, recentImpressions: 1 } });
   return toAdDTO(chosen);
 }
 
@@ -105,6 +105,8 @@ export interface TrafficShareAd {
   /** Expected share of this placement's views right now: weight ÷ total live weight, in % (1 decimal). */
   share: number;
   impressions: number;
+  /** Impressions since the placement's mix last changed; these follow `share`. */
+  recentImpressions: number;
   clicks: number;
   /** Share of the live ads' recorded impressions so far, in % (1 decimal). */
   impressionShare: number;
@@ -116,6 +118,8 @@ export interface PlacementTraffic {
   totalWeight: number;
   liveAds: number;
   impressions: number;
+  /** When the current mix started (recentImpressions count from here); null if not known. */
+  recentSince: string | null;
   /** Live ads, largest share first. */
   ads: TrafficShareAd[];
 }
@@ -144,13 +148,20 @@ export async function trafficShares(placement?: AdPlacement): Promise<PlacementT
           weight: a.weight,
           share: pct1(Math.max(1, a.weight), totalWeight),
           impressions: a.impressions,
+          recentImpressions: a.recentImpressions ?? 0,
           clicks: a.clicks,
           impressionShare: pct1(a.impressions, impressions),
         }))
         .sort((x, y) => y.weight - x.weight || x.advertiser.localeCompare(y.advertiser));
-      return { placement: p, totalWeight, liveAds: live.length, impressions, ads };
+      const since = live.reduce<Date | null>((latest, a) => (a.recentSince && (!latest || a.recentSince > latest) ? a.recentSince : latest), null);
+      return { placement: p, totalWeight, liveAds: live.length, impressions, recentSince: since?.toISOString() ?? null, ads };
     }),
   );
+}
+
+/** The traffic split in these placements changed: start counting "recent" impressions again. */
+async function restartRecent(placements: readonly AdPlacement[]): Promise<void> {
+  await Ad.updateMany({ placement: { $in: [...new Set(placements)] } }, { $set: { recentImpressions: 0, recentSince: new Date() } });
 }
 
 async function findAd(id: string): Promise<AdDoc> {
@@ -180,11 +191,16 @@ export async function createAd(input: CreateAdInput): Promise<AdminAdDTO> {
     endsAt: toDate(input.endsAt),
     weight: input.weight,
   });
+  if (ad.active) {
+    await restartRecent([ad.placement]);
+    return toAdminAdDTO((await Ad.findById(ad._id)) ?? ad);
+  }
   return toAdminAdDTO(ad);
 }
 
 export async function updateAd(id: string, input: UpdateAdInput): Promise<AdminAdDTO> {
   const ad = await findAd(id);
+  const oldPlacement = ad.placement;
   if (input.placement !== undefined) ad.placement = input.placement;
   if (input.advertiser !== undefined) ad.advertiser = input.advertiser;
   if (input.headline !== undefined) ad.headline = orUndefined(input.headline);
@@ -198,11 +214,17 @@ export async function updateAd(id: string, input: UpdateAdInput): Promise<AdminA
   if (input.weight !== undefined) ad.weight = input.weight;
   // A partial update may move only one end of the window, so re-check against stored values.
   if (ad.startsAt && ad.endsAt && ad.startsAt >= ad.endsAt) throw badRequest("End must be after start.", { endsAt: "End must be after start" });
+  const mixChanged = ["placement", "active", "startsAt", "endsAt", "weight"].some((p) => ad.isModified(p));
   await ad.save();
+  if (mixChanged) {
+    await restartRecent([oldPlacement, ad.placement]);
+    return toAdminAdDTO(await findAd(id));
+  }
   return toAdminAdDTO(ad);
 }
 
 export async function deleteAd(id: string): Promise<void> {
-  const res = await Ad.deleteOne({ _id: id });
-  if (res.deletedCount === 0) throw notFound("Advertisement");
+  const ad = await Ad.findByIdAndDelete(id);
+  if (!ad) throw notFound("Advertisement");
+  if (ad.active) await restartRecent([ad.placement]);
 }

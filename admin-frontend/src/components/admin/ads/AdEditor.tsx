@@ -204,7 +204,7 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
   const share = projectTraffic(
     traffic.data?.[0],
     ad?.id,
-    notLiveReason === "" ? { advertiser: values.advertiser || "This ad", weight: weightNum, impressions: ad?.impressions ?? 0 } : null,
+    notLiveReason === "" ? { advertiser: values.advertiser || "This ad", weight: weightNum, impressions: ad?.impressions ?? 0, recentImpressions: ad?.recentImpressions ?? 0 } : null,
   );
 
   return (
@@ -300,6 +300,7 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
             advertiser={values.advertiser}
             weight={weightOk ? weightNum : null}
             impressions={ad?.impressions ?? 0}
+            recentImpressions={ad?.recentImpressions ?? 0}
             live={notLiveReason === ""}
             notLiveReason={notLiveReason}
           />
