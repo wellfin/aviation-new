@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Building2, CalendarRange, FileText, Inbox, Megaphone, MessageSquareText } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Card, ErrorPanel, PageHeader, StatusPill, formatDateTime, formatMoney } from "@/components/admin/ui";
+import { Card, Dropdown, ErrorPanel, PageHeader, StatusPill, formatDateTime, formatMoney } from "@/components/admin/ui";
 import { can, useAuth } from "@/lib/auth/auth-context";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
@@ -509,16 +509,7 @@ function RangePicker({
           Custom
         </button>
       </div>
-      <label className="flex items-center gap-2 text-[13px]">
-        <span className="sr-only">Group by</span>
-        <select value={interval} onChange={(e) => onInterval(e.target.value as Interval)} className="h-10 rounded-xl border border-line bg-white/70 px-3 text-[13px] text-ink">
-          {intervals.map((i) => (
-            <option key={i} value={i}>
-              By {i}
-            </option>
-          ))}
-        </select>
-      </label>
+      <Dropdown label="Group by" value={interval} options={intervals.map((i) => ({ value: i, label: i[0]!.toUpperCase() + i.slice(1) }))} onChange={(v) => onInterval(v as Interval)} />
       {showCustom && (
         <form onSubmit={applyCustom} className="flex w-full flex-wrap items-end justify-end gap-2" noValidate>
           <label className="text-xs font-semibold text-muted">

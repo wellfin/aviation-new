@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock, ExternalLink, Pencil, Plus, Star } from "lucide-react";
 import { useState } from "react";
-import { ActionIcon, Card, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column } from "@/components/admin/ui";
+import { ActionIcon, Card, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column, SortFilter } from "@/components/admin/ui";
 import { buttonClasses } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -133,26 +133,19 @@ export function ProvidersClient() {
       )}
 
       <FilterBar>
-        <StatusTabs
-          inline
-          param="status"
-          label="Listing status"
-          current={status}
-          tabs={[{ value: "", label: "All" }, ...PROVIDER_STATUSES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))]}
-        />
+        <div className="w-full">
+          <StatusTabs
+            inline
+            param="status"
+            label="Listing status"
+            current={status}
+            tabs={[{ value: "", label: "All" }, ...PROVIDER_STATUSES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))]}
+          />
+        </div>
         <SearchFilter placeholder="Name, city, email or ICAO…" label="Search listings" />
         <SelectFilter param="category" label="Category" options={categories.map((c) => ({ value: c.slug, label: c.active ? c.name : `${c.name} (inactive)` }))} />
         <SelectFilter param="tier" label="Tier" options={PROVIDER_TIERS.map((t) => ({ value: t, label: TIER_LABEL[t] }))} />
-        <label className="flex items-center gap-2 text-sm">
-          <span className="text-muted">Sort</span>
-          <select value={get("sort", "newest")} onChange={(e) => set({ sort: e.target.value === "newest" ? "" : e.target.value })} className="h-10 rounded-xl border border-line bg-white px-3 text-sm outline-none focus:border-brand">
-            {SORTS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SortFilter defaultValue="newest" options={[...SORTS]} />
       </FilterBar>
 
       {list.error && !list.data ? (

@@ -4,7 +4,7 @@ import { siteUrl } from "@/components/admin/news/site";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ExternalLink, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Award, Building2, CheckCircle2, Circle, ExternalLink, FileText, Image as ImageIcon, Link2, ListChecks, MousePointerClick, Phone, PlaneLanding, PlaneTakeoff, Plus, Trash2, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Card, EmptyState, ErrorPanel, StatusPill, formatDateTime } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
@@ -170,6 +170,87 @@ const SECTIONS = [
   ["fleet", "Fleet"],
 ] as const;
 
+const SECTION_ICON: Record<(typeof SECTIONS)[number][0], LucideIcon> = {
+  basics: Building2,
+  media: ImageIcon,
+  "listing-button": MousePointerClick,
+  related: Link2,
+  contact: Phone,
+  about: FileText,
+  services: ListChecks,
+  airports: PlaneLanding,
+  certifications: Award,
+  brochures: FileText,
+  fleet: PlaneTakeoff,
+};
+
+/** Sticky section bar; highlights the section in view and scrolls to one on click. */
+function SectionNav({ sections }: { sections: ReadonlyArray<readonly [string, string]> }) {
+  const [active, setActive] = useState(sections[0]?.[0] ?? "");
+  useEffect(() => {
+    const els = sections.map(([id]) => document.getElementById(id)).filter((el): el is HTMLElement => Boolean(el));
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((en) => en.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible) setActive(visible.target.id);
+      },
+      { rootMargin: "-150px 0px -55% 0px" },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [sections]);
+  return (
+    <nav aria-label="Form sections" className="glass sticky top-[76px] z-10 mb-4 flex gap-1 overflow-x-auto rounded-2xl border p-1.5">
+      {sections.map(([id, label]) => {
+        const Icon = SECTION_ICON[id as keyof typeof SECTION_ICON];
+        const on = active === id;
+        return (
+          <a
+            key={id}
+            href={`#${id}`}
+            aria-current={on ? "true" : undefined}
+            onClick={() => setActive(id)}
+            className={cn(
+              "flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-[13px] font-semibold whitespace-nowrap transition",
+              on ? "bg-brand text-white shadow-[0_4px_12px_-2px_rgba(47,128,237,0.45)]" : "text-muted hover:bg-white/70 hover:text-ink",
+            )}
+          >
+            {Icon && <Icon className="size-3.5" aria-hidden />}
+            {label}
+          </a>
+        );
+      })}
+    </nav>
+  );
+}
+
+/** Right-rail checklist of what makes a listing complete. */
+function Completeness({ items }: { items: Array<{ label: string; done: boolean; href: string }> }) {
+  const done = items.filter((i) => i.done).length;
+  const pct = Math.round((done / items.length) * 100);
+  return (
+    <div className="glass rounded-2xl border p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-[15px] font-bold text-ink">Listing completeness</p>
+        <span className={cn("text-sm font-bold tabular-nums", pct === 100 ? "text-[#15803d]" : "text-brand")}>{pct}%</span>
+      </div>
+      <div className="mt-2 h-2 rounded-full bg-ink/[0.06]" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="Listing completeness">
+        <div className="h-2 rounded-full bg-gradient-to-r from-brand to-brand-cyan transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <ul className="mt-3 flex flex-col gap-1">
+        {items.map((i) => (
+          <li key={i.label}>
+            <a href={i.href} className="flex items-center gap-2 rounded-lg px-1.5 py-1 text-[13px] transition hover:bg-white/70">
+              {i.done ? <CheckCircle2 className="size-4 shrink-0 text-[#15803d]" aria-hidden /> : <Circle className="size-4 shrink-0 text-subtle" aria-hidden />}
+              <span className={i.done ? "text-muted line-through decoration-line" : "text-ink"}>{i.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 const back = (
   <Link href="/admin/providers" className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-brand">
     <ArrowLeft className="size-4" /> All providers
@@ -260,23 +341,17 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
   return (
     <>
       {back}
-      <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-ink">{mode === "create" ? "New listing" : provider!.name}</h1>
-          {provider && (
-            <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
-              <StatusPill status={provider.status} /> /{provider.slug} · updated {formatDateTime(provider.updatedAt)}
-            </p>
-          )}
-        </div>
-        <nav aria-label="Form sections" className="flex flex-wrap gap-1 text-xs">
-          {SECTIONS.filter(([idx]) => idx !== "airports" || (s.category !== "charter-operator" && s.category !== "charter-broker")).map(([idx, label]) => (
-            <a key={idx} href={`#${idx}`} className="rounded-lg border border-line bg-white px-2 py-1 font-semibold text-muted hover:text-brand">
-              {label}
-            </a>
-          ))}
-        </nav>
+      <div className="mb-4 flex flex-col gap-1">
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-[-0.3px] text-ink">{mode === "create" ? "New listing" : provider!.name}</h1>
+        {provider ? (
+          <p className="flex flex-wrap items-center gap-2 text-[13px] text-muted">
+            <StatusPill status={provider.status} /> /{provider.slug} · updated {formatDateTime(provider.updatedAt)}
+          </p>
+        ) : (
+          <p className="text-[13px] text-muted">Fill in the sections below. Only the fields marked * are required; you can finish the rest later.</p>
+        )}
       </div>
+      <SectionNav sections={SECTIONS.filter(([idx]) => idx !== "airports" || (s.category !== "charter-operator" && s.category !== "charter-broker"))} />
 
       <div ref={statusRef} className="mb-4 flex flex-col gap-2 empty:hidden" aria-live="polite">
         {feedback && <FormStatus status={feedback.status} message={feedback.message} />}
@@ -294,7 +369,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
 
       <form onSubmit={submit} noValidate className="grid items-start gap-4 xl:grid-cols-[1fr_340px]">
         <div className="flex min-w-0 flex-col gap-4">
-          <FormSection id="basics" title="Basics">
+          <FormSection id="basics" icon={SECTION_ICON["basics"]} title="Basics">
             <Input label="Business name *" name="name" value={s.name} maxLength={120} onChange={(ev) => set("name", ev.target.value)} error={e("name")} />
             <Grid>
               <Select label="Category *" name="category" value={s.category} onChange={(ev) => set("category", ev.target.value)} error={e("category")}>
@@ -344,7 +419,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             </Grid>
           </FormSection>
 
-          <FormSection id="media" title="Media" description="Upload PNG, JPG or WebP images, or paste a URL.">
+          <FormSection id="media" icon={SECTION_ICON["media"]} title="Media" description="Upload PNG, JPG or WebP images, or paste a URL.">
             <Grid>
               <div className="flex flex-col gap-3">
                 <UploadField id="logo" label="Logo" kind="image" value={s.logo} onChange={(v) => set("logo", v)} error={e("logo")} previewClassName="size-24" fit="contain" />
@@ -379,7 +454,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             </div>
           </FormSection>
 
-          <FormSection id="listing-button" title="Airport listing & button" description="Where this listing appears in airport service lists, and the blue button on Ultra Pro listings. The button is optional — Pro and Basic listings never show it.">
+          <FormSection id="listing-button" icon={SECTION_ICON["listing-button"]} title="Airport listing & button" description="Where this listing appears in airport service lists, and the blue button on Ultra Pro listings. The button is optional — Pro and Basic listings never show it.">
             <Select label="Position in airport lists" name="listingPosition" value={s.listingPosition} onChange={(ev) => set("listingPosition", ev.target.value)} error={e("listingPosition")} hint="Airport service lists show 6 listings a page: 1st – 6th on page 1, 7th – 12th on page 2, 13th – 18th on page 3. Unplaced listings fill the free places by plan.">
               <option value="">Not placed</option>
               {Array.from({ length: 18 }, (_, i) => i + 1).map((n) => (
@@ -398,11 +473,11 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             {s.tier !== "ultra_pro" && <p className="text-xs text-[#a16207]">Only Ultra Pro listings show this button.</p>}
           </FormSection>
 
-          <FormSection id="related" title="Related providers" description="Competitors or partners shown in this profile's sidebar card (e.g. “Related Charter Operators”).">
+          <FormSection id="related" icon={SECTION_ICON["related"]} title="Related providers" description="Competitors or partners shown in this profile's sidebar card (e.g. “Related Charter Operators”).">
             <RelatedInput value={s.relatedSlugs} onChange={(v) => set("relatedSlugs", v)} self={s.slug || undefined} error={e("relatedSlugs")} />
           </FormSection>
 
-          <FormSection id="contact" title="Contact & socials">
+          <FormSection id="contact" icon={SECTION_ICON["contact"]} title="Contact & socials">
             <Grid>
               <Input label="Phone" name="contact.phone" value={s.contact.phone} maxLength={30} onChange={(ev) => set("contact", { ...s.contact, phone: ev.target.value })} error={e("contact.phone")} />
               <Input label="Email" name="contact.email" type="email" value={s.contact.email} maxLength={254} onChange={(ev) => set("contact", { ...s.contact, email: ev.target.value })} error={e("contact.email")} />
@@ -430,7 +505,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             </Grid>
           </FormSection>
 
-          <FormSection id="about" title="About" description={`Up to 10 paragraphs and ${ABOUT_MAX_WORDS} words in total, shown on the profile page.`}>
+          <FormSection id="about" icon={SECTION_ICON["about"]} title="About" description={`Up to 10 paragraphs and ${ABOUT_MAX_WORDS} words in total, shown on the profile page.`}>
             {s.about.map((para, i) => (
               <div key={i} className="flex items-start gap-2">
                 <Textarea
@@ -470,7 +545,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             {e("about") && <p className="text-xs font-medium text-danger">{e("about")}</p>}
           </FormSection>
 
-          <FormSection id="services" title="Services">
+          <FormSection id="services" icon={SECTION_ICON["services"]} title="Services">
             <Repeater
               items={s.services}
               onChange={(v) => set("services", v)}
@@ -500,12 +575,12 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
 
           {/* Airport service providers only; charter operators and brokers aren't tied to airports. Saved airports are kept. */}
           {s.category !== "charter-operator" && s.category !== "charter-broker" && (
-            <FormSection id="airports" title="Airports">
+            <FormSection id="airports" icon={SECTION_ICON["airports"]} title="Airports">
               <AirportsInput value={s.airports} onChange={(v) => set("airports", v)} max={50} error={e("airports") ?? Object.entries(errors).find(([k]) => k.startsWith("airports."))?.[1]} />
             </FormSection>
           )}
 
-          <FormSection id="certifications" title="Certifications">
+          <FormSection id="certifications" icon={SECTION_ICON["certifications"]} title="Certifications">
             <Repeater
               items={s.certifications}
               onChange={(v) => set("certifications", v)}
@@ -528,7 +603,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             </Repeater>
           </FormSection>
 
-          <FormSection id="brochures" title="Brochures" description="PDF documents offered for download on the profile.">
+          <FormSection id="brochures" icon={SECTION_ICON["brochures"]} title="Brochures" description="PDF documents offered for download on the profile.">
             <Repeater
               items={s.brochures}
               onChange={(v) => set("brochures", v)}
@@ -563,7 +638,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             </Repeater>
           </FormSection>
 
-          <FormSection id="fleet" title="Fleet" description="Aircraft offered for charter. Existing aircraft keep their id so enquiries stay linked.">
+          <FormSection id="fleet" icon={SECTION_ICON["fleet"]} title="Fleet" description="Aircraft offered for charter. Existing aircraft keep their id so enquiries stay linked.">
             <Repeater
               items={s.fleet}
               onChange={(v) => set("fleet", v)}
@@ -602,7 +677,28 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
           </FormSection>
         </div>
 
-        <aside className="flex flex-col gap-4 xl:sticky xl:top-24">
+        <aside className="flex flex-col gap-4 xl:sticky xl:top-[140px]">
+          <div className="glass flex flex-col gap-2 rounded-2xl border p-4">
+            <Button type="submit" loading={saving} className="w-full">
+              {mode === "create" ? "Create listing" : "Save changes"}
+            </Button>
+            {mode === "edit" && dirty ? (
+              <p className="text-center text-xs text-[#a16207]">You have unsaved changes.</p>
+            ) : (
+              <p className="text-center text-xs text-muted">{mode === "create" ? "Saved as the status chosen below." : "All changes saved."}</p>
+            )}
+          </div>
+          <Completeness
+            items={[
+              { label: "Name, category and location", done: Boolean(s.name.trim() && s.category && s.city.trim() && s.country), href: "#basics" },
+              { label: "Logo", done: Boolean(s.logo), href: "#media" },
+              { label: "Cover image", done: Boolean(s.coverImage), href: "#media" },
+              { label: "Phone or email", done: Boolean(s.contact.phone.trim() || s.contact.email.trim()), href: "#contact" },
+              { label: "About text", done: s.about.some((p) => p.trim().length > 0), href: "#about" },
+              { label: "At least one service", done: s.services.length > 0, href: "#services" },
+              ...(s.category === "charter-operator" || s.category === "charter-broker" ? [] : [{ label: "Airports served", done: s.airports.length > 0, href: "#airports" }]),
+            ]}
+          />
           {provider && (
             <Card title="Status">
               <div className="mb-3 flex items-center gap-2">
@@ -661,12 +757,6 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             </div>
           </Card>
 
-          <div className="flex flex-col gap-2 glass rounded-2xl border p-4">
-            <Button type="submit" loading={saving} className="w-full">
-              {mode === "create" ? "Create listing" : "Save changes"}
-            </Button>
-            {mode === "edit" && dirty && <p className="text-center text-xs text-[#a16207]">You have unsaved changes.</p>}
-          </div>
         </aside>
       </form>
     </>

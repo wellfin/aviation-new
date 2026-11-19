@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, Check, ChevronLeft, ChevronRight, Inbox, RefreshCw, Search, Trash2, X, type LucideIcon } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, ChevronLeft, ChevronRight, Inbox, RefreshCw, Search, Trash2, X, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ApiError } from "@/lib/api/client";
 import { PAGE_SIZES, useUrlParams } from "@/lib/hooks/useUrlParams";
@@ -220,7 +220,7 @@ export function SearchFilter({ param = "q", placeholder = "Search…", label = "
   }, []);
 
   return (
-    <label className="relative block w-full sm:w-auto sm:min-w-48 sm:max-w-80 sm:flex-1">
+    <label className="relative block w-full sm:w-auto sm:min-w-56 sm:max-w-md sm:flex-1">
       <span className="sr-only">{label}</span>
       <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-subtle" aria-hidden />
       <input
@@ -240,30 +240,125 @@ export function SearchFilter({ param = "q", placeholder = "Search…", label = "
   );
 }
 
+/**
+ * Styled dropdown (replaces the browser's native list): shows "Label: Value", opens a glass panel
+ * with a tick on the chosen option. Keyboard: Up/Down to move, Enter to choose, Esc to close.
+ */
+export function Dropdown({
+  label,
+  value,
+  options,
+  onChange,
+  className,
+}: {
+  label: string;
+  value: string;
+  options: Array<{ value: string; label: string }>;
+  onChange: (value: string) => void;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const root = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLUListElement>(null);
+  const current = options.find((o) => o.value === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) list.current?.children[active]?.scrollIntoView({ block: "nearest" });
+  }, [open, active]);
+
+  const openAt = () => {
+    setActive(Math.max(0, options.findIndex((o) => o.value === value)));
+    setOpen(true);
+  };
+  const choose = (v: string) => {
+    onChange(v);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={root} className={cn("relative", className)}>
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => (open ? setOpen(false) : openAt())}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            if (!open) return openAt();
+            setActive((i) => Math.max(0, Math.min(options.length - 1, i + (e.key === "ArrowDown" ? 1 : -1))));
+          } else if (e.key === "Enter" && open) {
+            e.preventDefault();
+            choose(options[active]!.value);
+          } else if (e.key === "Escape") setOpen(false);
+        }}
+        className={cn(
+          "flex h-10 w-full min-w-36 items-center gap-2 rounded-xl border bg-white/70 pr-2.5 pl-3 text-left text-sm whitespace-nowrap transition outline-none hover:bg-white focus-visible:ring-3 focus-visible:ring-brand/15",
+          open ? "border-brand bg-white ring-3 ring-brand/15" : "border-line",
+        )}
+      >
+        <span className="text-muted">{label}:</span>
+        <span className={cn("min-w-0 flex-1 truncate font-medium", current && current.value !== options[0]?.value ? "text-brand" : "text-ink")}>{current?.label}</span>
+        <ChevronDown className={cn("size-4 shrink-0 text-muted transition", open && "rotate-180 text-brand")} aria-hidden />
+      </button>
+      {open && (
+        <ul
+          ref={list}
+          role="listbox"
+          aria-label={label}
+          className="absolute top-[calc(100%+6px)] left-0 z-40 max-h-72 w-max min-w-full overflow-y-auto rounded-xl border border-line bg-white p-1.5 shadow-[0_18px_40px_-16px_rgba(11,31,58,0.35)]"
+        >
+          {options.map((o, i) => {
+            const selected = o.value === value;
+            return (
+              <li key={o.value || "__all"} role="option" aria-selected={selected}>
+                <button
+                  type="button"
+                  onMouseEnter={() => setActive(i)}
+                  onClick={() => choose(o.value)}
+                  className={cn(
+                    "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition",
+                    i === active ? "bg-brand/10 text-brand" : "text-ink",
+                    selected && "font-semibold",
+                  )}
+                >
+                  <Check className={cn("size-4 shrink-0", selected ? "text-brand" : "invisible")} aria-hidden />
+                  {o.label}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** URL-synced filter dropdown with an "All" first option. */
 export function SelectFilter({ param, label, options }: { param: string; label: string; options: Array<{ value: string; label: string }> }) {
   const { get, set } = useUrlParams();
-  return (
-    <label className="flex items-center text-sm">
-      <span className="sr-only">{label}</span>
-      <select
-        value={get(param)}
-        onChange={(e) => set({ [param]: e.target.value })}
-        className="h-10 min-w-36 rounded-xl border border-line bg-white/70 px-3 text-sm text-ink outline-none focus:border-brand focus:bg-white focus:ring-3 focus:ring-brand/15"
-      >
-        <option value="">{`${label}: All`}</option>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
+  return <Dropdown label={label} value={get(param)} options={[{ value: "", label: "All" }, ...options]} onChange={(v) => set({ [param]: v })} />;
+}
+
+/** URL-synced sort dropdown; the default value is left out of the URL. */
+export function SortFilter({ options, defaultValue, param = "sort" }: { options: Array<{ value: string; label: string }>; defaultValue: string; param?: string }) {
+  const { get, set } = useUrlParams();
+  return <Dropdown label="Sort" value={get(param, defaultValue)} options={options} onChange={(v) => set({ [param]: v === defaultValue ? "" : v })} />;
 }
 
 /** Search and filters; directly above a DataTable it becomes the top of the same card. */
 export function FilterBar({ children }: { children: ReactNode }) {
-  return <div className="list-toolbar glass mb-4 flex flex-col gap-2.5 rounded-2xl border px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center">{children}</div>;
+  return <div className="list-toolbar glass relative z-20 mb-4 flex flex-col gap-2.5 rounded-2xl border px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center">{children}</div>;
 }
 
 /** Page numbers to show: first, last, and a window around the current page, with gaps ("…"). */

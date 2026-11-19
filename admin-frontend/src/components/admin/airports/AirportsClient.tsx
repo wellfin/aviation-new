@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Pencil, Plus, Star } from "lucide-react";
 import { useState } from "react";
-import { ActionIcon, DataTable, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
+import { ActionIcon, DataTable, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column, SortFilter } from "@/components/admin/ui";
 import { buttonClasses } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -117,15 +117,15 @@ export function AirportsClient() {
         <SelectFilter param="continent" label="Continent" options={CONTINENT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))} />
         <CountryFilter value={country} onChange={(v) => set({ country: v })} />
         <SelectFilter param="featured" label="Featured" options={[{ value: "true", label: "Featured" }, { value: "false", label: "Not featured" }]} />
-        <label className="flex items-center gap-2 text-sm">
-          <span className="text-muted">Sort</span>
-          <select value={get("sort", "icao")} onChange={(e) => set({ sort: e.target.value === "icao" ? "" : e.target.value })} className="h-10 rounded-xl border border-line bg-white px-3 text-sm outline-none focus:border-brand">
-            <option value="icao">ICAO</option>
-            <option value="name">Name</option>
-            <option value="services">Most listings</option>
-            <option value="newest">Newest</option>
-          </select>
-        </label>
+        <SortFilter
+          defaultValue="icao"
+          options={[
+            { value: "icao", label: "ICAO" },
+            { value: "name", label: "Name" },
+            { value: "services", label: "Most listings" },
+            { value: "newest", label: "Newest" },
+          ]}
+        />
       </FilterBar>
       {error && !data ? (
         <ErrorPanel error={error} onRetry={reload} />

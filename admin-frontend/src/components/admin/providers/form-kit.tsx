@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ArrowDown, ArrowUp, FileText, Loader2, Plus, Trash2, Upload, X } from "lucide-react";
+import { ArrowDown, ArrowUp, FileText, Loader2, Plus, Trash2, Upload, X, type LucideIcon } from "lucide-react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { FieldError } from "@/components/ui/Field";
@@ -12,14 +12,23 @@ import { UPLOAD_ACCEPT, uploadFile, type UploadedFile, type UploadKind } from ".
 
 /* ─────────────── Layout ─────────────── */
 
-export function FormSection({ title, description, children, id }: { title: string; description?: string; children: ReactNode; id?: string }) {
+export function FormSection({ title, description, children, id, icon: Icon }: { title: string; description?: string; children: ReactNode; id?: string; icon?: LucideIcon }) {
   return (
-    <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className="scroll-mt-24 glass rounded-2xl border p-5">
-      <h2 id={id ? `${id}-title` : undefined} className="text-base font-bold text-ink">
-        {title}
-      </h2>
-      {description && <p className="mt-0.5 text-sm text-muted">{description}</p>}
-      <div className="mt-4 flex flex-col gap-4">{children}</div>
+    <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className="glass scroll-mt-40 rounded-2xl border">
+      <header className="flex items-start gap-3 border-b border-line/80 px-5 py-4">
+        {Icon && (
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand/15 to-brand-cyan/10 text-brand ring-1 ring-brand/10" aria-hidden>
+            <Icon className="size-[18px]" />
+          </span>
+        )}
+        <div className="min-w-0">
+          <h2 id={id ? `${id}-title` : undefined} className="text-[15px] leading-6 font-bold text-ink">
+            {title}
+          </h2>
+          {description && <p className="text-[13px] text-muted">{description}</p>}
+        </div>
+      </header>
+      <div className="flex flex-col gap-4 px-5 py-4">{children}</div>
     </section>
   );
 }

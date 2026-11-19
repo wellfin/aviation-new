@@ -6,7 +6,7 @@ import { useState } from "react";
 import { CheckCircle2, Pencil, UserPlus } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { can, useAuth } from "@/lib/auth/auth-context";
-import { ActionIcon, Avatar, ConfirmAction, DataTable, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column } from "@/components/admin/ui";
+import { ActionIcon, Avatar, ConfirmAction, DataTable, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column, SortFilter } from "@/components/admin/ui";
 import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -17,7 +17,7 @@ import { RoleBadge, SORT_OPTIONS, type AdminUser } from "./shared";
 export function UsersClient() {
   const router = useRouter();
   const { user: me } = useAuth();
-  const { get, set, page, pageSize } = useUrlParams();
+  const { get, page, pageSize } = useUrlParams();
   const path = withQuery("/admin/users", {
     q: get("q"),
     role: get("role"),
@@ -189,22 +189,7 @@ export function UsersClient() {
             { value: "suspended", label: "Suspended" },
           ]}
         />
-        <label className="flex items-center text-sm">
-          <span className="sr-only">Sort</span>
-          <select
-            value={get("sort", "newest")}
-            onChange={(e) =>
-              set({ sort: e.target.value === "newest" ? "" : e.target.value })
-            }
-            className="h-10 min-w-36 rounded-xl border border-line bg-white/70 px-3 text-sm text-ink outline-none focus:border-brand focus:bg-white focus:ring-3 focus:ring-brand/15"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SortFilter defaultValue="newest" options={SORT_OPTIONS} />
         {data && (
           <span className="text-sm text-muted sm:ml-auto">
             {data.total.toLocaleString()} user{data.total === 1 ? "" : "s"}

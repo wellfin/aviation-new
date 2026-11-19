@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { applyAutoCase, autoCaseFor, sentenceCase, setFieldValue } from "@/lib/text";
 
 const control =
-  "w-full rounded-xl border border-line bg-white px-4 text-[15px] text-ink placeholder:text-subtle outline-none transition focus:border-brand focus:ring-3 focus:ring-brand/15 aria-invalid:border-danger aria-invalid:ring-danger/10 disabled:bg-surface";
+  "w-full rounded-xl border border-line bg-white/80 px-3.5 text-sm text-ink placeholder:text-subtle outline-none transition hover:border-slate-300 focus:border-brand focus:bg-white focus:ring-3 focus:ring-brand/15 aria-invalid:border-danger aria-invalid:ring-danger/10 disabled:bg-surface";
 
 export function Label({ htmlFor, children, className }: { htmlFor: string; children: ReactNode; className?: string }) {
   return (
@@ -48,7 +48,7 @@ export function Input({ label, error, hint, icon, trailing, wrapperClassName, cl
           name={name}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errId : undefined}
-          className={cn(control, "h-12", icon ? "pl-11" : undefined, trailing ? "pr-11" : undefined, className)}
+          className={cn(control, "h-11", icon ? "pl-10" : undefined, trailing ? "pr-11" : undefined, className)}
           {...rest}
           onBlur={(e) => {
             if (autoCase) setFieldValue(e.currentTarget, applyAutoCase(e.currentTarget.value, autoCase));
@@ -107,7 +107,7 @@ export function Select({
         name={name}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errId : undefined}
-        className={cn(control, "h-12 appearance-none bg-[url('/images/shared/chevron-down-dark.svg')] bg-[length:14px] bg-[right_16px_center] bg-no-repeat pr-10", className)}
+        className={cn(control, "h-11 appearance-none bg-[url('/images/shared/chevron-down-dark.svg')] bg-[length:12px] bg-[right_14px_center] bg-no-repeat pr-10", className)}
         {...rest}
       >
         {children}
