@@ -54,7 +54,7 @@ export function StatusTabs({
         const active = current === t.value;
         return (
           <button
-            key={t.value || "all"}
+            key={`${t.value}|${t.label}`}
             type="button"
             role="tab"
             aria-selected={active}
@@ -674,6 +674,42 @@ export function RowActions({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center justify-end gap-0.5" onClick={(e) => e.stopPropagation()}>
       {children}
+    </div>
+  );
+}
+
+/**
+ * Side panel that slides in from the right over a dimmed page (create / edit forms).
+ * Esc or a click on the backdrop closes it.
+ */
+export function Drawer({ open, title, description, onClose, children, width = "max-w-xl" }: { open: boolean; title: string; description?: string; onClose: () => void; children: ReactNode; width?: string }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="absolute inset-0 bg-navy-950/35 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
+      <div className={cn("relative m-3 flex w-full flex-col overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_24px_60px_-20px_rgba(11,31,58,0.45)] backdrop-blur-2xl", width)}>
+        <header className="flex items-start justify-between gap-4 border-b border-line px-6 py-4">
+          <div className="min-w-0">
+            <h2 className="text-lg font-extrabold text-ink">{title}</h2>
+            {description && <p className="text-[13px] text-muted">{description}</p>}
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close" className="flex size-9 shrink-0 items-center justify-center rounded-xl text-muted transition hover:bg-surface hover:text-ink">
+            <X className="size-5" />
+          </button>
+        </header>
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>
+      </div>
     </div>
   );
 }
