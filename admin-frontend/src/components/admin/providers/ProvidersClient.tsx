@@ -44,7 +44,7 @@ export function ProvidersClient() {
       header: "Listing",
       render: (p) => (
         <div className="flex min-w-0 items-center gap-3">
-          <span className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-surface text-sm font-bold text-muted" aria-hidden>
+          <span className="relative flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white/70 text-xs font-bold text-muted" aria-hidden>
             {p.logo ? <Image src={siteUrl(p.logo)} alt="" fill unoptimized sizes="40px" className="object-contain p-1" /> : p.name.charAt(0)}
           </span>
           <div className="min-w-0">
@@ -114,14 +114,14 @@ export function ProvidersClient() {
         />
       )}
 
-      <StatusTabs
-        param="status"
-        label="Listing status"
-        current={status}
-        tabs={[{ value: "", label: "All" }, ...PROVIDER_STATUSES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))]}
-      />
-
       <FilterBar>
+        <StatusTabs
+          inline
+          param="status"
+          label="Listing status"
+          current={status}
+          tabs={[{ value: "", label: "All" }, ...PROVIDER_STATUSES.map((s) => ({ value: s, label: s[0].toUpperCase() + s.slice(1) }))]}
+        />
         <SearchFilter placeholder="Name, city, email or ICAO…" label="Search listings" />
         <SelectFilter param="category" label="Category" options={categories.map((c) => ({ value: c.slug, label: c.active ? c.name : `${c.name} (inactive)` }))} />
         <SelectFilter param="tier" label="Tier" options={PROVIDER_TIERS.map((t) => ({ value: t, label: TIER_LABEL[t] }))} />

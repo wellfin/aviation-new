@@ -135,7 +135,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
         <nav aria-label="Admin" className="flex-1 overflow-y-auto px-3 pb-3">
           {groups.map((g) => (
-            <div key={g.label} className="mt-3 first:mt-1">
+            <div key={g.label} className="mt-2.5 first:mt-1">
               <p className={cn("px-3 pb-1.5 text-[11px] font-semibold tracking-[1px] text-muted uppercase", narrow && "lg:sr-only")}>{g.label}</p>
               <ul className="flex flex-col gap-0.5">
                 {g.items.map((item) => {
@@ -148,7 +148,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                         aria-current={active ? "page" : undefined}
                         title={narrow ? item.label : undefined}
                         className={cn(
-                          "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
+                          "flex items-center gap-3 rounded-xl px-3 py-2 text-[13.5px] transition",
                           narrow && "lg:justify-center lg:px-0",
                           active ? "bg-brand/10 font-semibold text-brand shadow-[inset_0_0_0_1px_rgba(47,128,237,0.15)]" : "font-medium text-ink/80 hover:bg-white/70 hover:text-ink",
                         )}
@@ -202,7 +202,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <main id="main" className="flex-1 px-3 py-6 md:px-4 lg:pr-4 lg:pl-1">
+        <main id="main" className="flex-1 px-3 pt-4 pb-6 md:px-4 lg:pr-4 lg:pl-1">
           {children}
         </main>
       </div>

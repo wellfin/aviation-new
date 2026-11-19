@@ -6,7 +6,21 @@ import { useState } from "react";
 import { CheckCircle2, UserPlus } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { can, useAuth } from "@/lib/auth/auth-context";
-import { Avatar, ConfirmButton, DataTable, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, StatusTabs, formatDateTime, type Column } from "@/components/admin/ui";
+import {
+  Avatar,
+  ConfirmButton,
+  DataTable,
+  ErrorPanel,
+  FilterBar,
+  PageHeader,
+  Pager,
+  SearchFilter,
+  SelectFilter,
+  StatusPill,
+  StatusTabs,
+  formatDateTime,
+  type Column,
+} from "@/components/admin/ui";
 import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -18,20 +32,45 @@ export function UsersClient() {
   const router = useRouter();
   const { user: me } = useAuth();
   const { get, set, page, pageSize } = useUrlParams();
-  const path = withQuery("/admin/users", { q: get("q"), role: get("role"), status: get("status"), sort: get("sort"), page, pageSize });
+  const path = withQuery("/admin/users", {
+    q: get("q"),
+    role: get("role"),
+    status: get("status"),
+    sort: get("sort"),
+    page,
+    pageSize,
+  });
   const { data, error, loading, reload } = useApi<Paginated<AdminUser>>(path);
-  const counts = useApi<{ all: number; ADMIN: number; MANAGER: number; USER: number; PROVIDER: number }>("/admin/users/counts");
-  const [feedback, setFeedback] = useState<{ status: "success" | "error"; message: string } | null>(null);
+  const counts = useApi<{
+    all: number;
+    ADMIN: number;
+    MANAGER: number;
+    USER: number;
+    PROVIDER: number;
+  }>("/admin/users/counts");
+  const [feedback, setFeedback] = useState<{
+    status: "success" | "error";
+    message: string;
+  } | null>(null);
   const canManage = can(me, "users:manage");
 
   async function remove(u: AdminUser) {
     setFeedback(null);
     try {
       await apiRequest("DELETE", `/admin/users/${u.id}`);
-      setFeedback({ status: "success", message: `${u.firstName} ${u.lastName} was deleted.` });
+      setFeedback({
+        status: "success",
+        message: `${u.firstName} ${u.lastName} was deleted.`,
+      });
       reload();
     } catch (err) {
-      setFeedback({ status: "error", message: err instanceof ApiError ? err.body.message : "Couldn't delete this user." });
+      setFeedback({
+        status: "error",
+        message:
+          err instanceof ApiError
+            ? err.body.message
+            : "Couldn't delete this user.",
+      });
     }
   }
 
@@ -43,32 +82,83 @@ export function UsersClient() {
         <div className="flex min-w-0 items-center gap-3">
           <Avatar name={`${u.firstName} ${u.lastName}`} />
           <div className="min-w-0">
-            <Link href={`/admin/users/${u.id}`} onClick={(e) => e.stopPropagation()} className="font-semibold text-ink hover:text-brand">
+            <Link
+              href={`/admin/users/${u.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="font-semibold text-ink hover:text-brand"
+            >
               {u.firstName} {u.lastName}
             </Link>
             <p className="flex items-center gap-1 truncate text-xs text-muted">
               {u.email}
-              {u.emailVerified && <CheckCircle2 className="size-3.5 text-success" aria-label="Email verified" />}
+              {u.emailVerified && (
+                <CheckCircle2
+                  className="size-3.5 text-success"
+                  aria-label="Email verified"
+                />
+              )}
             </p>
           </div>
         </div>
       ),
     },
-    { key: "company", header: "Company", render: (u) => u.company ?? <span className="text-subtle">—</span> },
-    { key: "role", header: "Role", render: (u) => <RoleBadge role={u.role} staffRole={u.staffRole} superAdmin={u.superAdmin} /> },
-    { key: "status", header: "Status", render: (u) => <StatusPill status={u.status} /> },
-    { key: "created", header: "Joined", render: (u) => <span className="whitespace-nowrap text-muted">{formatDateTime(u.createdAt)}</span> },
-    { key: "login", header: "Last sign-in", render: (u) => <span className="whitespace-nowrap text-muted">{formatDateTime(u.lastLoginAt)}</span> },
+    {
+      key: "company",
+      header: "Company",
+      render: (u) => u.company ?? <span className="text-subtle">—</span>,
+    },
+    {
+      key: "role",
+      header: "Role",
+      render: (u) => (
+        <RoleBadge
+          role={u.role}
+          staffRole={u.staffRole}
+          superAdmin={u.superAdmin}
+        />
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (u) => <StatusPill status={u.status} />,
+    },
+    {
+      key: "created",
+      header: "Joined",
+      render: (u) => (
+        <span className="whitespace-nowrap text-muted">
+          {formatDateTime(u.createdAt)}
+        </span>
+      ),
+    },
+    {
+      key: "login",
+      header: "Last sign-in",
+      render: (u) => (
+        <span className="whitespace-nowrap text-muted">
+          {formatDateTime(u.lastLoginAt)}
+        </span>
+      ),
+    },
     ...(canManage
       ? [
           {
             key: "actions",
             header: "",
             render: (u: AdminUser) =>
-              u.id === me?.id || u.superAdmin || (u.role === "ADMIN" && !me?.superAdmin) ? null : (
+              u.id === me?.id ||
+              u.superAdmin ||
+              (u.role === "ADMIN" && !me?.superAdmin) ? null : (
                 // Keep the click from opening the row.
-                <span onClick={(e) => e.stopPropagation()} className="inline-flex">
-                  <ConfirmButton confirmLabel="Delete" onConfirm={() => remove(u)}>
+                <span
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex"
+                >
+                  <ConfirmButton
+                    confirmLabel="Delete"
+                    onConfirm={() => remove(u)}
+                  >
                     Delete
                   </ConfirmButton>
                 </span>
@@ -96,23 +186,44 @@ export function UsersClient() {
           <FormStatus status={feedback.status} message={feedback.message} />
         </div>
       )}
-      <StatusTabs
-        param="role"
-        label="Role"
-        tabs={[
-          { value: "", label: "All", count: counts.data?.all },
-          { value: "ADMIN", label: "Admins", count: counts.data?.ADMIN },
-          { value: "MANAGER", label: "Staff", count: counts.data?.MANAGER },
-          { value: "USER", label: "Website users", count: counts.data?.USER },
-          { value: "PROVIDER", label: "Providers", count: counts.data?.PROVIDER },
-        ]}
-      />
       <FilterBar>
-        <SearchFilter placeholder="Name, email or company" label="Search users" />
-        <SelectFilter param="status" label="Status" options={[{ value: "active", label: "Active" }, { value: "suspended", label: "Suspended" }]} />
+        <StatusTabs
+          inline
+          param="role"
+          label="Role"
+          tabs={[
+            { value: "", label: "All", count: counts.data?.all },
+            { value: "ADMIN", label: "Admins", count: counts.data?.ADMIN },
+            { value: "MANAGER", label: "Staff", count: counts.data?.MANAGER },
+            { value: "USER", label: "Website users", count: counts.data?.USER },
+            {
+              value: "PROVIDER",
+              label: "Providers",
+              count: counts.data?.PROVIDER,
+            },
+          ]}
+        />
+        <SearchFilter
+          placeholder="Name, email or company"
+          label="Search users"
+        />
+        <SelectFilter
+          param="status"
+          label="Status"
+          options={[
+            { value: "active", label: "Active" },
+            { value: "suspended", label: "Suspended" },
+          ]}
+        />
         <label className="flex items-center text-sm">
           <span className="sr-only">Sort</span>
-          <select value={get("sort", "newest")} onChange={(e) => set({ sort: e.target.value === "newest" ? "" : e.target.value })} className="h-11 min-w-40 rounded-xl border border-line bg-white px-3.5 text-sm text-ink outline-none focus:border-brand focus:ring-3 focus:ring-brand/15">
+          <select
+            value={get("sort", "newest")}
+            onChange={(e) =>
+              set({ sort: e.target.value === "newest" ? "" : e.target.value })
+            }
+            className="h-10 min-w-36 rounded-xl border border-line bg-white/70 px-3 text-sm text-ink outline-none focus:border-brand focus:bg-white focus:ring-3 focus:ring-brand/15"
+          >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
@@ -120,14 +231,30 @@ export function UsersClient() {
             ))}
           </select>
         </label>
-        {data && <span className="text-sm text-muted sm:ml-auto">{data.total.toLocaleString()} user{data.total === 1 ? "" : "s"}</span>}
+        {data && (
+          <span className="text-sm text-muted sm:ml-auto">
+            {data.total.toLocaleString()} user{data.total === 1 ? "" : "s"}
+          </span>
+        )}
       </FilterBar>
       {error && !data ? (
         <ErrorPanel error={error} onRetry={reload} />
       ) : (
         <>
-          <DataTable columns={columns} rows={data?.items} rowKey={(u) => u.id} loading={loading} onRowClick={(u) => router.push(`/admin/users/${u.id}`)} />
-          {data && data.total > 0 && <Pager page={data.page} totalPages={data.totalPages} total={data.total} />}
+          <DataTable
+            columns={columns}
+            rows={data?.items}
+            rowKey={(u) => u.id}
+            loading={loading}
+            onRowClick={(u) => router.push(`/admin/users/${u.id}`)}
+          />
+          {data && data.total > 0 && (
+            <Pager
+              page={data.page}
+              totalPages={data.totalPages}
+              total={data.total}
+            />
+          )}
         </>
       )}
     </>

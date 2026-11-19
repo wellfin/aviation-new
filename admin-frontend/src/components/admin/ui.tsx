@@ -10,12 +10,12 @@ import { cn } from "@/lib/utils";
 
 export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
   return (
-    <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-      <div className="flex min-w-0 flex-col gap-x-3 gap-y-1 md:flex-row md:items-baseline">
-        <h1 className="shrink-0 text-2xl font-extrabold tracking-[-0.3px] text-ink">{title}</h1>
-        {description && <p className="text-sm text-muted">{description}</p>}
+    <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="min-w-0">
+        <h1 className="text-[22px] leading-7 font-extrabold tracking-[-0.3px] text-ink">{title}</h1>
+        {description && <p className="mt-0.5 truncate text-[13px] text-muted">{description}</p>}
       </div>
-      {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
+      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 }
@@ -24,11 +24,31 @@ export function PageHeader({ title, description, actions }: { title: string; des
  * Segmented tabs with counts ("All 64 · Customers 30 …"), synced to a URL parameter.
  * The first tab should use value "" (no filter).
  */
-export function StatusTabs({ param, tabs, label = "Filter", current: currentProp }: { param: string; tabs: Array<{ value: string; label: string; count?: number | null }>; label?: string; current?: string }) {
+export function StatusTabs({
+  param,
+  tabs,
+  label = "Filter",
+  current: currentProp,
+  inline = false,
+}: {
+  param: string;
+  tabs: Array<{ value: string; label: string; count?: number | null }>;
+  label?: string;
+  current?: string;
+  /** Inside a FilterBar (no own card or margin). */
+  inline?: boolean;
+}) {
   const { get, set } = useUrlParams();
   const current = currentProp ?? get(param);
   return (
-    <div role="tablist" aria-label={label} className="glass mb-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-2xl border p-1.5">
+    <div
+      role="tablist"
+      aria-label={label}
+      className={cn(
+        "inline-flex max-w-full shrink-0 gap-0.5 overflow-x-auto",
+        inline ? "rounded-xl bg-ink/[0.04] p-1 ring-1 ring-line/80" : "glass mb-4 rounded-2xl border p-1.5",
+      )}
+    >
       {tabs.map((t) => {
         const active = current === t.value;
         return (
@@ -39,7 +59,7 @@ export function StatusTabs({ param, tabs, label = "Filter", current: currentProp
             aria-selected={active}
             onClick={() => set({ [param]: t.value })}
             className={cn(
-              "flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition",
+              "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-semibold transition",
               active ? "bg-white text-ink shadow-[0_1px_3px_rgba(11,31,58,0.12),inset_0_0_0_1px_var(--color-line)]" : "text-muted hover:bg-white/60 hover:text-ink",
             )}
           >
@@ -55,7 +75,7 @@ export function StatusTabs({ param, tabs, label = "Filter", current: currentProp
 const AVATAR_TONES = ["bg-brand", "bg-success", "bg-purple", "bg-[#f97316]", "bg-[#ef4444]", "bg-[#0ea5e9]", "bg-[#db2777]", "bg-[#0d9488]"];
 
 /** Round initials badge; the colour is stable for a given name. */
-export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" }) {
+export function Avatar({ name, size = "sm" }: { name: string; size?: "sm" | "md" }) {
   const parts = name.trim().split(/\s+/);
   const initials = ((parts[0]?.charAt(0) ?? "") + (parts.length > 1 ? (parts[parts.length - 1]?.charAt(0) ?? "") : "")).toUpperCase() || "?";
   let hash = 0;
@@ -138,21 +158,21 @@ export function DataTable<T>({
     <div className="list-table glass overflow-hidden rounded-2xl border">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-line text-[11px] font-semibold tracking-[0.6px] text-muted uppercase">
+          <thead className="border-b border-line bg-white/50 text-[11px] font-semibold tracking-[0.6px] text-muted uppercase">
             <tr>
               {columns.map((c) => (
-                <th key={c.key} scope="col" className={cn("px-4 py-3.5 first:pl-5 last:pr-5", c.className)}>
+                <th key={c.key} scope="col" className={cn("px-3 py-2.5 whitespace-nowrap first:pl-5 last:pr-5", c.className)}>
                   {c.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className={cn("divide-y divide-line", loading && "opacity-50")} aria-busy={loading || undefined}>
+          <tbody className={cn("divide-y divide-line/70 text-[13px]", loading && "opacity-50")} aria-busy={loading || undefined}>
             {loading && !rows?.length
               ? Array.from({ length: 5 }, (_, i) => (
                   <tr key={`sk-${i}`}>
                     {columns.map((c) => (
-                      <td key={c.key} className="px-4 py-5 first:pl-5">
+                      <td key={c.key} className="px-3 py-4 first:pl-5">
                         <span className="block h-4 w-3/4 animate-pulse rounded bg-surface" />
                       </td>
                     ))}
@@ -165,7 +185,7 @@ export function DataTable<T>({
                     className={cn("transition", onRowClick && "cursor-pointer hover:bg-brand/[0.04]")}
                   >
                     {columns.map((c) => (
-                      <td key={c.key} className={cn("px-4 py-3.5 align-middle text-ink first:pl-5 last:pr-5", c.className)}>
+                      <td key={c.key} className={cn("px-3 py-2 align-middle leading-5 text-ink first:pl-5 last:pr-5", c.className)}>
                         {c.render(row)}
                       </td>
                     ))}
@@ -199,7 +219,7 @@ export function SearchFilter({ param = "q", placeholder = "Search…", label = "
   }, []);
 
   return (
-    <label className="relative block w-full sm:w-80">
+    <label className="relative block w-full sm:w-auto sm:min-w-48 sm:max-w-80 sm:flex-1">
       <span className="sr-only">{label}</span>
       <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-subtle" aria-hidden />
       <input
@@ -213,7 +233,7 @@ export function SearchFilter({ param = "q", placeholder = "Search…", label = "
           if (timer.current) clearTimeout(timer.current);
           timer.current = setTimeout(() => set({ [param]: v.trim() }), 350);
         }}
-        className="h-11 w-full rounded-xl border border-line bg-white pr-3 pl-10 text-sm outline-none placeholder:text-subtle focus:border-brand focus:ring-3 focus:ring-brand/15"
+        className="h-10 w-full rounded-xl border border-line bg-white/70 pr-3 pl-10 text-sm outline-none placeholder:text-subtle focus:border-brand focus:bg-white focus:ring-3 focus:ring-brand/15"
       />
     </label>
   );
@@ -227,7 +247,7 @@ export function SelectFilter({ param, label, options }: { param: string; label: 
       <select
         value={get(param)}
         onChange={(e) => set({ [param]: e.target.value })}
-        className="h-11 min-w-40 rounded-xl border border-line bg-white px-3.5 text-sm text-ink outline-none focus:border-brand focus:ring-3 focus:ring-brand/15"
+        className="h-10 min-w-36 rounded-xl border border-line bg-white/70 px-3 text-sm text-ink outline-none focus:border-brand focus:bg-white focus:ring-3 focus:ring-brand/15"
       >
         <option value="">{`${label}: All`}</option>
         {options.map((o) => (
@@ -242,7 +262,7 @@ export function SelectFilter({ param, label, options }: { param: string; label: 
 
 /** Search and filters; directly above a DataTable it becomes the top of the same card. */
 export function FilterBar({ children }: { children: ReactNode }) {
-  return <div className="list-toolbar glass mb-4 flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:flex-wrap sm:items-center">{children}</div>;
+  return <div className="list-toolbar glass mb-4 flex flex-col gap-2.5 rounded-2xl border px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center">{children}</div>;
 }
 
 /** Page numbers to show: first, last, and a window around the current page, with gaps ("…"). */
@@ -268,9 +288,9 @@ export function Pager({ page, totalPages, total, pageSize: sizeProp, sizes = tru
   const pageSize = sizeProp ?? urlSize;
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
-  const btn = "flex size-9 items-center justify-center rounded-xl text-sm font-semibold tabular-nums transition";
+  const btn = "flex size-8 items-center justify-center rounded-lg text-[13px] font-semibold tabular-nums transition";
   return (
-    <div className="list-pager glass mt-4 flex flex-col gap-3 rounded-2xl border px-5 py-3.5 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+    <div className="list-pager glass mt-4 flex flex-col gap-2 rounded-2xl border px-5 py-2.5 text-[13px] text-muted sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         {sizes && (
           <label className="flex items-center gap-2">
@@ -278,7 +298,7 @@ export function Pager({ page, totalPages, total, pageSize: sizeProp, sizes = tru
             <select
               value={pageSize}
               onChange={(e) => set({ pageSize: Number(e.target.value) === 20 ? "" : e.target.value })}
-              className="h-9 rounded-lg border border-line bg-white px-2 font-semibold text-ink outline-none focus:border-brand"
+              className="h-8 rounded-lg border border-line bg-white/70 px-2 font-semibold text-ink outline-none focus:border-brand"
             >
               {PAGE_SIZES.map((s) => (
                 <option key={s} value={s}>
@@ -367,7 +387,7 @@ const STATUS_TONE: Record<string, keyof typeof PILL_TONES> = {
 export function StatusPill({ status, tone }: { status: string; tone?: keyof typeof PILL_TONES }) {
   const t = tone ?? STATUS_TONE[status] ?? "slate";
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-semibold capitalize", PILL_TONES[t])}>
+    <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap capitalize", PILL_TONES[t])}>
       <span className="size-1.5 rounded-full bg-current" aria-hidden />
       {status.replace(/_/g, " ")}
     </span>
@@ -447,7 +467,7 @@ export function ConfirmButton({
 }) {
   const [asking, setAsking] = useState(false);
   const [busy, setBusy] = useState(false);
-  const base = "h-9 rounded-xl px-3 text-sm font-semibold transition disabled:opacity-50";
+  const base = "h-8 rounded-lg px-2.5 text-[13px] font-semibold whitespace-nowrap transition disabled:opacity-50";
   const color = tone === "danger" ? "bg-danger text-white hover:brightness-110" : "bg-brand text-white hover:brightness-110";
   if (!asking) {
     return (

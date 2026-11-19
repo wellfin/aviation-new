@@ -17,43 +17,47 @@ const STATE_TONE = { active: "green", paused: "slate", scheduled: "blue", ended:
 const pct = (n: number) => `${n.toFixed(2)}%`;
 
 function PlacementStatsGrid({ stats, loading, traffic }: { stats: PlacementStats[] | null; loading: boolean; traffic: PlacementTraffic[] | null }) {
-  if (loading && !stats) return <div className="mb-6 h-28 animate-pulse rounded-2xl bg-white shadow-soft" role="status" aria-label="Loading placement stats" />;
+  if (loading && !stats) return <div className="mb-4 h-[76px] animate-pulse rounded-2xl bg-white/60" role="status" aria-label="Loading placement stats" />;
   if (!stats) return null;
   // Placements the website doesn't render (e.g. "inline") only appear if an ad still uses them.
   const shown = stats.filter((s) => SELECTABLE_PLACEMENTS.includes(s.placement) || s.ads > 0);
   return (
-    <ul className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Placement performance">
-      {shown.map((s) => (
-        <li key={s.placement} className="glass rounded-2xl border p-4">
-          <p className="text-xs font-semibold tracking-[0.6px] text-muted uppercase">{PLACEMENT_LABEL[s.placement]}</p>
-          <p className="mt-1 text-2xl font-extrabold text-ink">{pct(s.ctr)}</p>
-          <p className="text-xs text-muted">CTR</p>
-          {(() => {
-            const t = traffic?.find((x) => x.placement === s.placement);
-            return t ? (
-              <p className="mt-2 text-xs text-muted">
-                Live now: <span className="font-semibold text-ink">{t.liveAds}</span> ad{t.liveAds === 1 ? "" : "s"} · total weight <span className="font-semibold text-ink">{t.totalWeight}</span>
+    <ul className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Placement performance">
+      {shown.map((s) => {
+        const t = traffic?.find((x) => x.placement === s.placement);
+        return (
+          <li key={s.placement} className="glass flex items-center gap-3 rounded-2xl border px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[11px] font-semibold tracking-[0.6px] text-muted uppercase">{PLACEMENT_LABEL[s.placement]}</p>
+              <p className="mt-0.5 flex items-baseline gap-1.5">
+                <span className="text-xl font-extrabold text-ink">{pct(s.ctr)}</span>
+                <span className="text-[11px] text-muted">CTR</span>
               </p>
-            ) : null;
-          })()}
-          <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
-            <div>
-              <dt className="text-subtle">Ads</dt>
-              <dd className="font-semibold text-ink">
-                {s.activeAds}/{s.ads}
-              </dd>
+              {t && (
+                <p className="truncate text-[11px] text-muted">
+                  {t.liveAds} live · weight {t.totalWeight}
+                </p>
+              )}
             </div>
-            <div>
-              <dt className="text-subtle">Views</dt>
-              <dd className="font-semibold text-ink">{s.impressions.toLocaleString()}</dd>
-            </div>
-            <div>
-              <dt className="text-subtle">Clicks</dt>
-              <dd className="font-semibold text-ink">{s.clicks.toLocaleString()}</dd>
-            </div>
-          </dl>
-        </li>
-      ))}
+            <dl className="grid shrink-0 grid-cols-3 gap-3 text-right text-[11px]">
+              <div>
+                <dt className="text-subtle">Ads</dt>
+                <dd className="font-semibold text-ink">
+                  {s.activeAds}/{s.ads}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-subtle">Views</dt>
+                <dd className="font-semibold text-ink">{s.impressions.toLocaleString()}</dd>
+              </div>
+              <div>
+                <dt className="text-subtle">Clicks</dt>
+                <dd className="font-semibold text-ink">{s.clicks.toLocaleString()}</dd>
+              </div>
+            </dl>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -104,7 +108,7 @@ export function AdsList() {
       render: (a) => (
         <Link href={`/admin/ads/${a.id}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-3 font-semibold text-ink hover:text-brand">
           {/* eslint-disable-next-line @next/next/no-img-element -- thumbnails may live on the API host */}
-          <img src={siteUrl(a.image)} alt="" className="h-9 w-14 shrink-0 rounded-md bg-surface object-cover" />
+          <img src={siteUrl(a.image)} alt="" className="h-8 w-12 shrink-0 rounded-md bg-surface object-cover" />
           <span className="min-w-0">
             {a.advertiser}
             <span className="block max-w-64 truncate text-xs font-normal text-muted">{a.headline ?? a.href}</span>

@@ -78,9 +78,8 @@ export function ReviewsClient() {
     <>
       <PageHeader title="Reviews" description="Approve or reject reviews before they appear on provider profiles." />
 
-      <StatusTabs param="status" label="Review status" current={tab} tabs={TABS} />
-
       <FilterBar>
+        <StatusTabs inline param="status" label="Review status" current={tab} tabs={TABS} />
         <SearchFilter placeholder="Title, text or author…" label="Search reviews" />
         <SearchFilter param="provider" placeholder="Provider slug or id" label="Filter by provider" />
         {get("provider") && (

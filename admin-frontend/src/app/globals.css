@@ -118,23 +118,25 @@
 
 /* Soft colour wash behind the console; glass panels sit on top of it. */
 @utility admin-bg {
-  background-color: var(--color-surface);
+  background-color: #eef3fa;
   background-image:
-    radial-gradient(900px 520px at 8% -8%, rgba(47, 128, 237, 0.16), transparent 60%),
-    radial-gradient(760px 480px at 100% 0%, rgba(0, 194, 255, 0.14), transparent 60%),
-    radial-gradient(820px 560px at 70% 105%, rgba(123, 79, 184, 0.1), transparent 60%);
+    radial-gradient(900px 560px at 6% -10%, rgba(47, 128, 237, 0.24), transparent 62%),
+    radial-gradient(760px 520px at 100% 0%, rgba(0, 194, 255, 0.2), transparent 60%),
+    radial-gradient(820px 600px at 72% 108%, rgba(123, 79, 184, 0.16), transparent 62%),
+    radial-gradient(600px 420px at 0% 100%, rgba(46, 204, 113, 0.1), transparent 60%);
   background-attachment: fixed;
 }
 
 /* Frosted panel: translucent white, blur, hairline border and a top highlight. */
 @utility glass {
-  background-color: rgba(255, 255, 255, 0.72);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  backdrop-filter: blur(18px) saturate(160%);
-  border-color: rgba(226, 232, 240, 0.85);
+  background-color: rgba(255, 255, 255, 0.62);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  border-color: rgba(255, 255, 255, 0.75);
   box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.8) inset,
-    0 8px 28px -12px rgba(11, 31, 58, 0.16);
+    0 1px 0 0 rgba(255, 255, 255, 0.9) inset,
+    0 0 0 1px rgba(148, 163, 184, 0.14),
+    0 10px 30px -14px rgba(11, 31, 58, 0.22);
 }
 
 /* ─────────── Admin: switch ─────────── */
@@ -184,4 +186,7 @@
     cursor: not-allowed;
     opacity: 0.5;
   }
+}
+.list-toolbar + .list-table {
+  border-top-color: rgba(203, 213, 225, 0.7);
 }

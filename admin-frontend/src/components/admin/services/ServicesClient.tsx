@@ -91,13 +91,14 @@ export function ServicesClient() {
         title="Services"
         description="The service categories providers are listed under, in the order the site shows them."
         actions={
-          <Button type="button" onClick={() => setEditing("new")}>
-            <Plus className="size-4" /> New service
-          </Button>
+          <>
+            <StatusTabs inline param="active" label="Service status" current={active} tabs={FILTERS} />
+            <Button type="button" onClick={() => setEditing("new")}>
+              <Plus className="size-4" /> New service
+            </Button>
+          </>
         }
       />
-
-      <StatusTabs param="active" label="Service status" current={active} tabs={FILTERS} />
 
       {feedback && (
         <div className="mb-4" aria-live="polite">
@@ -119,53 +120,45 @@ export function ServicesClient() {
           <EmptyState title="No services here" description={active ? "Try another filter." : "Create the first service category."} />
         </div>
       ) : (
-        <ol className={cn("flex flex-col gap-3", loading && "opacity-60")} aria-busy={loading || busy === "__order" || undefined}>
+        <ol className={cn("flex flex-col gap-2", loading && "opacity-60")} aria-busy={loading || busy === "__order" || undefined}>
           {rows.map((c, i) => (
             <li
               key={c.slug}
               className={cn(
-                "glass group flex flex-col gap-4 rounded-2xl border p-4 transition hover:-translate-y-px hover:shadow-[0_12px_32px_-14px_rgba(11,31,58,0.28)] xl:flex-row xl:items-center xl:gap-6",
+                "glass group flex flex-col gap-3 rounded-2xl border px-4 py-2 transition hover:-translate-y-px hover:shadow-[0_12px_32px_-14px_rgba(11,31,58,0.28)] xl:flex-row xl:items-center xl:gap-5",
                 !c.active && "opacity-75",
               )}
             >
-              <div className="flex min-w-0 flex-1 items-center gap-4">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
                 {canReorder && (
                   <div className="flex shrink-0 flex-col overflow-hidden rounded-xl border border-line bg-white/70">
-                    <button type="button" aria-label={`Move ${c.name} up`} disabled={i === 0 || busy !== null} onClick={() => move(i, i - 1)} className="flex h-7 w-8 items-center justify-center text-muted transition hover:bg-brand/10 hover:text-brand disabled:opacity-30 disabled:hover:bg-transparent">
+                    <button type="button" aria-label={`Move ${c.name} up`} disabled={i === 0 || busy !== null} onClick={() => move(i, i - 1)} className="flex h-5 w-7 items-center justify-center text-muted transition hover:bg-brand/10 hover:text-brand disabled:opacity-30 disabled:hover:bg-transparent">
                       <ArrowUp className="size-3.5" />
                     </button>
                     <span className="h-px bg-line" aria-hidden />
-                    <button type="button" aria-label={`Move ${c.name} down`} disabled={i === rows.length - 1 || busy !== null} onClick={() => move(i, i + 1)} className="flex h-7 w-8 items-center justify-center text-muted transition hover:bg-brand/10 hover:text-brand disabled:opacity-30 disabled:hover:bg-transparent">
+                    <button type="button" aria-label={`Move ${c.name} down`} disabled={i === rows.length - 1 || busy !== null} onClick={() => move(i, i + 1)} className="flex h-5 w-7 items-center justify-center text-muted transition hover:bg-brand/10 hover:text-brand disabled:opacity-30 disabled:hover:bg-transparent">
                       <ArrowDown className="size-3.5" />
                     </button>
                   </div>
                 )}
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand/15 to-brand-cyan/10 text-2xl ring-1 ring-brand/10" aria-hidden>
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand/15 to-brand-cyan/10 text-xl ring-1 ring-brand/10" aria-hidden>
                   {c.emoji || "•"}
                 </span>
-                <div className="min-w-0">
-                  <p className="flex flex-wrap items-center gap-2">
-                    <span className="text-base font-bold text-ink">{c.name}</span>
-                    <span className="rounded-md bg-brand/10 px-1.5 py-0.5 text-[11px] font-semibold text-brand">
+                <div className="min-w-0" title={`${c.longName} · icon: ${c.icon}`}>
+                  <p className="flex flex-wrap items-center gap-2 leading-5">
+                    <span className="text-[14px] font-bold text-ink">{c.name}</span>
+                    <code className="rounded bg-ink/[0.05] px-1.5 py-px font-mono text-[11px] text-muted">/{c.slug}</code>
+                    <span className="rounded-md bg-brand/10 px-1.5 py-px text-[11px] font-semibold text-brand">
                       {c.providerCount} listing{c.providerCount === 1 ? "" : "s"}
                     </span>
                     {!c.active && <StatusPill status="inactive" tone="slate" />}
                   </p>
-                  {c.description && <p className="mt-0.5 line-clamp-1 text-sm text-ink/75">{c.description}</p>}
-                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
-                    <span>{c.longName}</span>
-                    <span aria-hidden>·</span>
-                    <code className="rounded bg-surface px-1.5 py-px font-mono text-[11px]">/{c.slug}</code>
-                    <span aria-hidden>·</span>
-                    <span>
-                      icon <code className="font-mono text-[11px]">{c.icon}</code>
-                    </span>
-                  </p>
+                  <p className="truncate text-[13px] leading-5 text-muted">{c.description || c.longName}</p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3 xl:shrink-0 xl:justify-end xl:border-t-0 xl:pt-0">
-                <div className="flex items-center gap-5 rounded-xl border border-line bg-white/60 px-4 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-line pt-2.5 xl:shrink-0 xl:justify-end xl:border-t-0 xl:pt-0">
+                <div className="flex items-center gap-4 rounded-xl border border-line bg-white/60 px-3 py-1">
                   <Switch
                     label="Active"
                     checked={c.active}
