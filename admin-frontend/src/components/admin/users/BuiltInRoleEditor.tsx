@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Crown, type LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { Card, ConfirmButton, ErrorPanel, PageHeader } from "@/components/admin/ui";
+import { ConfirmButton, ErrorPanel } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useApi } from "@/lib/hooks/useApi";
+import { PermissionBoard, PermissionSummary } from "./PermissionBoard";
 import { BUILT_IN_TEXT, PERMISSION_GROUPS, USERS_MANAGE_ITEM, type BuiltInRole } from "./roles";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
@@ -67,71 +68,83 @@ function Form({ role, back, onSaved }: { role: BuiltInRole; back: React.ReactNod
     setSaving(false);
   }
 
+  const count = groups.reduce((n, g) => n + g.items.filter((i) => perms.has(i.value)).length, 0);
+  const toggle = (values: string[], on: boolean) =>
+    setPerms((cur) => {
+      const next = new Set(cur);
+      for (const v of values) {
+        if (on) next.add(v);
+        else next.delete(v);
+      }
+      return next;
+    });
+
   return (
     <>
       {back}
-      <PageHeader title={text.name} description={`${role.userCount} user${role.userCount === 1 ? "" : "s"} have this role. ${text.description}`} />
+      <RoleHero
+        icon={Crown}
+        tone="#eda100"
+        name={text.name}
+        subtitle={`${role.userCount} user${role.userCount === 1 ? "" : "s"} · ${text.description}`}
+        badges={
+          <>
+            <span className="rounded-md bg-ink/[0.06] px-2 py-0.5 text-[11px] font-bold text-muted">BUILT-IN</span>
+            {role.customised && <span className="rounded-md bg-warning/15 px-2 py-0.5 text-[11px] font-bold text-[#a16207]">CHANGED</span>}
+          </>
+        }
+      />
       {feedback && (
         <div className="mb-4">
           <FormStatus status={feedback.status} message={feedback.message} />
         </div>
       )}
-      {!canEdit && <p className="mb-4 rounded-xl border border-line bg-white px-4 py-3 text-sm text-muted">Only the Super Admin can change this role. You can view it.</p>}
+      {!canEdit && <p className="mb-4 rounded-xl border border-line bg-white/70 px-4 py-3 text-sm text-muted">Only the Super Admin can change this role. You can view it.</p>}
 
-      <div className="grid items-start gap-4 lg:grid-cols-[1fr_320px]">
-        <fieldset disabled={!canEdit || saving} className="min-w-0">
-          <Card title="Permissions">
-            <div className="flex flex-col gap-5">
-              {groups.map((g) => (
-                <div key={g.label}>
-                  <p className="mb-2 text-xs font-semibold tracking-[0.6px] text-muted uppercase">{g.label}</p>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {g.items.map((p) => (
-                      <label key={p.value} className="flex cursor-pointer gap-3 rounded-xl border border-line p-3 text-sm has-checked:border-brand has-checked:bg-brand/5">
-                        <input
-                          type="checkbox"
-                          checked={perms.has(p.value)}
-                          onChange={(e) =>
-                            setPerms((s) => {
-                              const next = new Set(s);
-                              if (e.target.checked) next.add(p.value);
-                              else next.delete(p.value);
-                              return next;
-                            })
-                          }
-                          className="mt-0.5 size-4 accent-brand"
-                        />
-                        <span>
-                          <span className="block font-semibold text-ink">{p.label}</span>
-                          <span className="block text-xs text-muted">{p.hint}</span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              <p className="text-xs text-subtle">The Super Admin always keeps every permission. Sign-in, profile and file uploads stay on for everyone with this role.</p>
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0">
+          <PermissionBoard groups={groups} selected={perms} onToggle={toggle} disabled={!canEdit || saving} />
+          <p className="mt-3 text-xs text-subtle">The Super Admin always keeps every permission. Sign-in, profile and file uploads stay on for everyone with this role.</p>
+        </div>
+        <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
+          {canEdit && (
+            <div className="glass flex flex-col gap-2 rounded-2xl border p-4">
+              <Button type="button" loading={saving} onClick={() => save([...perms])} className="w-full">
+                Save role
+              </Button>
+              <p className="text-center text-xs text-muted">Changes apply to everyone with this role straight away.</p>
             </div>
-          </Card>
-        </fieldset>
-        {canEdit && (
-          <aside className="flex flex-col gap-3 glass rounded-2xl border p-4 lg:sticky lg:top-24">
-            <Button type="button" loading={saving} onClick={() => save([...perms])} className="w-full">
-              Save role
-            </Button>
-            <p className="text-xs text-muted">
-              {perms.size} of {role.editable.length} permissions selected.
-            </p>
-            {role.customised && (
-              <div className="border-t border-line pt-3">
-                <ConfirmButton tone="primary" confirmLabel="Reset" onConfirm={() => save(null)}>
-                  Reset to default
-                </ConfirmButton>
-              </div>
-            )}
-          </aside>
-        )}
+          )}
+          <PermissionSummary groups={groups} selected={perms} disabled={!canEdit || saving} onAll={(on) => toggle(groups.flatMap((g) => g.items.map((i) => i.value)), on)} />
+          {canEdit && role.customised && (
+            <div className="glass rounded-2xl border p-4">
+              <p className="mb-1 text-sm font-semibold text-ink">Defaults</p>
+              <p className="mb-3 text-xs text-muted">Undo every change and give this role its original permissions.</p>
+              <ConfirmButton tone="primary" confirmLabel="Reset" onConfirm={() => save(null)}>
+                Reset to default
+              </ConfirmButton>
+            </div>
+          )}
+          {count === 0 && <p className="rounded-xl bg-warning/10 px-3 py-2 text-xs text-[#a16207]">With nothing allowed, people with this role can only sign in.</p>}
+        </aside>
       </div>
     </>
+  );
+}
+
+function RoleHero({ icon: Icon, tone, name, subtitle, badges }: { icon: LucideIcon; tone: string; name: string; subtitle: string; badges?: React.ReactNode }) {
+  return (
+    <div className="glass mb-4 flex flex-col gap-4 overflow-hidden rounded-2xl border p-5 sm:flex-row sm:items-center">
+      <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_10px_24px_-10px_rgba(11,31,58,0.45)]" style={{ background: tone }} aria-hidden>
+        <Icon className="size-7" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h1 className="flex flex-wrap items-center gap-2 text-[22px] leading-7 font-extrabold text-ink">
+          {name}
+          {badges}
+        </h1>
+        <p className="mt-0.5 text-[13px] text-muted">{subtitle}</p>
+      </div>
+    </div>
   );
 }

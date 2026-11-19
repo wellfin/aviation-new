@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, IdCard, ShieldCheck, type LucideIcon } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { Card, ConfirmButton, EmptyState, ErrorPanel, PageHeader } from "@/components/admin/ui";
+import { ConfirmButton, EmptyState, ErrorPanel } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
-import { FormStatus, Input, Textarea } from "@/components/ui/Field";
+import { FormStatus, Input } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { can, useAuth } from "@/lib/auth/auth-context";
 import { useApi } from "@/lib/hooks/useApi";
+import { PermissionBoard, PermissionSummary } from "./PermissionBoard";
 import { PERMISSION_GROUPS, type StaffRole } from "./roles";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
@@ -53,14 +54,6 @@ function RoleForm({ initial, back }: { initial: StaffRole | null; back: React.Re
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [saving, setSaving] = useState(false);
 
-  const toggle = (p: string, on: boolean) =>
-    setPerms((s) => {
-      const next = new Set(s);
-      if (on) next.add(p);
-      else next.delete(p);
-      return next;
-    });
-
   async function submit(e: FormEvent) {
     e.preventDefault();
     setFeedback(null);
@@ -100,68 +93,92 @@ function RoleForm({ initial, back }: { initial: StaffRole | null; back: React.Re
     }
   }
 
+  const bulk = (values: string[], on: boolean) =>
+    setPerms((cur) => {
+      const next = new Set(cur);
+      for (const v of values) {
+        if (on) next.add(v);
+        else next.delete(v);
+      }
+      return next;
+    });
+
   return (
     <>
       {back}
-      <PageHeader
-        title={initial ? initial.name : "New role"}
-        description={initial ? `${initial.userCount} user${initial.userCount === 1 ? "" : "s"} have this role.` : "Name the role and tick what people with it can do."}
+      <RoleHero
+        icon={ShieldCheck}
+        tone="#2a78d6"
+        name={initial ? initial.name : name.trim() || "New role"}
+        subtitle={initial ? `${initial.userCount} user${initial.userCount === 1 ? "" : "s"} · ${initial.description || "Custom role"}` : "Name the role and switch on what people with it can do."}
+        badges={<span className="rounded-md bg-brand/10 px-2 py-0.5 text-[11px] font-bold text-brand">CUSTOM</span>}
       />
       {feedback && (
         <div className="mb-4">
           <FormStatus status={feedback.status} message={feedback.message} />
         </div>
       )}
-      {!canManage && <p className="mb-4 rounded-xl border border-line bg-white px-4 py-3 text-sm text-muted">Only Admins can change roles. You can view this one.</p>}
+      {!canManage && <p className="mb-4 rounded-xl border border-line bg-white/70 px-4 py-3 text-sm text-muted">Only Admins can change roles. You can view this one.</p>}
 
-      <form onSubmit={submit} noValidate className="grid items-start gap-4 lg:grid-cols-[1fr_320px]">
+      <form onSubmit={submit} noValidate className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <fieldset disabled={!canManage || saving} className="flex min-w-0 flex-col gap-4">
-          <Card title="Role">
-            <div className="flex flex-col gap-4">
-              <Input label="Role name *" name="name" value={name} maxLength={60} placeholder="Content Editor" onChange={(e) => setName(e.target.value)} error={errors.name} />
-              <Textarea label="Description" name="description" value={description} maxLength={200} placeholder="Writes News and FAQs." onChange={(e) => setDescription(e.target.value)} error={errors.description} className="min-h-20" />
-            </div>
-          </Card>
-          <Card title="Permissions">
-            <div className="flex flex-col gap-5">
-              {PERMISSION_GROUPS.map((g) => (
-                <div key={g.label}>
-                  <p className="mb-2 text-xs font-semibold tracking-[0.6px] text-muted uppercase">{g.label}</p>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {g.items.map((p) => (
-                      <label key={p.value} className="flex cursor-pointer gap-3 rounded-xl border border-line p-3 text-sm has-checked:border-brand has-checked:bg-brand/5">
-                        <input type="checkbox" checked={perms.has(p.value)} onChange={(e) => toggle(p.value, e.target.checked)} className="mt-0.5 size-4 accent-brand" />
-                        <span>
-                          <span className="block font-semibold text-ink">{p.label}</span>
-                          <span className="block text-xs text-muted">{p.hint}</span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {errors.permissions && <p className="text-xs font-medium text-danger">{errors.permissions}</p>}
-              <p className="text-xs text-subtle">Adding users and editing roles always stay with Admins. File uploads are included automatically.</p>
-            </div>
-          </Card>
-        </fieldset>
-        {canManage && (
-          <aside className="flex flex-col gap-3 glass rounded-2xl border p-4 lg:sticky lg:top-24">
-            <Button type="submit" loading={saving} className="w-full">
-              {initial ? "Save role" : "Create role"}
-            </Button>
-            <p className="text-xs text-muted">{perms.size} permission{perms.size === 1 ? "" : "s"} selected.</p>
-            {initial && (
-              <div className="border-t border-line pt-3">
-                <ConfirmButton confirmLabel="Delete role" onConfirm={remove}>
-                  Delete role
-                </ConfirmButton>
-                {initial.userCount > 0 && <p className="mt-2 text-xs text-muted">Give its {initial.userCount} user{initial.userCount === 1 ? "" : "s"} another role first.</p>}
+          <section className="glass rounded-2xl border">
+            <header className="flex items-center gap-3 border-b border-line/80 px-5 py-3.5">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand/15 to-brand-cyan/10 text-brand ring-1 ring-brand/10" aria-hidden>
+                <IdCard className="size-[18px]" />
+              </span>
+              <div>
+                <h3 className="text-[15px] font-bold text-ink">Role details</h3>
+                <p className="text-xs text-muted">Shown in the role list and when you give someone this role.</p>
               </div>
-            )}
-          </aside>
-        )}
+            </header>
+            <div className="grid gap-4 p-5 sm:grid-cols-2">
+              <Input label="Role name *" name="name" value={name} maxLength={60} placeholder="Content Editor" onChange={(e) => setName(e.target.value)} error={errors.name} />
+              <Input label="Description" name="description" value={description} maxLength={200} placeholder="Writes News and FAQs." onChange={(e) => setDescription(e.target.value)} error={errors.description} />
+            </div>
+          </section>
+          <PermissionBoard groups={PERMISSION_GROUPS} selected={perms} onToggle={bulk} disabled={!canManage || saving} />
+          {errors.permissions && <p className="text-xs font-medium text-danger">{errors.permissions}</p>}
+          <p className="text-xs text-subtle">Adding users and editing roles always stay with Admins. File uploads are included automatically.</p>
+        </fieldset>
+        <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
+          {canManage && (
+            <div className="glass flex flex-col gap-2 rounded-2xl border p-4">
+              <Button type="submit" loading={saving} className="w-full">
+                {initial ? "Save role" : "Create role"}
+              </Button>
+              <p className="text-center text-xs text-muted">{initial ? "Changes apply to its people straight away." : "You can give it to people under Users."}</p>
+            </div>
+          )}
+          <PermissionSummary groups={PERMISSION_GROUPS} selected={perms} disabled={!canManage || saving} onAll={(on) => bulk(PERMISSION_GROUPS.flatMap((g) => g.items.map((i) => i.value)), on)} />
+          {canManage && initial && (
+            <div className="glass rounded-2xl border p-4">
+              <p className="mb-1 text-sm font-semibold text-ink">Delete role</p>
+              <p className="mb-3 text-xs text-muted">{initial.userCount > 0 ? `Give its ${initial.userCount} user${initial.userCount === 1 ? "" : "s"} another role first.` : "No one has this role, so it can be deleted."}</p>
+              <ConfirmButton confirmLabel="Delete role" onConfirm={remove} disabled={initial.userCount > 0}>
+                Delete role
+              </ConfirmButton>
+            </div>
+          )}
+        </aside>
       </form>
     </>
+  );
+}
+
+function RoleHero({ icon: Icon, tone, name, subtitle, badges }: { icon: LucideIcon; tone: string; name: string; subtitle: string; badges?: React.ReactNode }) {
+  return (
+    <div className="glass mb-4 flex flex-col gap-4 overflow-hidden rounded-2xl border p-5 sm:flex-row sm:items-center">
+      <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl text-white shadow-[0_10px_24px_-10px_rgba(11,31,58,0.45)]" style={{ background: tone }} aria-hidden>
+        <Icon className="size-7" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <h1 className="flex flex-wrap items-center gap-2 text-[22px] leading-7 font-extrabold text-ink">
+          {name}
+          {badges}
+        </h1>
+        <p className="mt-0.5 text-[13px] text-muted">{subtitle}</p>
+      </div>
+    </div>
   );
 }
