@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock, ExternalLink, Pencil, Plus, Star } from "lucide-react";
 import { useState } from "react";
-import { ActionIcon, Card, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column, SortFilter } from "@/components/admin/ui";
+import { ActionIcon, Card, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column, SortFilter, Modal, useAddModal } from "@/components/admin/ui";
 import { buttonClasses } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -16,6 +16,7 @@ import { useCategories } from "@/components/admin/services/categories";
 import { PROVIDER_STATUSES, PROVIDER_TIERS, TIER_LABEL, type AdminProvider } from "./schema";
 import { StatusActions } from "./StatusActions";
 
+import { ProviderEditor } from "./ProviderEditor";
 const SORTS = [
   { value: "newest", label: "Newest" },
   { value: "oldest", label: "Oldest" },
@@ -32,6 +33,7 @@ export function TierPill({ tier }: { tier: AdminProvider["tier"] }) {
 export function ProvidersClient() {
   const router = useRouter();
   const { get, set, page, pageSize } = useUrlParams();
+  const addModal = useAddModal();
   const status = get("status");
   const path = withQuery("/admin/providers", { q: get("q"), status, category: get("category"), tier: get("tier"), sort: get("sort"), page, pageSize });
   const list = useApi<Paginated<AdminProvider>>(path);
@@ -108,9 +110,9 @@ export function ProvidersClient() {
         title="Providers"
         description="Review new listings, curate the directory and manage tiers."
         actions={
-          <Link href="/admin/providers/new" className={buttonClasses("primary", "md")}>
+          <button type="button" onClick={addModal.show} className={buttonClasses("primary", "md")}>
             <Plus className="size-4" /> New listing
-          </Link>
+          </button>
         }
       />
 
@@ -169,6 +171,9 @@ export function ProvidersClient() {
           {list.data && list.data.total > 0 && <Pager page={list.data.page} totalPages={list.data.totalPages} total={list.data.total} />}
         </>
       )}
+      <Modal open={addModal.open} onClose={addModal.hide} size="xl" title="New listing" description="Only the fields marked * are required; you can finish the rest later.">
+        <ProviderEditor />
+      </Modal>
     </>
   );
 }

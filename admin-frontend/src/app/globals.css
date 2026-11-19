@@ -190,3 +190,15 @@
 .list-toolbar + .list-table {
   border-top-color: rgba(203, 213, 225, 0.7);
 }
+
+/* Full-page editors shown inside the "Add" popup: the popup has the title, so hide the page chrome
+   and pin sticky parts to the popup's own scroll area. */
+.in-modal [data-editor-chrome] {
+  display: none;
+}
+.in-modal [data-sticky] {
+  top: 0 !important;
+}
+.in-modal [data-sticky-below-nav] {
+  top: 64px !important;
+}

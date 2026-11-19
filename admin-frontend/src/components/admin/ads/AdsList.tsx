@@ -4,7 +4,7 @@ import { Eye, EyeOff, Pencil } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ActionIcon, ConfirmAction, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
+import { ActionIcon, ConfirmAction, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column, Modal, useAddModal } from "@/components/admin/ui";
 import type { Paginated } from "@/components/admin/enquiries/types";
 import { ButtonLink } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
@@ -14,6 +14,7 @@ import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import { AD_PLACEMENTS, PLACEMENT_LABEL, SELECTABLE_PLACEMENTS, adState, type AdminAd, type PlacementStats, type PlacementTraffic } from "./schema";
 import { siteUrl } from "@/components/admin/news/site";
 
+import { AdEditor } from "./AdEditor";
 const STATE_TONE = { active: "green", paused: "slate", scheduled: "blue", ended: "amber" } as const;
 const pct = (n: number) => `${n.toFixed(2)}%`;
 
@@ -66,6 +67,7 @@ function PlacementStatsGrid({ stats, loading, traffic }: { stats: PlacementStats
 export function AdsList() {
   const router = useRouter();
   const { get, page, pageSize } = useUrlParams();
+  const addModal = useAddModal();
   const placement = (AD_PLACEMENTS as readonly string[]).includes(get("placement")) ? get("placement") : "";
   const active = ["true", "false"].includes(get("active")) ? get("active") : "";
   const q = get("q").trim();
@@ -210,13 +212,16 @@ export function AdsList() {
               filtered ? (
                 <EmptyState title="No ads match" description="Try changing the filters." />
               ) : (
-                <EmptyState title="No ads yet" description="Create an ad to fill a placement on the site." action={<ButtonLink href="/admin/ads/new" size="sm" className="mt-2">New ad</ButtonLink>} />
+                <EmptyState title="No ads yet" description="Create an ad to fill a placement on the site." action={<ButtonLink href="/admin/ads?new=1" size="sm" className="mt-2">New ad</ButtonLink>} />
               )
             }
           />
           {list.data && list.data.total > 0 && <Pager page={list.data.page} totalPages={list.data.totalPages} total={list.data.total} />}
         </>
       )}
+      <Modal open={addModal.open} onClose={addModal.hide} size="xl" title="New ad" description="Ads rotate by weight among the active ads of the same placement.">
+        <AdEditor />
+      </Modal>
     </>
   );
 }

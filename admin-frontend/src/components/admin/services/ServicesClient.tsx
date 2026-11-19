@@ -288,7 +288,7 @@ function CategoryDialog({
   }
 
   return (
-    <dialog ref={ref} aria-labelledby="category-dialog-title" onClose={onClose} className="m-auto w-[calc(100%-32px)] max-w-xl rounded-2xl p-0 shadow-card backdrop:bg-navy-950/50">
+    <dialog ref={ref} aria-labelledby="category-dialog-title" onClose={onClose} className="m-auto w-[calc(100%-32px)] max-w-xl rounded-3xl border border-white/70 bg-[#f5f8fc] p-0 shadow-[0_30px_80px_-24px_rgba(11,31,58,0.55)] backdrop:bg-navy-950/40 backdrop:backdrop-blur-[3px]">
       <form onSubmit={submit} noValidate className="flex flex-col gap-4 p-6">
         <h2 id="category-dialog-title" className="text-lg font-bold text-ink">
           {isNew ? "New service" : `Edit “${category ? category.name : ""}”`}

@@ -2,7 +2,7 @@
 
 import { ArrowLeft, ArrowRight, ExternalLink, Eye, EyeOff, LayoutGrid, Pencil, Plus } from "lucide-react";
 import { useState, type FormEvent } from "react";
-import { ActionIcon, ConfirmAction, Drawer, EmptyState, ErrorPanel, PageHeader, Switch } from "@/components/admin/ui";
+import { ActionIcon, ConfirmAction, Modal, EmptyState, ErrorPanel, PageHeader, Switch } from "@/components/admin/ui";
 import { siteUrl } from "@/components/admin/news/site";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Textarea } from "@/components/ui/Field";
@@ -178,7 +178,7 @@ export function AdFormatsManager() {
         </ol>
       )}
 
-      <Drawer
+      <Modal
         open={drawer !== null}
         title={drawer === "new" ? "New package" : "Edit package"}
         description={drawer === "new" ? "It's added at the end of the Advertise page." : drawer ? `Id: ${drawer.id}` : undefined}
@@ -206,7 +206,7 @@ export function AdFormatsManager() {
             }}
           />
         )}
-      </Drawer>
+      </Modal>
     </>
   );
 }

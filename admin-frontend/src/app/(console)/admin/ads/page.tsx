@@ -14,7 +14,7 @@ export default function AdminAdsPage() {
         title="Advertising"
         description="Ads served in each placement, with impressions, clicks and click-through rate."
         actions={
-          <ButtonLink href="/admin/ads/new" size="sm">
+          <ButtonLink href="/admin/ads?new=1" size="sm">
             <Plus className="size-4" aria-hidden /> New ad
           </ButtonLink>
         }

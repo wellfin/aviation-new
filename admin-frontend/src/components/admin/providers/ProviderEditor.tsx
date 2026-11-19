@@ -200,7 +200,7 @@ function SectionNav({ sections }: { sections: ReadonlyArray<readonly [string, st
     return () => io.disconnect();
   }, [sections]);
   return (
-    <nav aria-label="Form sections" className="glass sticky top-[76px] z-10 mb-4 flex gap-1 overflow-x-auto rounded-2xl border p-1.5">
+    <nav aria-label="Form sections" data-sticky className="glass sticky top-[76px] z-10 mb-4 flex gap-1 overflow-x-auto rounded-2xl border p-1.5">
       {sections.map(([id, label]) => {
         const Icon = SECTION_ICON[id as keyof typeof SECTION_ICON];
         const on = active === id;
@@ -340,8 +340,8 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
 
   return (
     <>
-      {back}
-      <div className="mb-4 flex flex-col gap-1">
+      <div data-editor-chrome>{back}</div>
+      <div data-editor-chrome className="mb-4 flex flex-col gap-1">
         <h1 className="text-[22px] leading-7 font-extrabold tracking-[-0.3px] text-ink">{mode === "create" ? "New listing" : provider!.name}</h1>
         {provider ? (
           <p className="flex flex-wrap items-center gap-2 text-[13px] text-muted">
@@ -677,7 +677,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
           </FormSection>
         </div>
 
-        <aside className="flex flex-col gap-4 xl:sticky xl:top-[140px]">
+        <aside data-sticky-below-nav className="flex flex-col gap-4 xl:sticky xl:top-[140px]">
           <div className="glass flex flex-col gap-2 rounded-2xl border p-4">
             <Button type="submit" loading={saving} className="w-full">
               {mode === "create" ? "Create listing" : "Save changes"}

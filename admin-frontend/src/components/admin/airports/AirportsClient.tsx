@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Pencil, Plus, Star } from "lucide-react";
 import { useState } from "react";
-import { ActionIcon, DataTable, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column, SortFilter } from "@/components/admin/ui";
+import { ActionIcon, DataTable, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column, SortFilter, Modal, useAddModal } from "@/components/admin/ui";
 import { buttonClasses } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -15,11 +15,13 @@ import { siteUrl } from "@/components/admin/news/site";
 import { DeleteAirportButton } from "./DeleteAirportButton";
 import { AIRPORT_TYPES, CONTINENT_OPTIONS, type AdminAirport } from "./schema";
 
+import { AirportEditor } from "./AirportEditor";
 const TYPE_LABEL = Object.fromEntries(AIRPORT_TYPES.map((t) => [t.value, t.label]));
 
 export function AirportsClient() {
   const router = useRouter();
   const { get, set, page, pageSize } = useUrlParams();
+  const addModal = useAddModal();
   const country = get("country");
   const path = withQuery("/admin/airports", {
     q: get("q"),
@@ -97,9 +99,9 @@ export function AirportsClient() {
         title="Airports"
         description="The airport database behind search, airport pages and listings."
         actions={
-          <Link href="/admin/airports/new" className={buttonClasses("primary", "md")}>
+          <button type="button" onClick={addModal.show} className={buttonClasses("primary", "md")}>
             <Plus className="size-4" /> New airport
-          </Link>
+          </button>
         }
       />
       {feedback && (
@@ -142,6 +144,9 @@ export function AirportsClient() {
           {data && data.total > 0 && <Pager page={data.page} totalPages={data.totalPages} total={data.total} />}
         </>
       )}
+      <Modal open={addModal.open} onClose={addModal.hide} size="xl" title="New airport" description="ICAO code, name and location are required; the rest can be added later.">
+        <AirportEditor />
+      </Modal>
     </>
   );
 }

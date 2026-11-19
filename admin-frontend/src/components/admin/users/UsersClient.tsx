@@ -4,9 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CheckCircle2, Pencil, UserPlus } from "lucide-react";
-import { ButtonLink } from "@/components/ui/Button";
 import { can, useAuth } from "@/lib/auth/auth-context";
-import { ActionIcon, Avatar, ConfirmAction, DataTable, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column, SortFilter } from "@/components/admin/ui";
+import { ActionIcon, Avatar, ConfirmAction, DataTable, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column, SortFilter, Modal, useAddModal } from "@/components/admin/ui";
 import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -14,10 +13,13 @@ import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import type { Paginated } from "@/lib/types";
 import { RoleBadge, SORT_OPTIONS, type AdminUser } from "./shared";
 
+import { Button } from "@/components/ui/Button";
+import { UserCreateClient } from "./UserCreateClient";
 export function UsersClient() {
   const router = useRouter();
   const { user: me } = useAuth();
   const { get, page, pageSize } = useUrlParams();
+  const addModal = useAddModal();
   const path = withQuery("/admin/users", {
     q: get("q"),
     role: get("role"),
@@ -149,9 +151,9 @@ export function UsersClient() {
         description="Search accounts, add people, change roles and suspend or remove access."
         actions={
           canManage && (
-            <ButtonLink href="/admin/users/new" size="sm">
+            <Button size="sm" onClick={addModal.show}>
               <UserPlus className="size-4" aria-hidden /> Add user
-            </ButtonLink>
+            </Button>
           )
         }
       />
@@ -216,6 +218,9 @@ export function UsersClient() {
           )}
         </>
       )}
+      <Modal open={addModal.open} onClose={addModal.hide} size="lg" title="Add user" description="Create a staff account and choose its role.">
+        <UserCreateClient />
+      </Modal>
     </>
   );
 }

@@ -88,9 +88,9 @@ export function Avatar({ name, size = "sm" }: { name: string; size?: "sm" | "md"
   );
 }
 
-export function Card({ children, className, title, actions }: { children: ReactNode; className?: string; title?: string; actions?: ReactNode }) {
+export function Card({ children, className, title, actions, ...rest }: { children: ReactNode; className?: string; title?: string; actions?: ReactNode; "data-sticky"?: boolean }) {
   return (
-    <section className={cn("glass rounded-2xl border p-5", className)}>
+    <section className={cn("glass rounded-2xl border p-5", className)} {...rest}>
       {(title || actions) && (
         <div className="mb-4 flex items-center justify-between gap-3">
           {title && <h2 className="text-base font-bold text-ink">{title}</h2>}
@@ -679,10 +679,25 @@ export function RowActions({ children }: { children: ReactNode }) {
 }
 
 /**
- * Side panel that slides in from the right over a dimmed page (create / edit forms).
- * Esc or a click on the backdrop closes it.
+ * Centre popup used for every "Add" (and small edits) in the admin. The body scrolls; Esc or a click
+ * on the dimmed page closes it. Content inside gets the `in-modal` class so full-page editors can
+ * hide their own back link / title and re-anchor sticky parts.
  */
-export function Drawer({ open, title, description, onClose, children, width = "max-w-xl" }: { open: boolean; title: string; description?: string; onClose: () => void; children: ReactNode; width?: string }) {
+export function Modal({
+  open,
+  title,
+  description,
+  onClose,
+  children,
+  size = "md",
+}: {
+  open: boolean;
+  title: string;
+  description?: string;
+  onClose: () => void;
+  children: ReactNode;
+  size?: "md" | "lg" | "xl";
+}) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -695,11 +710,12 @@ export function Drawer({ open, title, description, onClose, children, width = "m
     };
   }, [open, onClose]);
   if (!open) return null;
+  const width = size === "xl" ? "max-w-[min(1240px,calc(100vw-32px))]" : size === "lg" ? "max-w-4xl" : "max-w-xl";
   return (
-    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label={title}>
-      <div className="absolute inset-0 bg-navy-950/35 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
-      <div className={cn("relative m-3 flex w-full flex-col overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_24px_60px_-20px_rgba(11,31,58,0.45)] backdrop-blur-2xl", width)}>
-        <header className="flex items-start justify-between gap-4 border-b border-line px-6 py-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="absolute inset-0 bg-navy-950/40 backdrop-blur-[3px]" onClick={onClose} aria-hidden />
+      <div className={cn("relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-3xl border border-white/70 bg-[#f5f8fc]/95 shadow-[0_30px_80px_-24px_rgba(11,31,58,0.55)] backdrop-blur-2xl", width)}>
+        <header className="flex items-start justify-between gap-4 border-b border-line bg-white/80 px-6 py-4">
           <div className="min-w-0">
             <h2 className="text-lg font-extrabold text-ink">{title}</h2>
             {description && <p className="text-[13px] text-muted">{description}</p>}
@@ -708,10 +724,21 @@ export function Drawer({ open, title, description, onClose, children, width = "m
             <X className="size-5" />
           </button>
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>
+        <div className="in-modal min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>
       </div>
     </div>
   );
+}
+
+/** "Add" popup state kept in the URL (?new=1), so Back closes it and the link can be shared. */
+export function useAddModal() {
+  const { get, set } = useUrlParams();
+  const open = get("new") === "1";
+  return {
+    open,
+    show: () => set({ new: "1", page: get("page") }),
+    hide: () => set({ new: "", page: get("page") }),
+  };
 }
 
 /** Button that asks for confirmation inline before running a (destructive) action. */

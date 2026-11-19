@@ -92,8 +92,10 @@ export function UserCreateClient() {
 
   return (
     <>
-      {back}
-      <PageHeader title="Add user" description="Create an account and choose what the person can do. Share the password with them; they can change it after signing in." />
+      <div data-editor-chrome>
+        {back}
+        <PageHeader title="Add user" description="Create an account and choose what the person can do. Share the password with them; they can change it after signing in." />
+      </div>
       {message && (
         <div className="mb-4">
           <FormStatus status="error" message={message} />

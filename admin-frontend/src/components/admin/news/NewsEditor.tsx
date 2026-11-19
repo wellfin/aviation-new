@@ -52,8 +52,10 @@ export function NewsEditor({ id }: { id?: string }) {
   if (!id) {
     return (
       <>
-        {back}
-        <PageHeader title="New article" description="Drafts stay private until you publish them." />
+        <div data-editor-chrome>
+          {back}
+          <PageHeader title="New article" description="Drafts stay private until you publish them." />
+        </div>
         <NewsForm />
       </>
     );
@@ -257,7 +259,7 @@ function NewsForm({ article: initial }: { article?: AdminNews }) {
             </div>
           </Card>
 
-          <Card title="Publishing" className="xl:sticky xl:top-24">
+          <Card title="Publishing" className="xl:sticky xl:top-24" data-sticky>
             <div className="flex flex-col gap-3">
               {feedback && (
                 <div aria-live="polite">

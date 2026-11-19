@@ -18,7 +18,7 @@ export default function AdminNewsPage() {
             <ButtonLink href="/admin/news/categories" size="sm" variant="ghost">
               <Tags className="size-4" aria-hidden /> Categories
             </ButtonLink>
-            <ButtonLink href="/admin/news/new" size="sm">
+            <ButtonLink href="/admin/news?new=1" size="sm">
               <Plus className="size-4" aria-hidden /> New article
             </ButtonLink>
           </>

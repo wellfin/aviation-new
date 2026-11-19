@@ -63,8 +63,10 @@ export function AdEditor({ id }: { id?: string }) {
   if (!id) {
     return (
       <>
-        {back}
-        <PageHeader title="New ad" description="Ads rotate by weight among the active ads of the same placement." />
+        <div data-editor-chrome>
+          {back}
+          <PageHeader title="New ad" description="Ads rotate by weight among the active ads of the same placement." />
+        </div>
         <AdForm />
       </>
     );

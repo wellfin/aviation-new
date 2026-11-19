@@ -123,8 +123,8 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
 
   return (
     <>
-      {back}
-      <div className="mb-6">
+      <div data-editor-chrome>{back}</div>
+      <div data-editor-chrome className="mb-6">
         <h1 className="text-2xl font-extrabold text-ink">{airport ? `${airport.icao} · ${airport.shortName}` : "New airport"}</h1>
         {airport && (
           <p className="mt-1 text-sm text-muted">
@@ -419,7 +419,7 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
           </FormSection>
         </div>
 
-        <aside className="flex flex-col gap-4 xl:sticky xl:top-24">
+        <aside data-sticky className="flex flex-col gap-4 xl:sticky xl:top-24">
           <Card title="Visibility">
             <div className="flex flex-col gap-3">
               <Toggle id="featured" label="Featured" description="Shown in featured airport lists on the site." checked={s.featured} onChange={(v) => set("featured", v)} />

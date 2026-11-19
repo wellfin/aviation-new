@@ -43,7 +43,7 @@ export function RolePicker({ value, onChange, disabled, current, name = "role" }
       {custom && custom.length === 0 && (
         <p className="px-1 text-xs text-subtle">
           No staff roles yet.{" "}
-          <Link href="/admin/roles/new" className="font-semibold text-brand hover:underline">
+          <Link href="/admin/roles?new=1" className="font-semibold text-brand hover:underline">
             Create one
           </Link>{" "}
           (for example &ldquo;Accountant&rdquo;) under Roles & permissions.

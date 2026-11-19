@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Pencil, Star } from "lucide-react";
-import { ActionIcon, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
+import { ActionIcon, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column, Modal, useAddModal } from "@/components/admin/ui";
 import type { Paginated } from "@/components/admin/enquiries/types";
 import { ButtonLink } from "@/components/ui/Button";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -12,9 +12,11 @@ import type { AdminNews } from "./schema";
 import { siteUrl } from "./site";
 
 
+import { NewsEditor } from "./NewsEditor";
 export function NewsList() {
   const router = useRouter();
   const { get, page, pageSize } = useUrlParams();
+  const addModal = useAddModal();
   const status = ["draft", "published"].includes(get("status")) ? get("status") : "";
   const { data: categories } = useApi<string[]>("/news/categories");
   const category = get("category").trim();
@@ -82,13 +84,16 @@ export function NewsList() {
               filtered ? (
                 <EmptyState title="No articles match" description="Try changing the filters." />
               ) : (
-                <EmptyState title="No articles yet" description="Write the first news story for the site." action={<ButtonLink href="/admin/news/new" size="sm" className="mt-2">New article</ButtonLink>} />
+                <EmptyState title="No articles yet" description="Write the first news story for the site." action={<ButtonLink href="/admin/news?new=1" size="sm" className="mt-2">New article</ButtonLink>} />
               )
             }
           />
           {data && data.total > 0 && <Pager page={data.page} totalPages={data.totalPages} total={data.total} />}
         </>
       )}
+      <Modal open={addModal.open} onClose={addModal.hide} size="xl" title="New article" description="Drafts stay private until you publish them.">
+        <NewsEditor />
+      </Modal>
     </>
   );
 }

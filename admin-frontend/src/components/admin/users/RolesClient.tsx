@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { Check, Crown, KeyRound, Lock, Minus, Plus, ShieldCheck, Users } from "lucide-react";
 import type { ReactNode } from "react";
-import { Card, EmptyState, ErrorPanel, PageHeader } from "@/components/admin/ui";
+import { Card, EmptyState, ErrorPanel, PageHeader, Modal, useAddModal } from "@/components/admin/ui";
 import { BarList, SERIES_COLORS } from "@/components/admin/dashboard/charts";
-import { ButtonLink } from "@/components/ui/Button";
+import { Button } from "@/components/ui/Button";
 import { can, useAuth } from "@/lib/auth/auth-context";
 import { useApi } from "@/lib/hooks/useApi";
 import { cn } from "@/lib/utils";
 import { BUILT_IN_TEXT, PERMISSION_GROUPS, PERMISSION_LABEL, USERS_MANAGE_ITEM, type BuiltInRole, type StaffRole } from "./roles";
 
+import { RoleEditor } from "./RoleEditor";
 const usersText = (n: number) => `${n} user${n === 1 ? "" : "s"}`;
 
 /** Every console permission, in menu order (the rows of the matrix). */
@@ -33,6 +34,7 @@ export function RolesClient() {
   const custom = useApi<StaffRole[]>("/admin/roles");
   const builtIn = useApi<BuiltInRole[]>("/admin/roles/built-in");
   const canManage = can(me, "users:manage");
+  const addModal = useAddModal();
 
   const columns: Column[] = [];
   for (const r of builtIn.data ?? []) {
@@ -65,9 +67,9 @@ export function RolesClient() {
         description="Who can do what in the admin panel. Give staff a custom role with only the parts they need."
         actions={
           canManage && (
-            <ButtonLink href="/admin/roles/new">
+            <Button onClick={addModal.show}>
               <Plus className="size-4" aria-hidden /> New role
-            </ButtonLink>
+            </Button>
           )
         }
       />
@@ -102,15 +104,16 @@ export function RolesClient() {
                   ))}
                   {canManage && (
                     <li>
-                      <Link
-                        href="/admin/roles/new"
-                        className="flex h-full min-h-32 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-brand/25 bg-white/40 text-sm font-semibold text-brand transition hover:border-brand/50 hover:bg-white/70"
+                      <button
+                        type="button"
+                        onClick={addModal.show}
+                        className="flex h-full min-h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-brand/25 bg-white/40 text-sm font-semibold text-brand transition hover:border-brand/50 hover:bg-white/70"
                       >
                         <span className="flex size-9 items-center justify-center rounded-xl bg-brand/10">
                           <Plus className="size-5" aria-hidden />
                         </span>
                         Create a role
-                      </Link>
+                      </button>
                     </li>
                   )}
                 </ul>
@@ -167,6 +170,9 @@ export function RolesClient() {
           )}
         </div>
       )}
+      <Modal open={addModal.open} onClose={addModal.hide} size="xl" title="New role" description="Name the role and switch on what people with it can do.">
+        <RoleEditor />
+      </Modal>
     </>
   );
 }
