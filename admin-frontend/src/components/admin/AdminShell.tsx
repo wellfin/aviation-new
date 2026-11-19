@@ -108,11 +108,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="admin-bg min-h-screen">
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-3 left-3 z-40 flex flex-col overflow-hidden rounded-3xl border border-line bg-white shadow-soft transition-all duration-200",
+          "glass fixed inset-y-3 left-3 z-40 flex flex-col overflow-hidden rounded-3xl border transition-all duration-200",
           narrow ? "lg:w-[76px]" : "lg:w-64",
           "w-64",
           open ? "translate-x-0" : "-translate-x-[calc(100%+24px)] lg:translate-x-0",
@@ -150,7 +150,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                         className={cn(
                           "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition",
                           narrow && "lg:justify-center lg:px-0",
-                          active ? "bg-brand/10 font-semibold text-brand" : "font-medium text-ink/80 hover:bg-surface hover:text-ink",
+                          active ? "bg-brand/10 font-semibold text-brand shadow-[inset_0_0_0_1px_rgba(47,128,237,0.15)]" : "font-medium text-ink/80 hover:bg-white/70 hover:text-ink",
                         )}
                       >
                         <item.icon className="size-[18px] shrink-0" aria-hidden />
@@ -184,8 +184,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       {/* Main column */}
       <div className={cn("flex min-w-0 flex-col transition-all duration-200", narrow ? "lg:pl-[100px]" : "lg:pl-[280px]")}>
-        <header className="sticky top-0 z-20 bg-surface/85 px-3 pt-3 pb-1 backdrop-blur-sm lg:pr-4 lg:pl-1">
-          <div className="flex h-14 items-center gap-2 rounded-2xl border border-line bg-white/95 px-3 shadow-soft backdrop-blur">
+        <header className="sticky top-0 z-20 px-3 pt-3 pb-1 lg:pr-4 lg:pl-1">
+          <div className="glass flex h-14 items-center gap-2 rounded-2xl border px-3">
             <button
               type="button"
               className="flex size-10 items-center justify-center rounded-xl text-ink hover:bg-surface"
@@ -269,7 +269,7 @@ function PageSearch({ items }: { items: Array<AdminNavItem & { group: string }> 
             input.current?.blur();
           }
         }}
-        className="h-10 w-full rounded-xl border border-line bg-surface-2 pr-14 pl-9 text-sm outline-none focus:border-brand focus:bg-white focus:ring-3 focus:ring-brand/15"
+        className="h-10 w-full rounded-xl border border-line bg-white/60 pr-14 pl-9 text-sm outline-none focus:border-brand focus:bg-white focus:ring-3 focus:ring-brand/15"
       />
       <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 rounded-md border border-line bg-white px-1.5 py-0.5 font-sans text-[11px] text-muted sm:block">Ctrl K</kbd>
       {focused && matches.length > 0 && (

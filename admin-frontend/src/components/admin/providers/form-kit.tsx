@@ -14,7 +14,7 @@ import { UPLOAD_ACCEPT, uploadFile, type UploadedFile, type UploadKind } from ".
 
 export function FormSection({ title, description, children, id }: { title: string; description?: string; children: ReactNode; id?: string }) {
   return (
-    <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className="scroll-mt-24 rounded-2xl border border-line bg-white p-5 shadow-soft">
+    <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className="scroll-mt-24 glass rounded-2xl border p-5">
       <h2 id={id ? `${id}-title` : undefined} className="text-base font-bold text-ink">
         {title}
       </h2>
@@ -30,12 +30,12 @@ export function Grid({ children, cols = 2 }: { children: ReactNode; cols?: 2 | 3
 
 export function Toggle({ label, description, checked, onChange, id }: { label: string; description?: string; checked: boolean; onChange: (v: boolean) => void; id: string }) {
   return (
-    <label htmlFor={id} className="flex cursor-pointer items-start gap-3 rounded-xl border border-line p-3">
-      <input id={id} type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 size-4 accent-brand" />
-      <span className="text-sm">
+    <label htmlFor={id} className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-line bg-white/70 px-4 py-3 transition hover:border-brand/40">
+      <span className="min-w-0 text-sm">
         <span className="block font-semibold text-ink">{label}</span>
-        {description && <span className="block text-xs text-muted">{description}</span>}
+        {description && <span className="mt-0.5 block text-xs text-muted">{description}</span>}
       </span>
+      <input id={id} type="checkbox" role="switch" className="switch" checked={checked} onChange={(e) => onChange(e.target.checked)} />
     </label>
   );
 }

@@ -90,7 +90,7 @@ export function UserDetailClient({ id }: { id: string }) {
     return (
       <>
         {back}
-        <div className="h-64 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading user" />
+        <div className="h-64 animate-pulse rounded-2xl bg-white/60" role="status" aria-label="Loading user" />
       </>
     );
   }
@@ -134,13 +134,14 @@ export function UserDetailClient({ id }: { id: string }) {
             <Item label="User ID" value={<code className="font-mono text-xs">{user.id}</code>} />
           </dl>
           {(user.role === "ADMIN" || user.role === "MANAGER") && (
-            <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-line p-4 text-sm has-checked:border-brand has-checked:bg-brand/5 has-disabled:cursor-not-allowed has-disabled:opacity-60">
+            <label className="mt-5 flex cursor-pointer items-center gap-4 rounded-xl border border-line bg-white/70 p-4 text-sm has-checked:border-brand/40 has-disabled:cursor-not-allowed has-disabled:opacity-60">
               <input
                 type="checkbox"
+                role="switch"
                 checked={user.leadEmails}
                 disabled={savingLeadEmails || !(isSelf || (can(me, "users:manage") && !user.superAdmin))}
                 onChange={(e) => setLeadEmails(e.target.checked)}
-                className="mt-0.5 size-4 accent-brand"
+                className="switch"
               />
               <span>
                 <span className="block font-semibold text-ink">Lead emails</span>

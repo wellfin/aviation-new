@@ -36,7 +36,7 @@ export function RolesClient() {
       {builtIn.error && !builtIn.data ? (
         <ErrorPanel error={builtIn.error} onRetry={builtIn.reload} />
       ) : !builtIn.data ? (
-        <div className="h-32 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading roles" />
+        <div className="h-32 animate-pulse rounded-2xl bg-white/60" role="status" aria-label="Loading roles" />
       ) : (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {builtIn.data.filter((r) => r.key !== "MANAGER").map((r) => {
@@ -76,7 +76,7 @@ export function RolesClient() {
       {error && !data ? (
         <ErrorPanel error={error} onRetry={reload} />
       ) : loading && !data ? (
-        <div className="h-32 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading roles" />
+        <div className="h-32 animate-pulse rounded-2xl bg-white/60" role="status" aria-label="Loading roles" />
       ) : data && data.length === 0 ? (
         <Card>
           <EmptyState

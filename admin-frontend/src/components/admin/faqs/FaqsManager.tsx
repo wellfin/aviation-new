@@ -2,14 +2,13 @@
 
 import { ArrowDown, ArrowUp, Pencil, Plus } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Card, ConfirmButton, EmptyState, ErrorPanel, FilterBar, PageHeader, SearchFilter, SelectFilter, StatusPill } from "@/components/admin/ui";
+import { Card, ConfirmButton, EmptyState, ErrorPanel, FilterBar, PageHeader, SearchFilter, SelectFilter, StatusPill, Switch } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Select, Textarea } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { fieldErrors, type FieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
-import { cn } from "@/lib/utils";
 import { FAQ_CATEGORIES, faqFormSchema, type AdminFaq, type FaqCategory, type FaqFormValues } from "./schema";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
@@ -184,17 +183,7 @@ export function FaqsManager() {
                           </div>
                           <div className="flex shrink-0 flex-wrap items-center gap-2">
                             <StatusPill status={faq.published ? "published" : "hidden"} tone={faq.published ? "green" : "slate"} />
-                            <button
-                              type="button"
-                              role="switch"
-                              aria-checked={faq.published}
-                              aria-label={`Published: ${faq.question}`}
-                              disabled={busy !== null}
-                              onClick={() => togglePublished(faq)}
-                              className={cn("relative h-6 w-11 rounded-full transition disabled:opacity-50", faq.published ? "bg-success" : "bg-slate-300")}
-                            >
-                              <span className={cn("absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition", faq.published && "translate-x-5")} />
-                            </button>
+                            <Switch checked={faq.published} aria-label={`Published: ${faq.question}`} disabled={busy !== null} onChange={() => togglePublished(faq)} />
                             <button
                               type="button"
                               onClick={() => setEditing(faq.id)}
@@ -283,7 +272,7 @@ function FaqForm({
           ))}
         </Select>
         <label className="flex h-12 items-center gap-3 text-sm font-medium text-ink">
-          <input type="checkbox" checked={values.published} onChange={(e) => setValues({ ...values, published: e.target.checked })} className="size-4 accent-brand" />
+          <input type="checkbox" role="switch" checked={values.published} onChange={(e) => setValues({ ...values, published: e.target.checked })} className="switch" />
           Published on the FAQ page
         </label>
       </div>

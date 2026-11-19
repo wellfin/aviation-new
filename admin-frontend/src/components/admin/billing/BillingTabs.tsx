@@ -92,7 +92,7 @@ export function BillingTabs() {
 
   return (
     <>
-      <nav aria-label="Billing sections" className="mb-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-line bg-white p-1.5 shadow-soft">
+      <nav aria-label="Billing sections" className="mb-4 inline-flex max-w-full gap-1 overflow-x-auto glass rounded-2xl border p-1.5">
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -223,14 +223,14 @@ function Payments() {
       {data && !inverted && (
         <ul className="mb-4 flex flex-wrap gap-3" aria-label="Captured revenue">
           {data.totals.length === 0 ? (
-            <li className="rounded-2xl border border-line bg-white px-5 py-4 shadow-soft">
+            <li className="glass rounded-2xl border px-5 py-4">
               <p className="text-xs font-semibold tracking-[0.6px] text-muted uppercase">Captured revenue</p>
               <p className="mt-1 text-2xl font-extrabold text-ink">{formatMoney(0)}</p>
               <p className="text-xs text-muted">No captured payments{from || to ? " in this period" : ""}</p>
             </li>
           ) : (
             data.totals.map((t) => (
-              <li key={t.currency} className="rounded-2xl border border-line bg-white px-5 py-4 shadow-soft">
+              <li key={t.currency} className="glass rounded-2xl border px-5 py-4">
                 <p className="text-xs font-semibold tracking-[0.6px] text-muted uppercase">Captured revenue · {t.currency}</p>
                 <p className="mt-1 text-2xl font-extrabold text-ink">{formatMoney(t.capturedAmount, t.currency)}</p>
                 <p className="text-xs text-muted">

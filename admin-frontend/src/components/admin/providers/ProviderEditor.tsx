@@ -192,7 +192,7 @@ export function ProviderEditor({ id }: { id?: string }) {
     return (
       <>
         {back}
-        <div className="h-96 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading listing" />
+        <div className="h-96 animate-pulse rounded-2xl bg-white/60" role="status" aria-label="Loading listing" />
       </>
     );
   }
@@ -389,7 +389,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
               ))}
             </Select>
             <label className="flex items-center gap-3 text-sm font-medium text-ink">
-              <input type="checkbox" checked={!s.ctaHidden} onChange={(ev) => set("ctaHidden", !ev.target.checked)} className="size-4 accent-brand" />
+              <input type="checkbox" role="switch" checked={!s.ctaHidden} onChange={(ev) => set("ctaHidden", !ev.target.checked)} className="switch" />
               Show the button
             </label>
             <Grid>
@@ -661,7 +661,7 @@ function ProviderForm({ initial }: { initial: AdminProvider | null }) {
             </div>
           </Card>
 
-          <div className="flex flex-col gap-2 rounded-2xl border border-line bg-white p-4 shadow-soft">
+          <div className="flex flex-col gap-2 glass rounded-2xl border p-4">
             <Button type="submit" loading={saving} className="w-full">
               {mode === "create" ? "Create listing" : "Save changes"}
             </Button>

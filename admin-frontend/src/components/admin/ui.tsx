@@ -28,7 +28,7 @@ export function StatusTabs({ param, tabs, label = "Filter", current: currentProp
   const { get, set } = useUrlParams();
   const current = currentProp ?? get(param);
   return (
-    <div role="tablist" aria-label={label} className="mb-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-line bg-white p-1.5 shadow-soft">
+    <div role="tablist" aria-label={label} className="glass mb-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-2xl border p-1.5">
       {tabs.map((t) => {
         const active = current === t.value;
         return (
@@ -40,7 +40,7 @@ export function StatusTabs({ param, tabs, label = "Filter", current: currentProp
             onClick={() => set({ [param]: t.value })}
             className={cn(
               "flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition",
-              active ? "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--color-line)]" : "text-muted hover:text-ink",
+              active ? "bg-white text-ink shadow-[0_1px_3px_rgba(11,31,58,0.12),inset_0_0_0_1px_var(--color-line)]" : "text-muted hover:bg-white/60 hover:text-ink",
             )}
           >
             {t.label}
@@ -69,7 +69,7 @@ export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md"
 
 export function Card({ children, className, title, actions }: { children: ReactNode; className?: string; title?: string; actions?: ReactNode }) {
   return (
-    <section className={cn("rounded-2xl border border-line bg-white p-5 shadow-soft", className)}>
+    <section className={cn("glass rounded-2xl border p-5", className)}>
       {(title || actions) && (
         <div className="mb-4 flex items-center justify-between gap-3">
           {title && <h2 className="text-base font-bold text-ink">{title}</h2>}
@@ -135,7 +135,7 @@ export function DataTable<T>({
   onRowClick?: (row: T) => void;
 }) {
   return (
-    <div className="list-table overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+    <div className="list-table glass overflow-hidden rounded-2xl border">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-line text-[11px] font-semibold tracking-[0.6px] text-muted uppercase">
@@ -162,7 +162,7 @@ export function DataTable<T>({
                   <tr
                     key={rowKey(row)}
                     onClick={onRowClick ? () => onRowClick(row) : undefined}
-                    className={cn("transition", onRowClick && "cursor-pointer hover:bg-surface-2")}
+                    className={cn("transition", onRowClick && "cursor-pointer hover:bg-brand/[0.04]")}
                   >
                     {columns.map((c) => (
                       <td key={c.key} className={cn("px-4 py-3.5 align-middle text-ink first:pl-5 last:pr-5", c.className)}>
@@ -242,7 +242,7 @@ export function SelectFilter({ param, label, options }: { param: string; label: 
 
 /** Search and filters; directly above a DataTable it becomes the top of the same card. */
 export function FilterBar({ children }: { children: ReactNode }) {
-  return <div className="list-toolbar mb-4 flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 shadow-soft sm:flex-row sm:flex-wrap sm:items-center">{children}</div>;
+  return <div className="list-toolbar glass mb-4 flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:flex-wrap sm:items-center">{children}</div>;
 }
 
 /** Page numbers to show: first, last, and a window around the current page, with gaps ("…"). */
@@ -270,7 +270,7 @@ export function Pager({ page, totalPages, total, pageSize: sizeProp, sizes = tru
   const to = Math.min(total, page * pageSize);
   const btn = "flex size-9 items-center justify-center rounded-xl text-sm font-semibold tabular-nums transition";
   return (
-    <div className="list-pager mt-4 flex flex-col gap-3 rounded-2xl border border-line bg-white px-5 py-3.5 text-sm text-muted shadow-soft sm:flex-row sm:items-center sm:justify-between">
+    <div className="list-pager glass mt-4 flex flex-col gap-3 rounded-2xl border px-5 py-3.5 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         {sizes && (
           <label className="flex items-center gap-2">
@@ -371,6 +371,63 @@ export function StatusPill({ status, tone }: { status: string; tone?: keyof type
       <span className="size-1.5 rounded-full bg-current" aria-hidden />
       {status.replace(/_/g, " ")}
     </span>
+  );
+}
+
+/**
+ * On/off switch (pill with a sliding knob). With `label` it renders the text beside it;
+ * without one, pass `aria-label`.
+ */
+export function Switch({
+  checked,
+  onChange,
+  label,
+  description,
+  disabled,
+  "aria-label": ariaLabel,
+  className,
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  label?: ReactNode;
+  description?: ReactNode;
+  disabled?: boolean;
+  "aria-label"?: string;
+  className?: string;
+}) {
+  const input = (
+    <input
+      type="checkbox"
+      role="switch"
+      className="switch"
+      checked={checked}
+      disabled={disabled}
+      aria-label={label ? undefined : ariaLabel}
+      onChange={(e) => onChange(e.target.checked)}
+    />
+  );
+  if (!label) return input;
+  return (
+    <label className={cn("inline-flex cursor-pointer items-center gap-2.5 text-sm", disabled && "cursor-not-allowed", className)}>
+      {input}
+      <span className="min-w-0">
+        <span className="block font-semibold text-ink">{label}</span>
+        {description && <span className="block text-xs font-normal text-muted">{description}</span>}
+      </span>
+    </label>
+  );
+}
+
+/** Setting row: title and help text on the left, a switch on the right. */
+export function SwitchRow({ label, description, checked, onChange, disabled }: { label: ReactNode; description?: ReactNode; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+  return (
+    <label className={cn("flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-line bg-white/70 px-4 py-3 transition hover:border-brand/40", disabled && "cursor-not-allowed opacity-70")}>
+      <span className="min-w-0 text-sm">
+        <span className="block font-semibold text-ink">{label}</span>
+        {description && <span className="mt-0.5 block text-xs text-muted">{description}</span>}
+      </span>
+      <input type="checkbox" role="switch" className="switch" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+    </label>
   );
 }
 

@@ -101,11 +101,11 @@ export function ReviewsClient() {
       ) : !data ? (
         <div className="flex flex-col gap-3" role="status" aria-label="Loading reviews">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-36 animate-pulse rounded-2xl bg-white" />
+            <div key={i} className="h-36 animate-pulse rounded-2xl bg-white/60" />
           ))}
         </div>
       ) : data.items.length === 0 ? (
-        <div className="rounded-2xl border border-line bg-white shadow-soft">
+        <div className="glass rounded-2xl border">
           {status === "pending" ? (
             <EmptyState title="All caught up" description="There are no reviews waiting for moderation." />
           ) : (
@@ -116,7 +116,7 @@ export function ReviewsClient() {
         <>
           <ul className={cn("flex flex-col gap-3", loading && "opacity-60")} aria-busy={loading || undefined}>
             {data.items.map((r) => (
-              <li key={r.id} className="rounded-2xl border border-line bg-white p-5 shadow-soft">
+              <li key={r.id} className="glass rounded-2xl border p-5">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">

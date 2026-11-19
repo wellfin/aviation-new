@@ -35,7 +35,7 @@ export function RoleEditor({ id }: { id?: string }) {
     return (
       <>
         {back}
-        <div className="h-64 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading role" />
+        <div className="h-64 animate-pulse rounded-2xl bg-white/60" role="status" aria-label="Loading role" />
       </>
     );
   }
@@ -146,7 +146,7 @@ function RoleForm({ initial, back }: { initial: StaffRole | null; back: React.Re
           </Card>
         </fieldset>
         {canManage && (
-          <aside className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 shadow-soft lg:sticky lg:top-24">
+          <aside className="flex flex-col gap-3 glass rounded-2xl border p-4 lg:sticky lg:top-24">
             <Button type="submit" loading={saving} className="w-full">
               {initial ? "Save role" : "Create role"}
             </Button>

@@ -34,7 +34,7 @@ export function BuiltInRoleEditor({ roleKey }: { roleKey: "ADMIN" | "MANAGER" })
     return (
       <>
         {back}
-        <div className="h-64 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading role" />
+        <div className="h-64 animate-pulse rounded-2xl bg-white/60" role="status" aria-label="Loading role" />
       </>
     );
   }
@@ -115,7 +115,7 @@ function Form({ role, back, onSaved }: { role: BuiltInRole; back: React.ReactNod
           </Card>
         </fieldset>
         {canEdit && (
-          <aside className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 shadow-soft lg:sticky lg:top-24">
+          <aside className="flex flex-col gap-3 glass rounded-2xl border p-4 lg:sticky lg:top-24">
             <Button type="button" loading={saving} onClick={() => save([...perms])} className="w-full">
               Save role
             </Button>

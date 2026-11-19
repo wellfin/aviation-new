@@ -207,11 +207,11 @@ function PlanForm({ id, plan, onSaved }: { id: PlanId; plan: AdminPlan | undefin
         <Card title="Display">
           <div className="flex flex-col gap-4">
             <label className="flex items-center gap-3 text-sm font-medium text-ink">
-              <input type="checkbox" checked={values.active} onChange={(e) => set("active", e.target.checked)} className="size-4 accent-brand" />
+              <input type="checkbox" role="switch" checked={values.active} onChange={(e) => set("active", e.target.checked)} className="switch" />
               Active (shown on the pricing page)
             </label>
             <label className="flex items-center gap-3 text-sm font-medium text-ink">
-              <input type="checkbox" checked={values.highlighted} onChange={(e) => set("highlighted", e.target.checked)} className="size-4 accent-brand" />
+              <input type="checkbox" role="switch" checked={values.highlighted} onChange={(e) => set("highlighted", e.target.checked)} className="switch" />
               Highlighted (&ldquo;most popular&rdquo;)
             </label>
             <Input id="order" name="order" label="Display order" inputMode="numeric" value={values.order} onChange={(e) => set("order", e.target.value)} error={errors.order} hint="Lower numbers appear first." />

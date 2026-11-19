@@ -24,7 +24,7 @@ function PlacementStatsGrid({ stats, loading, traffic }: { stats: PlacementStats
   return (
     <ul className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Placement performance">
       {shown.map((s) => (
-        <li key={s.placement} className="rounded-2xl border border-line bg-white p-4 shadow-soft">
+        <li key={s.placement} className="glass rounded-2xl border p-4">
           <p className="text-xs font-semibold tracking-[0.6px] text-muted uppercase">{PLACEMENT_LABEL[s.placement]}</p>
           <p className="mt-1 text-2xl font-extrabold text-ink">{pct(s.ctr)}</p>
           <p className="text-xs text-muted">CTR</p>

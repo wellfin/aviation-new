@@ -60,7 +60,7 @@ export function AirportEditor({ icao }: { icao?: string }) {
     return (
       <>
         {back}
-        <div className="h-96 animate-pulse rounded-2xl bg-white" role="status" aria-label="Loading airport" />
+        <div className="h-96 animate-pulse rounded-2xl bg-white/60" role="status" aria-label="Loading airport" />
       </>
     );
   }
@@ -425,7 +425,7 @@ function AirportForm({ initial }: { initial: AdminAirport | null }) {
               <Toggle id="featured" label="Featured" description="Shown in featured airport lists on the site." checked={s.featured} onChange={(v) => set("featured", v)} />
             </div>
           </Card>
-          <div className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 shadow-soft">
+          <div className="flex flex-col gap-3 glass rounded-2xl border p-4">
             <Button type="submit" loading={saving} className="w-full">
               {mode === "create" ? "Create airport" : "Save changes"}
             </Button>

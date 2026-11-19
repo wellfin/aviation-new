@@ -242,7 +242,7 @@ function AdForm({ ad: initial }: { ad?: AdminAd }) {
           <Card title="Delivery">
             <div className="flex flex-col gap-4">
               <label className="flex items-center gap-3 text-sm font-medium text-ink">
-                <input type="checkbox" checked={values.active} onChange={(e) => set("active", e.target.checked)} className="size-4 accent-brand" />
+                <input type="checkbox" role="switch" checked={values.active} onChange={(e) => set("active", e.target.checked)} className="switch" />
                 Active (paused ads are never served)
               </label>
               <div className="grid gap-4 sm:grid-cols-2">

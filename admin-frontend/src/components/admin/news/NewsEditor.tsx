@@ -251,7 +251,7 @@ function NewsForm({ article: initial }: { article?: AdminNews }) {
               <Input id="author" name="author" label="Author" value={values.author} onChange={(e) => set("author", e.target.value)} error={errors.author} maxLength={120} />
               <Input id="authorRole" name="authorRole" label="Author role" value={values.authorRole} onChange={(e) => set("authorRole", e.target.value)} error={errors.authorRole} maxLength={120} placeholder="Senior Editor" />
               <label className="flex items-center gap-3 text-sm font-medium text-ink">
-                <input type="checkbox" checked={values.featured} onChange={(e) => set("featured", e.target.checked)} className="size-4 accent-brand" />
+                <input type="checkbox" role="switch" checked={values.featured} onChange={(e) => set("featured", e.target.checked)} className="switch" />
                 Featured on the news page
               </label>
             </div>

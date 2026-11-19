@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Pencil, Plus } from "lucide-react";
+import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { IconButton, Toggle } from "@/components/admin/providers/form-kit";
-import { ConfirmButton, EmptyState, ErrorPanel, PageHeader, StatusPill } from "@/components/admin/ui";
+import { Toggle } from "@/components/admin/providers/form-kit";
+import { ConfirmButton, EmptyState, ErrorPanel, PageHeader, StatusPill, StatusTabs, Switch } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Textarea } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
@@ -24,7 +24,7 @@ const FILTERS = [
 const errorMessage = (err: unknown) => (err instanceof ApiError ? err.body.message : "Something went wrong. Please try again.");
 
 export function ServicesClient() {
-  const { get, set } = useUrlParams();
+  const { get } = useUrlParams();
   const active = get("active");
   const { data, error, loading, reload } = useApi<AdminCategory[]>(withQuery("/admin/categories", { active }));
   // Local copy so toggles and reordering update instantly; replaced whenever the server list changes.
@@ -97,19 +97,7 @@ export function ServicesClient() {
         }
       />
 
-      <nav aria-label="Service status" className="mb-4 inline-flex max-w-full gap-1 overflow-x-auto rounded-2xl border border-line bg-white p-1.5 shadow-soft">
-        {FILTERS.map((f) => (
-          <button
-            key={f.value}
-            type="button"
-            aria-current={active === f.value ? "page" : undefined}
-            onClick={() => set({ active: f.value })}
-            className={cn("shrink-0 rounded-xl px-3.5 py-2 text-sm font-semibold whitespace-nowrap transition", active === f.value ? "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--color-line)]" : "text-muted hover:text-ink")}
-          >
-            {f.label}
-          </button>
-        ))}
-      </nav>
+      <StatusTabs param="active" label="Service status" current={active} tabs={FILTERS} />
 
       {feedback && (
         <div className="mb-4" aria-live="polite">
@@ -123,65 +111,91 @@ export function ServicesClient() {
       ) : !rows ? (
         <div className="flex flex-col gap-2" role="status" aria-label="Loading services">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-2xl bg-white" />
+            <div key={i} className="glass h-[88px] animate-pulse rounded-2xl border" />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <div className="rounded-2xl border border-line bg-white shadow-soft">
+        <div className="glass rounded-2xl border">
           <EmptyState title="No services here" description={active ? "Try another filter." : "Create the first service category."} />
         </div>
       ) : (
-        <ol className={cn("flex flex-col gap-2", loading && "opacity-60")} aria-busy={loading || busy === "__order" || undefined}>
+        <ol className={cn("flex flex-col gap-3", loading && "opacity-60")} aria-busy={loading || busy === "__order" || undefined}>
           {rows.map((c, i) => (
-            <li key={c.slug} className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-4 shadow-soft lg:flex-row lg:items-center">
-              <div className="flex min-w-0 flex-1 items-center gap-3">
+            <li
+              key={c.slug}
+              className={cn(
+                "glass group flex flex-col gap-4 rounded-2xl border p-4 transition hover:-translate-y-px hover:shadow-[0_12px_32px_-14px_rgba(11,31,58,0.28)] xl:flex-row xl:items-center xl:gap-6",
+                !c.active && "opacity-75",
+              )}
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-4">
                 {canReorder && (
-                  <div className="flex flex-col gap-1">
-                    <IconButton label={`Move ${c.name} up`} disabled={i === 0 || busy !== null} onClick={() => move(i, i - 1)}>
-                      <ArrowUp className="size-4" />
-                    </IconButton>
-                    <IconButton label={`Move ${c.name} down`} disabled={i === rows.length - 1 || busy !== null} onClick={() => move(i, i + 1)}>
-                      <ArrowDown className="size-4" />
-                    </IconButton>
+                  <div className="flex shrink-0 flex-col overflow-hidden rounded-xl border border-line bg-white/70">
+                    <button type="button" aria-label={`Move ${c.name} up`} disabled={i === 0 || busy !== null} onClick={() => move(i, i - 1)} className="flex h-7 w-8 items-center justify-center text-muted transition hover:bg-brand/10 hover:text-brand disabled:opacity-30 disabled:hover:bg-transparent">
+                      <ArrowUp className="size-3.5" />
+                    </button>
+                    <span className="h-px bg-line" aria-hidden />
+                    <button type="button" aria-label={`Move ${c.name} down`} disabled={i === rows.length - 1 || busy !== null} onClick={() => move(i, i + 1)} className="flex h-7 w-8 items-center justify-center text-muted transition hover:bg-brand/10 hover:text-brand disabled:opacity-30 disabled:hover:bg-transparent">
+                      <ArrowDown className="size-3.5" />
+                    </button>
                   </div>
                 )}
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-surface text-xl" aria-hidden>
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand/15 to-brand-cyan/10 text-2xl ring-1 ring-brand/10" aria-hidden>
                   {c.emoji || "•"}
                 </span>
                 <div className="min-w-0">
-                  <p className="flex flex-wrap items-center gap-2 font-semibold text-ink">
-                    {c.name}
+                  <p className="flex flex-wrap items-center gap-2">
+                    <span className="text-base font-bold text-ink">{c.name}</span>
+                    <span className="rounded-md bg-brand/10 px-1.5 py-0.5 text-[11px] font-semibold text-brand">
+                      {c.providerCount} listing{c.providerCount === 1 ? "" : "s"}
+                    </span>
                     {!c.active && <StatusPill status="inactive" tone="slate" />}
                   </p>
-                  <p className="truncate text-xs text-muted">
-                    {c.longName} · <code className="font-mono">{c.slug}</code> · icon <code className="font-mono">{c.icon}</code> · {c.providerCount} listing{c.providerCount === 1 ? "" : "s"}
+                  {c.description && <p className="mt-0.5 line-clamp-1 text-sm text-ink/75">{c.description}</p>}
+                  <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
+                    <span>{c.longName}</span>
+                    <span aria-hidden>·</span>
+                    <code className="rounded bg-surface px-1.5 py-px font-mono text-[11px]">/{c.slug}</code>
+                    <span aria-hidden>·</span>
+                    <span>
+                      icon <code className="font-mono text-[11px]">{c.icon}</code>
+                    </span>
                   </p>
-                  {c.description && <p className="mt-1 line-clamp-2 text-sm text-ink/80">{c.description}</p>}
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-4 lg:shrink-0">
-                <Switch
-                  label="Active"
-                  checked={c.active}
-                  disabled={busy !== null}
-                  onChange={(v) => patch(c, { active: v }, v ? `“${c.name}” is active.` : `“${c.name}” deactivated.`)}
-                />
-                <Switch
-                  label="In menu"
-                  checked={c.showInMenu}
-                  disabled={busy !== null}
-                  onChange={(v) => patch(c, { showInMenu: v }, v ? `“${c.name}” is shown in the menu.` : `“${c.name}” hidden from the menu.`)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setEditing(c)}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line bg-white px-3 text-sm font-semibold text-ink hover:bg-surface"
-                >
-                  <Pencil className="size-4" /> Edit
-                </button>
-                <ConfirmButton confirmLabel="Delete service" onConfirm={() => remove(c)}>
-                  Delete
-                </ConfirmButton>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3 xl:shrink-0 xl:justify-end xl:border-t-0 xl:pt-0">
+                <div className="flex items-center gap-5 rounded-xl border border-line bg-white/60 px-4 py-2">
+                  <Switch
+                    label="Active"
+                    checked={c.active}
+                    disabled={busy !== null}
+                    onChange={(v) => patch(c, { active: v }, v ? `“${c.name}” is active.` : `“${c.name}” deactivated.`)}
+                  />
+                  <span className="h-6 w-px bg-line" aria-hidden />
+                  <Switch
+                    label="In menu"
+                    checked={c.showInMenu}
+                    disabled={busy !== null}
+                    onChange={(v) => patch(c, { showInMenu: v }, v ? `“${c.name}” is shown in the menu.` : `“${c.name}” hidden from the menu.`)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditing(c)}
+                    title="Edit"
+                    className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line bg-white/80 px-3 text-sm font-semibold text-ink transition hover:border-brand/40 hover:text-brand"
+                  >
+                    <Pencil className="size-4" /> Edit
+                  </button>
+                  <ConfirmButton confirmLabel="Delete" onConfirm={() => remove(c)}>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Trash2 className="size-4" aria-hidden />
+                      <span className="sr-only">Delete {c.name}</span>
+                    </span>
+                  </ConfirmButton>
+                </div>
               </div>
             </li>
           ))}
@@ -198,19 +212,6 @@ export function ServicesClient() {
         }}
       />
     </>
-  );
-}
-
-function Switch({ label, checked, disabled, onChange }: { label: string; checked: boolean; disabled?: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <label className={cn("inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-ink", disabled && "cursor-not-allowed opacity-60")}>
-      <input type="checkbox" role="switch" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="peer sr-only" />
-      <span
-        aria-hidden
-        className="relative h-6 w-10 rounded-full bg-line transition peer-checked:bg-success peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand after:absolute after:top-0.5 after:left-0.5 after:size-5 after:rounded-full after:bg-white after:shadow after:transition peer-checked:after:translate-x-4"
-      />
-      {label}
-    </label>
   );
 }
 

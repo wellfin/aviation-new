@@ -89,7 +89,7 @@ export function DashboardClient() {
               value={o?.newsletter.subscribers}
               sub={o && `${o.newsletter.pending.toLocaleString()} awaiting confirmation`}
             />
-            <div className="col-span-2 rounded-2xl border border-line bg-white p-4 shadow-soft">
+            <div className="col-span-2 glass rounded-2xl border p-4">
               <p className="text-xs font-semibold tracking-[0.4px] text-muted uppercase">Revenue (captured, in range)</p>
               {!o ? (
                 <span className="mt-2 block h-7 w-32 animate-pulse rounded bg-surface" />
@@ -170,7 +170,7 @@ function RangePicker({
     cn("h-9 rounded-xl px-3 text-sm font-semibold transition", active ? "bg-navy-900 text-white" : "border border-line bg-white text-ink hover:bg-surface");
 
   return (
-    <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-line bg-white p-3 shadow-soft lg:flex-row lg:items-center lg:justify-between">
+    <div className="mb-6 flex flex-col gap-3 glass rounded-2xl border p-3 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Date range">
         <CalendarRange className="size-4 text-muted" aria-hidden />
         {RANGE_PRESETS.map((p) => (
@@ -263,7 +263,7 @@ function QuickLink({ href, icon: Icon, label, value }: { href: string; icon: typ
 
 function Kpi({ label, value, sub }: { label: string; value: number | undefined; sub?: string | undefined | null }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-4 shadow-soft">
+    <div className="glass rounded-2xl border p-4">
       <p className="text-xs font-semibold tracking-[0.4px] text-muted uppercase">{label}</p>
       {value === undefined ? (
         <span className="mt-2 block h-7 w-16 animate-pulse rounded bg-surface" />

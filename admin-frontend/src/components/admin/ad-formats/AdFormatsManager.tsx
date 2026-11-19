@@ -2,14 +2,14 @@
 
 import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Card, ConfirmButton, EmptyState, ErrorPanel, PageHeader, StatusPill } from "@/components/admin/ui";
+import { Card, ConfirmButton, EmptyState, ErrorPanel, PageHeader, StatusPill, Switch } from "@/components/admin/ui";
 import { siteUrl } from "@/components/admin/news/site";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Textarea } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { fieldErrors, type FieldErrors } from "@/lib/api/forms";
 import { useApi } from "@/lib/hooks/useApi";
-import { cn, slugify } from "@/lib/utils";
+import { slugify } from "@/lib/utils";
 import { adFormatFormSchema, type AdFormat, type AdFormatFormValues } from "./schema";
 
 type Feedback = { status: "success" | "error"; message: string } | null;
@@ -161,17 +161,7 @@ export function AdFormatsManager() {
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-2">
                       <StatusPill status={f.active ? "active" : "hidden"} tone={f.active ? "green" : "slate"} />
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={f.active}
-                        aria-label={`Show "${f.title}" on the Advertise page`}
-                        disabled={busy !== null}
-                        onClick={() => toggleActive(f)}
-                        className={cn("relative h-6 w-11 rounded-full transition disabled:opacity-50", f.active ? "bg-success" : "bg-slate-300")}
-                      >
-                        <span className={cn("absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition", f.active && "translate-x-5")} />
-                      </button>
+                      <Switch checked={f.active} aria-label={`Show "${f.title}" on the Advertise page`} disabled={busy !== null} onChange={() => toggleActive(f)} />
                       <button
                         type="button"
                         onClick={() => setEditing(f.id)}
@@ -294,7 +284,7 @@ function AdFormatForm({
         />
       </div>
       <label className="flex items-center gap-3 text-sm font-medium text-ink">
-        <input type="checkbox" checked={values.active} onChange={(e) => setValues({ ...values, active: e.target.checked })} className="size-4 accent-brand" />
+        <input type="checkbox" role="switch" checked={values.active} onChange={(e) => setValues({ ...values, active: e.target.checked })} className="switch" />
         Active (shown on the Advertise page)
       </label>
       {formError && <FormStatus status="error" message={formError} />}
