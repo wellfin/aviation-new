@@ -3,7 +3,7 @@ import { dateRangeShape } from "./date-range.js";
 
 export const overviewQuery = z.object({ ...dateRangeShape });
 
-export const TIMESERIES_METRICS = ["users", "enquiries", "revenue", "reviews"] as const;
+export const TIMESERIES_METRICS = ["users", "enquiries", "revenue", "reviews", "leads", "listings"] as const;
 export type TimeseriesMetric = (typeof TIMESERIES_METRICS)[number];
 
 export const INTERVALS = ["day", "week", "month"] as const;

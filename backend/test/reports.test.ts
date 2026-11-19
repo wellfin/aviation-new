@@ -234,4 +234,35 @@ describe("admin reports", () => {
     expect(truncUtc(d, "week").toISOString()).toBe("2026-06-01T00:00:00.000Z");
     expect(truncUtc(d, "month").toISOString()).toBe("2026-06-01T00:00:00.000Z");
   });
+
+  it("insights: enquiries by service and listing, listings by service, ad totals and latest activity", async () => {
+    const a = await provider("published");
+    const b = await provider("published");
+    await Enquiry.create([
+      { provider: a._id, name: "Asha", email: "a@jetco.aero", message: "Hi" },
+      { provider: a._id, name: "Ben", email: "b@jetco.aero", message: "Hi" },
+      { provider: b._id, name: "Cara", email: "c@jetco.aero", message: "Hi" },
+    ]);
+    const { agent } = await signedInAgent("ADMIN", app);
+    const r = await agent.get(api("/insights"));
+    expect(r.status).toBe(200);
+    const d = r.body.data;
+    expect(d.enquiriesByCategory).toEqual([{ category: "FBO", count: 3 }]);
+    expect(d.topProviders.map((p: { name: string; enquiries: number }) => [p.name, p.enquiries])).toEqual([
+      [a.name, 2],
+      [b.name, 1],
+    ]);
+    expect(d.listingsByCategory).toEqual([{ category: "FBO", count: 2 }]);
+    expect(d.ads).toMatchObject({ impressions: 0, clicks: 0, ctr: 0 });
+    expect(d.recentEnquiries).toHaveLength(3);
+    expect(d.recentEnquiries[0]).toMatchObject({ provider: expect.any(String), status: "new" });
+
+    const leads = await agent.get(api("/timeseries?metric=leads&interval=day"));
+    expect(leads.status).toBe(200);
+    const listings = await agent.get(api("/timeseries?metric=listings&interval=day"));
+    expect(listings.body.data.reduce((s: number, p: { value: number }) => s + p.value, 0)).toBe(2);
+
+    const { agent: user } = await signedInAgent("USER", app);
+    expect([401, 403]).toContain((await user.get(api("/insights"))).status);
+  });
 });

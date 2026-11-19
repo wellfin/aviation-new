@@ -2,7 +2,11 @@ import mongoose, { type Model, type PipelineStage } from "mongoose";
 import { validationError } from "../../lib/errors.js";
 import { Payment } from "../billing/billing.models.js";
 import { PROVIDER_TIERS } from "../catalog/categories.js";
+import { Ad } from "../ads/ad.model.js";
+import { Airport } from "../airports/airport.model.js";
+import { ServiceCategory } from "../categories/category.model.js";
 import { Enquiry, ENQUIRY_STATUSES } from "../enquiries/enquiry.model.js";
+import { Lead } from "../leads/lead.model.js";
 import { Provider, PROVIDER_STATUSES } from "../providers/provider.model.js";
 import { ROLES } from "../rbac/permissions.js";
 import { Review, REVIEW_STATUSES } from "../reviews/review.model.js";
@@ -158,7 +162,68 @@ function sourceFor(metric: TimeseriesMetric, currency: string): MetricSource {
       return { model: Review as unknown as Model<never>, dateField: "createdAt", match: {}, value: 1 };
     case "revenue":
       return { model: Payment as unknown as Model<never>, dateField: "paidAt", match: { status: "captured", currency }, value: "$amount" };
+    case "leads":
+      return { model: Lead as unknown as Model<never>, dateField: "createdAt", match: {}, value: 1 };
+    case "listings":
+      return { model: Provider as unknown as Model<never>, dateField: "createdAt", match: {}, value: 1 };
   }
+}
+
+/**
+ * Dashboard detail for a date range: where enquiries go (by service and by listing), which airports
+ * have the most listings, how listings split across services, ad totals, and the latest activity.
+ */
+export async function insights(q: { from?: string | undefined; to?: string | undefined }) {
+  const range = resolveRange(q);
+  const inRange = { $gte: range.from, $lt: range.to };
+  const [categories, enquiriesByCategory, topProviders, listingsByCategory, topAirports, ads, recentEnquiries, recentLeads] = await Promise.all([
+    ServiceCategory.find({}, { slug: 1, name: 1 }).lean(),
+    Enquiry.aggregate<{ _id: string | null; count: number }>([
+      { $match: { createdAt: inRange } },
+      { $lookup: { from: "providers", localField: "provider", foreignField: "_id", as: "p", pipeline: [{ $project: { category: 1 } }] } },
+      { $group: { _id: { $first: "$p.category" }, count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]),
+    Enquiry.aggregate<{ _id: unknown; count: number; p: Array<{ name: string; slug: string; category: string; rating: number; reviewCount: number }> }>([
+      { $match: { createdAt: inRange } },
+      { $group: { _id: "$provider", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 8 },
+      { $lookup: { from: "providers", localField: "_id", foreignField: "_id", as: "p", pipeline: [{ $project: { name: 1, slug: 1, category: 1, rating: 1, reviewCount: 1 } }] } },
+    ]),
+    Provider.aggregate<{ _id: string; count: number }>([{ $match: { status: "published" } }, ...groupCount("category"), { $sort: { count: -1 } }]),
+    Provider.aggregate<{ _id: unknown; count: number }>([
+      { $match: { status: "published" } },
+      { $unwind: "$airports" },
+      { $group: { _id: "$airports", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 8 },
+    ]),
+    Ad.aggregate<{ _id: null; impressions: number; clicks: number; live: number; total: number }>([
+      { $group: { _id: null, impressions: { $sum: "$impressions" }, clicks: { $sum: "$clicks" }, live: { $sum: { $cond: ["$active", 1, 0] } }, total: { $sum: 1 } } },
+    ]),
+    Enquiry.find({}, { name: 1, status: 1, createdAt: 1, provider: 1, service: 1 }).sort({ createdAt: -1 }).limit(6).populate<{ provider: { name: string } | null }>("provider", "name").lean(),
+    Lead.find({}, { type: 1, name: 1, status: 1, createdAt: 1, company: 1 }).sort({ createdAt: -1 }).limit(6).lean(),
+  ]);
+  const nameOf = new Map(categories.map((c) => [c.slug, c.name]));
+  const airportRows = await Airport.find({ _id: { $in: topAirports.map((a) => a._id) } }, { icao: 1, name: 1, city: 1 }).lean();
+  const airportById = new Map(airportRows.map((a) => [String(a._id), a]));
+  const adTotals = ads[0] ?? { impressions: 0, clicks: 0, live: 0, total: 0 };
+  return {
+    range: { from: range.from.toISOString(), to: range.to.toISOString() },
+    enquiriesByCategory: enquiriesByCategory.map((r) => ({ category: r._id ? (nameOf.get(r._id) ?? r._id) : "Removed listing", count: r.count })),
+    topProviders: topProviders
+      .filter((r) => r.p[0])
+      .map((r) => ({ id: String(r._id), name: r.p[0]!.name, slug: r.p[0]!.slug, category: nameOf.get(r.p[0]!.category) ?? r.p[0]!.category, enquiries: r.count, rating: r.p[0]!.rating, reviews: r.p[0]!.reviewCount })),
+    listingsByCategory: listingsByCategory.map((r) => ({ category: nameOf.get(r._id) ?? r._id, count: r.count })),
+    topAirports: topAirports
+      .map((r) => ({ a: airportById.get(String(r._id)), count: r.count }))
+      .filter((r) => r.a)
+      .map((r) => ({ icao: r.a!.icao, name: r.a!.name, city: r.a!.city ?? "", listings: r.count })),
+    ads: { impressions: adTotals.impressions, clicks: adTotals.clicks, ctr: adTotals.impressions ? Math.round((adTotals.clicks / adTotals.impressions) * 10000) / 100 : 0, live: adTotals.live, total: adTotals.total },
+    recentEnquiries: recentEnquiries.map((e) => ({ id: String(e._id), name: e.name, provider: e.provider?.name ?? "—", service: e.service ?? "", status: e.status, createdAt: e.createdAt.toISOString() })),
+    recentLeads: recentLeads.map((l) => ({ id: String(l._id), type: l.type, name: l.name, company: l.company ?? "", status: l.status, createdAt: l.createdAt.toISOString() })),
+  };
 }
 
 export interface TimeseriesPoint {
