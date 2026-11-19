@@ -2,7 +2,7 @@
 
 import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Card, ConfirmButton, EmptyState, ErrorPanel, PageHeader, StatusPill, Switch } from "@/components/admin/ui";
+import { ActionIcon, Card, ConfirmAction, EmptyState, ErrorPanel, PageHeader, StatusPill, Switch } from "@/components/admin/ui";
 import { siteUrl } from "@/components/admin/news/site";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Textarea } from "@/components/ui/Field";
@@ -162,16 +162,8 @@ export function AdFormatsManager() {
                     <div className="flex shrink-0 flex-wrap items-center gap-2">
                       <StatusPill status={f.active ? "active" : "hidden"} tone={f.active ? "green" : "slate"} />
                       <Switch checked={f.active} aria-label={`Show "${f.title}" on the Advertise page`} disabled={busy !== null} onChange={() => toggleActive(f)} />
-                      <button
-                        type="button"
-                        onClick={() => setEditing(f.id)}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line px-3 text-sm font-semibold text-ink hover:bg-surface"
-                      >
-                        <Pencil className="size-3.5" aria-hidden /> Edit
-                      </button>
-                      <ConfirmButton onConfirm={() => remove(f)} confirmLabel="Delete">
-                        Delete
-                      </ConfirmButton>
+                      <ActionIcon icon={Pencil} label="Edit package" hint="Edit package: title, price, features and order" onClick={() => setEditing(f.id)} />
+                      <ConfirmAction label="Delete package" hint="Delete this package permanently" confirmHint="Yes, delete package" onConfirm={() => remove(f)} />
                     </div>
                   </div>
                 )}

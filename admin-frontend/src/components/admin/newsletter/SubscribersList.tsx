@@ -1,7 +1,8 @@
 "use client";
 
+import { Mail, MailX } from "lucide-react";
 import { useState } from "react";
-import { ConfirmButton, DataTable, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { ActionIcon, ConfirmAction, DataTable, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
 import type { Paginated } from "@/components/admin/enquiries/types";
 import { CsvExportLink } from "@/components/admin/leads/CsvExportLink";
 import { ApiError, apiRequest } from "@/lib/api/client";
@@ -72,13 +73,16 @@ export function SubscribersList() {
       ? [
           {
             key: "actions",
-            header: "Action",
-            render: (s: Subscriber) =>
-              s.status === "unsubscribed" ? null : (
-                <ConfirmButton onConfirm={() => unsubscribe(s)} confirmLabel="Yes, unsubscribe">
-                  Unsubscribe
-                </ConfirmButton>
-              ),
+            header: "",
+            className: "w-px",
+            render: (s: Subscriber) => (
+              <RowActions>
+                <ActionIcon icon={Mail} label={`Email ${s.email}`} hint={`Write to ${s.email}`} href={`mailto:${s.email}`} external />
+                {s.status !== "unsubscribed" && (
+                  <ConfirmAction icon={MailX} label={`Unsubscribe ${s.email}`} hint="Unsubscribe: stop sending the newsletter to this address" confirmHint="Yes, unsubscribe" onConfirm={() => unsubscribe(s)} />
+                )}
+              </RowActions>
+            ),
           } satisfies Column<Subscriber>,
         ]
       : []),

@@ -3,9 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock, Plus, Star } from "lucide-react";
+import { Clock, ExternalLink, Pencil, Plus, Star } from "lucide-react";
 import { useState } from "react";
-import { Card, DataTable, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, StatusTabs, formatDateTime, type Column } from "@/components/admin/ui";
+import { ActionIcon, Card, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column } from "@/components/admin/ui";
 import { buttonClasses } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -82,6 +82,24 @@ export function ProvidersClient() {
     },
     { key: "owner", header: "Owner", render: (p) => (p.owner ? <span className="text-xs">{p.owner.email}</span> : <span className="text-xs whitespace-nowrap text-subtle">Staff-managed</span>) },
     { key: "updated", header: "Updated", render: (p) => <span className="whitespace-nowrap text-muted">{formatDateTime(p.updatedAt)}</span> },
+    {
+      key: "actions",
+      header: "",
+      className: "w-px",
+      render: (p) => (
+        <RowActions>
+          <ActionIcon icon={Pencil} label={`Edit ${p.name}`} hint="Edit listing: details, services, airports and status" href={`/admin/providers/${p.id}`} />
+          <ActionIcon
+            icon={ExternalLink}
+            label={`View ${p.name} on the site`}
+            hint={p.status === "published" ? "View the public listing (new tab)" : "Not on the site until it's published"}
+            href={siteUrl(`/providers/${p.slug}`)}
+            external
+            disabled={p.status !== "published"}
+          />
+        </RowActions>
+      ),
+    },
   ];
 
   return (

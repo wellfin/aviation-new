@@ -1,9 +1,10 @@
 "use client";
 
+import { Eye, EyeOff, Pencil } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ConfirmButton, DataTable, EmptyState, ErrorPanel, FilterBar, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { ActionIcon, ConfirmAction, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
 import type { Paginated } from "@/components/admin/enquiries/types";
 import { ButtonLink } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
@@ -165,19 +166,19 @@ export function AdsList() {
     {
       key: "actions",
       header: "",
+      className: "w-px",
       render: (a) => (
-        <span onClick={(e) => e.stopPropagation()} className="flex items-center justify-end gap-2">
-          <button
-            type="button"
+        <RowActions>
+          <ActionIcon icon={Pencil} label={`Edit ${a.advertiser} ad`} hint="Edit ad: image, link, schedule and weight" href={`/admin/ads/${a.id}`} />
+          <ActionIcon
+            icon={a.active ? EyeOff : Eye}
+            label={a.active ? `Hide ${a.advertiser} ad` : `Show ${a.advertiser} ad`}
+            hint={a.active ? "Hide: stop showing this ad on the site" : "Show: start showing this ad on the site"}
+            tone={a.active ? "warning" : "success"}
             onClick={() => toggleActive(a)}
-            className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-ink transition hover:border-brand hover:text-brand"
-          >
-            {a.active ? "Hide" : "Show"}
-          </button>
-          <ConfirmButton onConfirm={() => remove(a)} confirmLabel="Delete">
-            Delete
-          </ConfirmButton>
-        </span>
+          />
+          <ConfirmAction label={`Delete ${a.advertiser} ad`} hint="Delete this ad and its stats" confirmHint="Yes, delete this ad" onConfirm={() => remove(a)} />
+        </RowActions>
       ),
     },
   ];

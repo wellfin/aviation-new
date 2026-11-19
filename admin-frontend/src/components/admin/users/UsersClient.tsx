@@ -3,24 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { CheckCircle2, UserPlus } from "lucide-react";
+import { CheckCircle2, Pencil, UserPlus } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { can, useAuth } from "@/lib/auth/auth-context";
-import {
-  Avatar,
-  ConfirmButton,
-  DataTable,
-  ErrorPanel,
-  FilterBar,
-  PageHeader,
-  Pager,
-  SearchFilter,
-  SelectFilter,
-  StatusPill,
-  StatusTabs,
-  formatDateTime,
-  type Column,
-} from "@/components/admin/ui";
+import { ActionIcon, Avatar, ConfirmAction, DataTable, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, StatusTabs, type Column } from "@/components/admin/ui";
 import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -141,31 +127,19 @@ export function UsersClient() {
         </span>
       ),
     },
-    ...(canManage
-      ? [
-          {
-            key: "actions",
-            header: "",
-            render: (u: AdminUser) =>
-              u.id === me?.id ||
-              u.superAdmin ||
-              (u.role === "ADMIN" && !me?.superAdmin) ? null : (
-                // Keep the click from opening the row.
-                <span
-                  onClick={(e) => e.stopPropagation()}
-                  className="inline-flex"
-                >
-                  <ConfirmButton
-                    confirmLabel="Delete"
-                    onConfirm={() => remove(u)}
-                  >
-                    Delete
-                  </ConfirmButton>
-                </span>
-              ),
-          },
-        ]
-      : []),
+    {
+      key: "actions",
+      header: "",
+      className: "w-px",
+      render: (u: AdminUser) => (
+        <RowActions>
+          <ActionIcon icon={Pencil} label={`Open ${u.firstName} ${u.lastName}`} hint="Open profile: change role, status and lead emails" href={`/admin/users/${u.id}`} />
+          {canManage && !(u.id === me?.id || u.superAdmin || (u.role === "ADMIN" && !me?.superAdmin)) && (
+            <ConfirmAction label={`Delete ${u.firstName} ${u.lastName}`} hint="Delete this account permanently" confirmHint="Yes, delete account and sign it out" onConfirm={() => remove(u)} />
+          )}
+        </RowActions>
+      ),
+    },
   ];
 
   return (

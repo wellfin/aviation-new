@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquare } from "lucide-react";
-import { DataTable, ErrorPanel, FilterBar, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { Eye, Mail, MessageSquare } from "lucide-react";
+import { ActionIcon, DataTable, ErrorPanel, FilterBar, formatDateTime, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
 import { DateRangeFilter, dateParam, isInvertedRange } from "@/components/admin/enquiries/DateRangeFilter";
 import type { Paginated } from "@/components/admin/enquiries/types";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -77,6 +77,17 @@ export function LeadsList() {
       ),
     },
     { key: "received", header: "Received", render: (l) => <span className="whitespace-nowrap text-muted">{formatDateTime(l.createdAt)}</span> },
+    {
+      key: "actions",
+      header: "",
+      className: "w-px",
+      render: (l) => (
+        <RowActions>
+          <ActionIcon icon={Eye} label={`Open lead from ${l.name}`} hint="Open lead: full message, status and notes" href={`/admin/leads/${l.id}`} />
+          <ActionIcon icon={Mail} label={`Email ${l.name}`} hint={`Reply by email to ${l.email}`} href={`mailto:${l.email}`} external />
+        </RowActions>
+      ),
+    },
   ];
 
   return (

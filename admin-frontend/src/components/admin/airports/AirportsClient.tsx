@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Star } from "lucide-react";
+import { ExternalLink, Pencil, Plus, Star } from "lucide-react";
 import { useState } from "react";
-import { DataTable, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
+import { ActionIcon, DataTable, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
 import { buttonClasses } from "@/components/ui/Button";
 import { FormStatus } from "@/components/ui/Field";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import type { Paginated } from "@/lib/types";
 import { Flag } from "@/components/ui/Flag";
+import { siteUrl } from "@/components/admin/news/site";
 import { DeleteAirportButton } from "./DeleteAirportButton";
 import { AIRPORT_TYPES, CONTINENT_OPTIONS, type AdminAirport } from "./schema";
 
@@ -71,10 +72,13 @@ export function AirportsClient() {
     {
       key: "actions",
       header: "",
-      className: "text-right",
+      className: "w-px",
       render: (a) => (
-        <span onClick={(e) => e.stopPropagation()} className="inline-flex">
+        <RowActions>
+          <ActionIcon icon={Pencil} label={`Edit ${a.icao}`} hint="Edit airport: information, services, runways and frequencies" href={`/admin/airports/${a.icao}`} />
+          <ActionIcon icon={ExternalLink} label={`View ${a.icao} on the site`} hint="View the public airport page (new tab)" href={siteUrl(`/airports/${a.icao.toLowerCase()}`)} external />
           <DeleteAirportButton
+            icon
             icao={a.icao}
             onDeleted={() => {
               setFeedback({ status: "success", message: `${a.icao} deleted.` });
@@ -82,7 +86,7 @@ export function AirportsClient() {
             }}
             onError={(message, inUse) => setFeedback({ status: "error", message, icao: inUse ? a.icao : undefined })}
           />
-        </span>
+        </RowActions>
       ),
     },
   ];

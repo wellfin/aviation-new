@@ -2,7 +2,7 @@
 
 import { ArrowDown, ArrowUp, Pencil, Plus } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { Card, ConfirmButton, EmptyState, ErrorPanel, FilterBar, PageHeader, SearchFilter, SelectFilter, StatusPill, Switch } from "@/components/admin/ui";
+import { ActionIcon, Card, ConfirmAction, EmptyState, ErrorPanel, FilterBar, PageHeader, SearchFilter, SelectFilter, StatusPill, Switch } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Select, Textarea } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
@@ -184,16 +184,8 @@ export function FaqsManager() {
                           <div className="flex shrink-0 flex-wrap items-center gap-2">
                             <StatusPill status={faq.published ? "published" : "hidden"} tone={faq.published ? "green" : "slate"} />
                             <Switch checked={faq.published} aria-label={`Published: ${faq.question}`} disabled={busy !== null} onChange={() => togglePublished(faq)} />
-                            <button
-                              type="button"
-                              onClick={() => setEditing(faq.id)}
-                              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line px-3 text-sm font-semibold text-ink hover:bg-surface"
-                            >
-                              <Pencil className="size-3.5" aria-hidden /> Edit
-                            </button>
-                            <ConfirmButton onConfirm={() => remove(faq)} confirmLabel="Delete">
-                              Delete
-                            </ConfirmButton>
+                            <ActionIcon icon={Pencil} label="Edit FAQ" hint="Edit question, answer and category" onClick={() => setEditing(faq.id)} />
+                            <ConfirmAction label="Delete FAQ" hint="Delete this FAQ permanently" confirmHint="Yes, delete FAQ" onConfirm={() => remove(faq)} />
                           </div>
                         </div>
                       )}

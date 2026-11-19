@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertTriangle, ChevronLeft, ChevronRight, Inbox, RefreshCw, Search } from "lucide-react";
+import Link from "next/link";
+import { AlertTriangle, Check, ChevronLeft, ChevronRight, Inbox, RefreshCw, Search, Trash2, X, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ApiError } from "@/lib/api/client";
 import { PAGE_SIZES, useUrlParams } from "@/lib/hooks/useUrlParams";
@@ -448,6 +449,137 @@ export function SwitchRow({ label, description, checked, onChange, disabled }: {
       </span>
       <input type="checkbox" role="switch" className="switch" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
     </label>
+  );
+}
+
+/* ─────────────── Row actions (icons with hover hints) ─────────────── */
+
+type ActionTone = "default" | "danger" | "success" | "warning";
+const ACTION_TONE: Record<ActionTone, string> = {
+  default: "text-muted hover:bg-brand/10 hover:text-brand",
+  danger: "text-muted hover:bg-danger/10 hover:text-danger",
+  success: "text-muted hover:bg-success/15 hover:text-[#15803d]",
+  warning: "text-muted hover:bg-warning/20 hover:text-[#a16207]",
+};
+
+/** Small dark hint shown above an action while it's hovered or focused. */
+function Hint({ text }: { text: string }) {
+  return (
+    <span
+      role="tooltip"
+      className="pointer-events-none absolute right-0 bottom-full z-30 mb-1.5 w-max max-w-56 translate-y-1 rounded-lg bg-ink px-2.5 py-1.5 text-left text-[11px] leading-4 font-medium whitespace-normal text-white opacity-0 shadow-lg transition group-hover/act:translate-y-0 group-hover/act:opacity-100 group-focus-within/act:translate-y-0 group-focus-within/act:opacity-100"
+    >
+      {text}
+    </span>
+  );
+}
+
+/**
+ * Icon button for a list row. `hint` says what happens on click (shown on hover); `label` is the
+ * accessible name. With `href` it's a link.
+ */
+export function ActionIcon({
+  icon: Icon,
+  label,
+  hint,
+  href,
+  onClick,
+  tone = "default",
+  disabled,
+  external,
+}: {
+  icon: LucideIcon;
+  label: string;
+  hint?: string;
+  href?: string;
+  onClick?: () => void;
+  tone?: ActionTone;
+  disabled?: boolean;
+  /** Open `href` in a new tab (public site pages). */
+  external?: boolean;
+}) {
+  const cls = cn("flex size-8 items-center justify-center rounded-lg transition disabled:pointer-events-none disabled:opacity-35", ACTION_TONE[tone]);
+  return (
+    <span className="group/act relative inline-flex">
+      {href && !disabled && external ? (
+        <a href={href} target="_blank" rel="noopener" aria-label={label} className={cls}>
+          <Icon className="size-[17px]" aria-hidden />
+        </a>
+      ) : href && !disabled ? (
+        <Link href={href} aria-label={label} className={cls}>
+          <Icon className="size-[17px]" aria-hidden />
+        </Link>
+      ) : (
+        <button type="button" aria-label={label} disabled={disabled} onClick={onClick} className={cls}>
+          <Icon className="size-[17px]" aria-hidden />
+        </button>
+      )}
+      <Hint text={hint ?? label} />
+    </span>
+  );
+}
+
+/**
+ * Icon that asks before acting: first click swaps it for "confirm" (✓) and "cancel" (✕) icons.
+ * Use for delete, unsubscribe, reject and other actions that are hard to undo.
+ */
+export function ConfirmAction({
+  icon: Icon = Trash2,
+  label,
+  hint,
+  confirmHint,
+  onConfirm,
+  tone = "danger",
+  disabled,
+}: {
+  icon?: LucideIcon;
+  label: string;
+  hint: string;
+  /** Shown on the ✓ icon, e.g. "Yes, delete this user permanently". */
+  confirmHint?: string;
+  onConfirm: () => Promise<void> | void;
+  tone?: ActionTone;
+  disabled?: boolean;
+}) {
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  if (!asking) return <ActionIcon icon={Icon} label={label} hint={hint} tone={tone} disabled={disabled} onClick={() => setAsking(true)} />;
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded-lg bg-danger/8 p-0.5 ring-1 ring-danger/20">
+      <span className="group/act relative inline-flex">
+        <button
+          type="button"
+          aria-label={`Confirm: ${label}`}
+          disabled={busy}
+          autoFocus
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await onConfirm();
+            } finally {
+              setBusy(false);
+              setAsking(false);
+            }
+          }}
+          className={cn("flex size-7 items-center justify-center rounded-md text-white transition disabled:opacity-60", tone === "danger" ? "bg-danger hover:brightness-110" : "bg-brand hover:brightness-110")}
+        >
+          {busy ? <span className="size-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" /> : <Check className="size-4" aria-hidden />}
+        </button>
+        <Hint text={confirmHint ?? `Yes, ${label.toLowerCase()}`} />
+      </span>
+      <button type="button" aria-label="Cancel" title="Cancel" onClick={() => setAsking(false)} className="flex size-7 items-center justify-center rounded-md text-muted transition hover:bg-white hover:text-ink">
+        <X className="size-4" aria-hidden />
+      </button>
+    </span>
+  );
+}
+
+/** Actions cell: right-aligned icons; clicks don't open the row. */
+export function RowActions({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex items-center justify-end gap-0.5" onClick={(e) => e.stopPropagation()}>
+      {children}
+    </div>
   );
 }
 

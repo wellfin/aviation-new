@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ExternalLink, Star } from "lucide-react";
-import { DataTable, EmptyState, ErrorPanel, FilterBar, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { ExternalLink, Pencil, Star } from "lucide-react";
+import { ActionIcon, DataTable, EmptyState, ErrorPanel, FilterBar, formatDateTime, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
 import type { Paginated } from "@/components/admin/enquiries/types";
 import { ButtonLink } from "@/components/ui/Button";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -42,15 +42,22 @@ export function NewsList() {
     { key: "published", header: "Published", render: (n) => <span className="whitespace-nowrap text-muted">{formatDateTime(n.publishedAt)}</span> },
     { key: "updated", header: "Updated", render: (n) => <span className="whitespace-nowrap text-muted">{formatDateTime(n.updatedAt)}</span> },
     {
-      key: "view",
+      key: "actions",
       header: "",
-      render: (n) =>
-        n.status === "published" ? (
-          <a href={siteUrl(`/news/${n.slug}`)} target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()} className="relative inline-flex items-center gap-1 text-sm font-semibold whitespace-nowrap text-brand hover:underline">
-            View <ExternalLink className="size-3.5" aria-hidden />
-            <span className="sr-only">{n.title} on the site</span>
-          </a>
-        ) : null,
+      className: "w-px",
+      render: (n) => (
+        <RowActions>
+          <ActionIcon icon={Pencil} label={`Edit ${n.title}`} hint="Edit article: text, image, category and publishing" href={`/admin/news/${n.id}`} />
+          <ActionIcon
+            icon={ExternalLink}
+            label={`View ${n.title} on the site`}
+            hint={n.status === "published" ? "View the article on the site (new tab)" : "Not on the site until it's published"}
+            href={siteUrl(`/news/${n.slug}`)}
+            external
+            disabled={n.status !== "published"}
+          />
+        </RowActions>
+      ),
     },
   ];
 

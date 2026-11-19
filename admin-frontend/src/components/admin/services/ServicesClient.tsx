@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Pencil, Plus } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Toggle } from "@/components/admin/providers/form-kit";
-import { ConfirmButton, EmptyState, ErrorPanel, PageHeader, StatusPill, StatusTabs, Switch } from "@/components/admin/ui";
+import { ActionIcon, ConfirmAction, EmptyState, ErrorPanel, PageHeader, RowActions, StatusPill, StatusTabs, Switch } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Textarea } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
@@ -173,22 +173,10 @@ export function ServicesClient() {
                     onChange={(v) => patch(c, { showInMenu: v }, v ? `“${c.name}” is shown in the menu.` : `“${c.name}” hidden from the menu.`)}
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditing(c)}
-                    title="Edit"
-                    className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-line bg-white/80 px-3 text-sm font-semibold text-ink transition hover:border-brand/40 hover:text-brand"
-                  >
-                    <Pencil className="size-4" /> Edit
-                  </button>
-                  <ConfirmButton confirmLabel="Delete" onConfirm={() => remove(c)}>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Trash2 className="size-4" aria-hidden />
-                      <span className="sr-only">Delete {c.name}</span>
-                    </span>
-                  </ConfirmButton>
-                </div>
+                <RowActions>
+                  <ActionIcon icon={Pencil} label={`Edit ${c.name}`} hint="Edit service: name, description, icon and slug" onClick={() => setEditing(c)} />
+                  <ConfirmAction label={`Delete ${c.name}`} hint={c.providerCount ? `Delete service (${c.providerCount} listing${c.providerCount === 1 ? "" : "s"} use it)` : "Delete this service"} confirmHint="Yes, delete service" onConfirm={() => remove(c)} />
+                </RowActions>
               </div>
             </li>
           ))}

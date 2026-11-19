@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ExternalLink, Star } from "lucide-react";
+import { Ban, CheckCircle2, ExternalLink, Star } from "lucide-react";
 import { useState } from "react";
 import { ReasonDialog } from "@/components/admin/providers/form-kit";
-import { ConfirmButton, EmptyState, ErrorPanel, FilterBar, PageHeader, Pager, SearchFilter, StatusPill, StatusTabs, formatDateTime } from "@/components/admin/ui";
+import { ActionIcon, ConfirmAction, EmptyState, ErrorPanel, FilterBar, formatDateTime, PageHeader, Pager, SearchFilter, StatusPill, StatusTabs } from "@/components/admin/ui";
 import { FormStatus } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
@@ -159,28 +159,15 @@ export function ReviewsClient() {
                       </p>
                     )}
                   </div>
-                  <div className="flex shrink-0 flex-wrap gap-2">
+                  <div className="flex shrink-0 items-start gap-0.5">
                     {r.status !== "approved" && (
-                      <button
-                        type="button"
-                        disabled={busy === r.id}
-                        onClick={() => approve(r)}
-                        className="h-9 rounded-xl bg-success px-3 text-sm font-semibold text-white hover:brightness-105 disabled:opacity-50"
-                      >
-                        {busy === r.id ? "Approving…" : "Approve"}
-                      </button>
+                      <ActionIcon icon={CheckCircle2} tone="success" label="Approve review" hint="Approve: publish this review on the listing" disabled={busy === r.id} onClick={() => approve(r)} />
                     )}
-                    {r.status !== "rejected" && (
-                      <button
-                        type="button"
-                        onClick={() => setRejecting(r)}
-                        className="h-9 rounded-xl border border-line bg-white px-3 text-sm font-semibold text-danger hover:bg-danger/5"
-                      >
-                        Reject…
-                      </button>
-                    )}
-                    <ConfirmButton
-                      confirmLabel="Delete review"
+                    {r.status !== "rejected" && <ActionIcon icon={Ban} tone="warning" label="Reject review" hint="Reject: hide it and tell the author why" onClick={() => setRejecting(r)} />}
+                    <ConfirmAction
+                      label="Delete review"
+                      hint="Delete this review permanently"
+                      confirmHint="Yes, delete review"
                       onConfirm={async () => {
                         setFeedback(null);
                         try {
@@ -191,9 +178,7 @@ export function ReviewsClient() {
                           fail(err);
                         }
                       }}
-                    >
-                      Delete
-                    </ConfirmButton>
+                    />
                   </div>
                 </div>
               </li>

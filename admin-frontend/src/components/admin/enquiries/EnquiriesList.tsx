@@ -1,8 +1,9 @@
 "use client";
 
+import { Eye } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DataTable, ErrorPanel, FilterBar, Pager, SearchFilter, SelectFilter, StatusPill, formatDateTime, type Column } from "@/components/admin/ui";
+import { ActionIcon, DataTable, ErrorPanel, FilterBar, formatDateTime, Pager, RowActions, SearchFilter, SelectFilter, StatusPill, type Column } from "@/components/admin/ui";
 import { useApi, withQuery } from "@/lib/hooks/useApi";
 import { useUrlParams } from "@/lib/hooks/useUrlParams";
 import { DateRangeFilter, dateParam, dayEnd, dayStart, isInvertedRange } from "./DateRangeFilter";
@@ -67,6 +68,16 @@ export function EnquiriesList() {
     },
     { key: "status", header: "Status", render: (e) => <StatusPill status={e.status} /> },
     { key: "received", header: "Received", render: (e) => <span className="whitespace-nowrap text-muted">{formatDateTime(e.createdAt)}</span> },
+    {
+      key: "actions",
+      header: "",
+      className: "w-px",
+      render: (e) => (
+        <RowActions>
+          <ActionIcon icon={Eye} label="Open enquiry" hint="Open enquiry: message, contact details and listing" href={`/admin/enquiries/${e.id}`} />
+        </RowActions>
+      ),
+    },
   ];
 
   return (
