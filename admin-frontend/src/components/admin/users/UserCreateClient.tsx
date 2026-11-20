@@ -76,8 +76,8 @@ export function UserCreateClient() {
   }
 
   const back = (
-    <Link href="/admin/users" className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-brand">
-      <ArrowLeft className="size-4" /> All users
+    <Link href="/admin/system-users" className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-brand">
+      <ArrowLeft className="size-4" /> System users
     </Link>
   );
 

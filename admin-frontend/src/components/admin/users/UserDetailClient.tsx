@@ -26,6 +26,8 @@ export function UserDetailClient({ id }: { id: string }) {
   const [feedback, setFeedback] = useState<Feedback>(params.get("created") ? { status: "success", message: "User added. They can sign in with the email and password you set." } : null);
 
   const user = override ?? data;
+  /** Staff accounts live under System users; signed-up people under Users. */
+  const listHref = user && (user.role === "ADMIN" || user.role === "MANAGER") ? "/admin/system-users" : "/admin/users";
   const isSelf = me?.id === id;
   const target = override ?? data;
   // Only the Super Admin can change or remove Admins; nobody can change the Super Admin.
@@ -61,15 +63,15 @@ export function UserDetailClient({ id }: { id: string }) {
     setFeedback(null);
     try {
       await apiRequest("DELETE", `/admin/users/${id}`);
-      router.push("/admin/users");
+      router.push(listHref);
     } catch (err) {
       setFeedback({ status: "error", message: err instanceof ApiError ? err.body.message : "Couldn't delete this user." });
     }
   }
 
   const back = (
-    <Link href="/admin/users" className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-brand">
-      <ArrowLeft className="size-4" /> All users
+    <Link href={listHref} className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-brand">
+      <ArrowLeft className="size-4" /> {listHref === "/admin/users" ? "All users" : "System users"}
     </Link>
   );
 

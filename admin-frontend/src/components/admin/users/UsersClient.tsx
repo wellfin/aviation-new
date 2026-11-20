@@ -15,14 +15,20 @@ import { RoleBadge, SORT_OPTIONS, type AdminUser } from "./shared";
 
 import { Button } from "@/components/ui/Button";
 import { UserCreateClient } from "./UserCreateClient";
-export function UsersClient() {
+/**
+ * customers = people who signed up on the website (website users and providers);
+ * system = admin-panel accounts (Super Admin, Admins and staff with a custom role).
+ */
+export function UsersClient({ kind = "customers" }: { kind?: "customers" | "system" }) {
   const router = useRouter();
   const { user: me } = useAuth();
   const { get, page, pageSize } = useUrlParams();
   const addModal = useAddModal();
+  const system = kind === "system";
   const path = withQuery("/admin/users", {
     q: get("q"),
     role: get("role"),
+    group: kind,
     status: get("status"),
     sort: get("sort"),
     page,
@@ -31,6 +37,8 @@ export function UsersClient() {
   const { data, error, loading, reload } = useApi<Paginated<AdminUser>>(path);
   const counts = useApi<{
     all: number;
+    customers: number;
+    system: number;
     ADMIN: number;
     MANAGER: number;
     USER: number;
@@ -90,11 +98,15 @@ export function UsersClient() {
         </div>
       ),
     },
-    {
-      key: "company",
-      header: "Company",
-      render: (u) => u.company ?? <span className="text-subtle">—</span>,
-    },
+    ...(system
+      ? []
+      : [
+          {
+            key: "company",
+            header: "Company",
+            render: (u: AdminUser) => u.company ?? <span className="text-subtle">—</span>,
+          },
+        ]),
     {
       key: "role",
       header: "Role",
@@ -147,9 +159,14 @@ export function UsersClient() {
   return (
     <>
       <PageHeader
-        title="Users"
-        description="Search accounts, add people, change roles and suspend or remove access."
+        title={system ? "System users" : "Users"}
+        description={
+          system
+            ? "Everyone who can sign in to this admin panel: the Super Admin, Admins and staff with a custom role."
+            : "People who signed up on the website: website users and service providers."
+        }
         actions={
+          system &&
           canManage && (
             <Button size="sm" onClick={addModal.show}>
               <UserPlus className="size-4" aria-hidden /> Add user
@@ -167,20 +184,22 @@ export function UsersClient() {
           inline
           param="role"
           label="Role"
-          tabs={[
-            { value: "", label: "All", count: counts.data?.all },
-            { value: "ADMIN", label: "Admins", count: counts.data?.ADMIN },
-            { value: "MANAGER", label: "Staff", count: counts.data?.MANAGER },
-            { value: "USER", label: "Website users", count: counts.data?.USER },
-            {
-              value: "PROVIDER",
-              label: "Providers",
-              count: counts.data?.PROVIDER,
-            },
-          ]}
+          tabs={
+            system
+              ? [
+                  { value: "", label: "All", count: counts.data?.system },
+                  { value: "ADMIN", label: "Admins", count: counts.data?.ADMIN },
+                  { value: "MANAGER", label: "Staff", count: counts.data?.MANAGER },
+                ]
+              : [
+                  { value: "", label: "All", count: counts.data?.customers },
+                  { value: "USER", label: "Website users", count: counts.data?.USER },
+                  { value: "PROVIDER", label: "Providers", count: counts.data?.PROVIDER },
+                ]
+          }
         />
         <SearchFilter
-          placeholder="Name, email or company"
+          placeholder={system ? "Name or email" : "Name, email or company"}
           label="Search users"
         />
         <SelectFilter
@@ -218,7 +237,7 @@ export function UsersClient() {
           )}
         </>
       )}
-      <Modal open={addModal.open} onClose={addModal.hide} size="lg" title="Add user" description="Create a staff account and choose its role.">
+      <Modal open={system && addModal.open} onClose={addModal.hide} size="lg" title="Add user" description="Create a staff account and choose its role.">
         <UserCreateClient />
       </Modal>
     </>

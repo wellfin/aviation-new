@@ -38,6 +38,21 @@ describe("admin user management", () => {
     expect((await agent.get(api("?q=(.*"))).status).toBe(200);
   });
 
+  it("splits signed-up customers from system (admin-panel) users", async () => {
+    const { agent } = await signedInAgent("ADMIN");
+    await createUser({ email: "flyer@example.com" });
+    await createUser({ email: "fbo@jetco.com", role: "PROVIDER" });
+    await createUser({ email: "staff@jetco.com", role: "MANAGER" });
+    const customers = await agent.get(api("?group=customers&pageSize=100"));
+    expect(customers.body.data.items.map((u: { role: string }) => u.role).sort()).toEqual(["PROVIDER", "USER"]);
+    const system = await agent.get(api("?group=system&pageSize=100"));
+    expect(system.body.data.items.every((u: { role: string }) => u.role === "ADMIN" || u.role === "MANAGER")).toBe(true);
+    expect(system.body.data.total).toBe(2);
+    const counts = (await agent.get(api("/counts"))).body.data;
+    expect(counts).toMatchObject({ customers: 2, system: 2, all: 4 });
+    expect((await agent.get(api("?group=nobody"))).status).toBe(422);
+  });
+
   it("changes a role and forces the user's sessions to re-authenticate", async () => {
     const { agent: admin } = await signedInAgent("ADMIN");
     const target = await createUser();

@@ -21,9 +21,13 @@ const idParams = z.object({ id: z.string().refine(isObjectId, "Invalid id") });
 const listQuery = paginationQuery.extend({
   q: z.string().trim().max(100).optional(),
   role: z.enum(ROLES).optional(),
+  /** customers = signed-up website users and providers; system = admin-panel staff (Admins and custom roles). */
+  group: z.enum(["customers", "system"]).optional(),
   status: z.enum(["active", "suspended"]).optional(),
   sort: z.enum(["newest", "oldest", "name", "lastLogin"]).default("newest"),
 });
+
+const USER_GROUPS = { customers: ["USER", "PROVIDER"], system: ["ADMIN", "MANAGER"] } as const;
 
 const SORTS = {
   newest: { createdAt: -1 },
@@ -72,6 +76,7 @@ adminUsersRouter.get(
   handler({ query: listQuery }, async ({ query }, _req, res) => {
     const filter: Record<string, unknown> = {};
     if (query.role) filter.role = query.role;
+    else if (query.group) filter.role = { $in: [...USER_GROUPS[query.group]] };
     if (query.status) filter.status = query.status;
     if (query.q) {
       const rx = containsRegex(query.q);
@@ -93,7 +98,16 @@ adminUsersRouter.get(
   handler({}, async (_input, _req, res) => {
     const rows = await User.aggregate<{ _id: string; n: number }>([{ $group: { _id: "$role", n: { $sum: 1 } } }]);
     const by = Object.fromEntries(rows.map((r) => [r._id, r.n]));
-    ok(res, { all: rows.reduce((s, r) => s + r.n, 0), ADMIN: by.ADMIN ?? 0, MANAGER: by.MANAGER ?? 0, USER: by.USER ?? 0, PROVIDER: by.PROVIDER ?? 0 });
+    const n = (k: string) => by[k] ?? 0;
+    ok(res, {
+      all: rows.reduce((s, r) => s + r.n, 0),
+      customers: n("USER") + n("PROVIDER"),
+      system: n("ADMIN") + n("MANAGER"),
+      ADMIN: n("ADMIN"),
+      MANAGER: n("MANAGER"),
+      USER: n("USER"),
+      PROVIDER: n("PROVIDER"),
+    });
   }),
 );
 

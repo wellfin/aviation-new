@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   PlaneLanding,
   Tags,
+  UserCog,
   Users,
 } from "lucide-react";
 
@@ -63,6 +64,12 @@ export const ADMIN_NAV: AdminNavGroup[] = [
       { href: "/admin/newsletter", label: "Newsletter", icon: Mail, permission: "leads:read" },
       { href: "/admin/billing", label: "Billing", icon: CreditCard, permission: "billing:read:any" },
       { href: "/admin/users", label: "Users", icon: Users, permission: "users:read" },
+    ],
+  },
+  {
+    label: "Administration",
+    items: [
+      { href: "/admin/system-users", label: "System users", icon: UserCog, permission: "users:read" },
       { href: "/admin/roles", label: "Roles & permissions", icon: ShieldCheck, permission: "users:read" },
     ],
   },
