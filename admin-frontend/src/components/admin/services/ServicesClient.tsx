@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Pencil, Plus } from "lucide-react";
+import { ArrowDown, ArrowUp, Pencil, Plus, TriangleAlert } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Toggle } from "@/components/admin/providers/form-kit";
-import { ActionIcon, ConfirmAction, EmptyState, ErrorPanel, PageHeader, RowActions, StatusPill, StatusTabs, Switch } from "@/components/admin/ui";
+import { ActionIcon, ConfirmAction, EmptyState, ErrorPanel, Modal, PageHeader, RowActions, StatusPill, StatusTabs, Switch } from "@/components/admin/ui";
 import { Button } from "@/components/ui/Button";
 import { FormStatus, Input, Textarea } from "@/components/ui/Field";
 import { ApiError, apiRequest } from "@/lib/api/client";
@@ -38,7 +38,10 @@ export function ServicesClient() {
   const [busy, setBusy] = useState<string | null>(null);
   const [editing, setEditing] = useState<AdminCategory | "new" | null>(null);
 
-  async function patch(c: AdminCategory, body: Partial<Pick<AdminCategory, "active" | "showInMenu">>, message: string) {
+  /** Service the admin is switching off while published listings still use it (asks first). */
+  const [confirmOff, setConfirmOff] = useState<{ category: AdminCategory; message: string } | null>(null);
+
+  async function patch(c: AdminCategory, body: Partial<Pick<AdminCategory, "active" | "showInMenu">> & { deactivateListings?: boolean }, message: string) {
     setBusy(c.slug);
     setFeedback(null);
     try {
@@ -47,7 +50,9 @@ export function ServicesClient() {
       setFeedback({ status: "success", message });
       if (active && body.active !== undefined) reload();
     } catch (err) {
-      setFeedback({ status: "error", message: errorMessage(err) });
+      if (err instanceof ApiError && err.body.code === "CATEGORY_IN_USE" && body.active === false && !body.deactivateListings) {
+        setConfirmOff({ category: c, message: err.body.message });
+      } else setFeedback({ status: "error", message: errorMessage(err) });
     } finally {
       setBusy(null);
     }
@@ -182,6 +187,35 @@ export function ServicesClient() {
           ))}
         </ol>
       )}
+
+      <Modal open={confirmOff !== null} onClose={() => setConfirmOff(null)} title={`Deactivate “${confirmOff?.category.name ?? ""}”?`}>
+        {confirmOff && (
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-3 rounded-2xl border border-[#f5c46b]/60 bg-[#fff7e6] p-4 text-sm text-ink">
+              <TriangleAlert className="mt-0.5 size-5 shrink-0 text-[#b7791f]" aria-hidden />
+              <div className="flex flex-col gap-1.5">
+                <p className="font-semibold">{confirmOff.message}</p>
+                <p className="text-muted">The service and its listings are hidden from the website. When you switch the service back on, these listings go live again automatically.</p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setConfirmOff(null)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  const c = confirmOff.category;
+                  setConfirmOff(null);
+                  void patch(c, { active: false, deactivateListings: true }, `“${c.name}” and its listings are now inactive.`);
+                }}
+              >
+                OK, deactivate
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <CategoryDialog
         category={editing}

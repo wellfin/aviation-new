@@ -1,7 +1,9 @@
 import type { z } from "zod";
 import { withTransaction } from "../../lib/db.js";
 import { AppError, badRequest, conflict, notFound, validationError } from "../../lib/errors.js";
+import { recountAirportServices } from "../airports/airports.service.js";
 import { Provider } from "../providers/provider.model.js";
+import { icaosOf } from "../providers/providers.service.js";
 import { ServiceCategory, toCategoryDTO, type CategoryDTO } from "./category.model.js";
 import type { createCategoryBody, updateCategoryBody } from "./category.schemas.js";
 
@@ -60,14 +62,40 @@ export async function createCategory(input: z.infer<typeof createCategoryBody>):
 export async function updateCategory(slug: string, input: z.infer<typeof updateCategoryBody>): Promise<CategoryDTO> {
   const category = await ServiceCategory.findOne({ slug });
   if (!category) throw notFound("Category");
-  if (input.active === false && category.active) {
+  const { deactivateListings, ...fields } = input;
+  const turningOff = fields.active === false && category.active;
+  const turningOn = fields.active === true && !category.active;
+  if (turningOff && !deactivateListings) {
     const inUse = await Provider.countDocuments({ category: slug, status: "published" });
     if (inUse > 0) {
-      throw new AppError(409, "CATEGORY_IN_USE", `${inUse} published listing${inUse === 1 ? " uses" : "s use"} this category. Move them to another category first.`);
+      throw new AppError(
+        409,
+        "CATEGORY_IN_USE",
+        `${inUse} published listing${inUse === 1 ? " uses" : "s use"} this service. Deactivating it will also make ${inUse === 1 ? "that listing" : "those listings"} inactive.`,
+      );
     }
   }
-  category.set(input);
-  await category.save();
+  await withTransaction(async (session) => {
+    // Sequential: operations within one transaction must not run concurrently.
+    let touched: string[] = [];
+    if (turningOff || turningOn) {
+      const match = turningOff
+        ? { category: slug, status: "published" as const }
+        : { category: slug, status: "suspended" as const, suspendedByCategory: true };
+      const listings = await Provider.find(match).select("airportCodes").session(session).lean();
+      touched = icaosOf(listings.flatMap((l) => l.airportCodes ?? []));
+      if (listings.length) {
+        await Provider.updateMany(
+          { _id: { $in: listings.map((l) => l._id) } },
+          turningOff ? { $set: { status: "suspended", suspendedByCategory: true } } : { $set: { status: "published" }, $unset: { suspendedByCategory: 1 } },
+          { session },
+        );
+      }
+    }
+    category.set(fields);
+    await category.save({ session });
+    if (touched.length) await recountAirportServices(touched, session);
+  });
   invalidateCategoryCache();
   return toCategoryDTO(category);
 }

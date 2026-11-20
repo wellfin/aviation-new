@@ -70,6 +70,26 @@ describe("service categories", () => {
     expect(list.body.data.find((x: { slug: string }) => x.slug === "fuel").providerCount).toBe(1);
   });
 
+  it("deactivating with confirmation suspends the service's listings and switching it back on restores only those", async () => {
+    const { agent } = await signedInAgent("ADMIN");
+    const auto = await publishedProvider("fuel");
+    const manual = await Provider.create({ slug: `manual-${Date.now()}`, name: "Manual", status: "suspended", category: "fuel", countryCode: "GB", country: "United Kingdom", city: "London", summary: "Test" });
+    const off = await agent.patch(api("/admin/categories/fuel")).send({ active: false, deactivateListings: true });
+    expect(off.status).toBe(200);
+    expect(off.body.data.active).toBe(false);
+    expect((await Provider.findById(auto._id))!.status).toBe("suspended");
+    expect((await request(app).get(api(`/providers/${auto.slug}`))).status).toBe(404);
+
+    expect((await agent.patch(api("/admin/categories/fuel")).send({ active: true })).status).toBe(200);
+    const restored = (await Provider.findById(auto._id))!;
+    expect(restored.status).toBe("published");
+    expect(restored.suspendedByCategory).toBeUndefined();
+    // a listing an admin suspended by hand stays suspended
+    expect((await Provider.findById(manual._id))!.status).toBe("suspended");
+    // the flag alone is not an update
+    expect((await agent.patch(api("/admin/categories/fuel")).send({ deactivateListings: true })).status).toBe(422);
+  });
+
   it("deactivated categories disappear publicly and are rejected for new listings", async () => {
     const { agent: admin } = await signedInAgent("ADMIN");
     expect((await admin.patch(api("/admin/categories/permit")).send({ active: false })).status).toBe(200);

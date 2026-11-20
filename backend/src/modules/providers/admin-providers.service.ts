@@ -208,6 +208,8 @@ export async function transitionProvider(id: string, action: ProviderAction, rea
       throw conflict(`A ${listing.status} listing can't be ${action === "approve" ? "approved" : `${action}ed`}.`, undefined, "INVALID_STATUS");
     }
     listing.status = rule.to;
+    // A manual decision overrides the automatic suspension from a deactivated service.
+    listing.suspendedByCategory = undefined;
     if (action === "approve") {
       listing.publishedAt ??= new Date();
       listing.rejectionReason = undefined;

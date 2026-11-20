@@ -30,7 +30,11 @@ export const createCategoryBody = z.object({ slug: categorySlug, ...editable }).
 export const updateCategoryBody = z
   .object(editable)
   .partial()
-  .refine((v) => Object.keys(v).length > 0, "Nothing to update");
+  .extend({
+    /** Confirms that deactivating the service also suspends its published listings (restored when it is switched back on). */
+    deactivateListings: z.boolean().optional(),
+  })
+  .refine((v) => Object.keys(v).some((k) => k !== "deactivateListings"), "Nothing to update");
 
 export const slugParams = z.object({ slug: categorySlug });
 export const reorderBody = z.object({ slugs: z.array(categorySlug).min(1).max(200) });

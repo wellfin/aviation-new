@@ -60,6 +60,8 @@ const providerSchema = new Schema(
     owner: { type: Schema.Types.ObjectId, ref: "User" },
     status: { type: String, enum: PROVIDER_STATUSES, required: true, default: "draft" },
     rejectionReason: { type: String, trim: true, maxlength: 500 },
+    /** Set when the listing was suspended because its service was deactivated; it is republished when the service is switched back on. */
+    suspendedByCategory: { type: Boolean },
     tier: { type: String, enum: PROVIDER_TIERS, required: true, default: "basic" },
     verified: { type: Boolean, default: false },
     /** Slug of an admin-managed ServiceCategory (validated by the services on write). */
